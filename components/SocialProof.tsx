@@ -1,0 +1,174 @@
+import { CheckCircle } from 'lucide-react'
+import Link from 'next/link'
+
+const socialStats = [
+  {
+    platform: 'TikTok',
+    icon: (
+      <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1-.1z" />
+      </svg>
+    ),
+    followers: '245.4K',
+    engagement: '2.7M',
+    engagementLabel: 'Me gusta',
+    color: 'bg-gradient-to-r from-pink-500 to-cyan-500',
+    image: 'https://images.unsplash.com/photo-1517438322307-e67111335449?q=80&w=400',
+  },
+  {
+    platform: 'Instagram',
+    icon: (
+      <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+      </svg>
+    ),
+    followers: '45.6K',
+    engagement: '+10M',
+    engagementLabel: 'Vistas',
+    color: 'bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500',
+    image: 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?q=80&w=400',
+  },
+  {
+    platform: 'Facebook',
+    icon: (
+      <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+      </svg>
+    ),
+    followers: '135K',
+    engagement: '1.5M',
+    engagementLabel: 'Me gusta',
+    color: 'bg-blue-600',
+    image: 'https://images.unsplash.com/photo-1495555687398-3f50d6e79e1e?q=80&w=400',
+  },
+]
+
+export default function SocialProof() {
+  return (
+    <section className="py-20 bg-dark">
+      <div className="container mx-auto px-4">
+        {/* Title */}
+        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-4">
+          Más de <span className="text-red-500">400,000 seguidores</span>
+          <br />
+          confían en nosotros
+        </h2>
+        <p className="section-subtitle">
+          Únete a nuestra comunidad de boxeadores en redes sociales
+        </p>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto mb-12">
+          {/* Social Cards */}
+          {socialStats.map((social, index) => (
+            <div key={index} className="card overflow-hidden p-0">
+              {/* Card Image */}
+              <div
+                className="h-32 bg-cover bg-center relative"
+                style={{ backgroundImage: `url('${social.image}')` }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-t from-dark-100 to-transparent"></div>
+              </div>
+
+              {/* Card Content */}
+              <div className="p-4">
+                {/* Platform Badge */}
+                <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-white text-sm font-medium mb-3 ${social.color}`}>
+                  {social.icon}
+                  <span>{social.platform}</span>
+                </div>
+
+                {/* Stats */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-2xl font-bold text-white">{social.followers}</p>
+                    <p className="text-sm text-neutral">Seguidores</p>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-white">{social.engagement}</p>
+                    <p className="text-sm text-neutral">{social.engagementLabel}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+
+          {/* Instructor Card */}
+          <div className="card overflow-hidden p-0">
+            {/* Card Image */}
+            <div
+              className="h-32 bg-cover bg-center relative"
+              style={{
+                backgroundImage: `url('https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?q=80&w=400')`,
+              }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-t from-dark-100 to-transparent"></div>
+              {/* Certified Badge */}
+              <div className="absolute top-3 right-3 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded flex items-center gap-1">
+                <CheckCircle className="w-3 h-3" />
+                CERTIFICADO
+              </div>
+            </div>
+
+            {/* Card Content */}
+            <div className="p-4">
+              <h3 className="text-xl font-bold text-white mb-1">Richard Rodríguez</h3>
+              <p className="text-accent text-sm font-medium mb-3">
+                Entrenador Profesional de Boxeo
+              </p>
+              <ul className="space-y-1 text-sm text-neutral">
+                <li className="flex items-center gap-2">
+                  <span className="text-accent">•</span>
+                  +15 años de experiencia
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-accent">•</span>
+                  +500 alumnos entrenados
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        {/* Social Links */}
+        <div className="text-center">
+          <p className="text-neutral mb-4">
+            Únete a miles de personas que ya están transformando su vida con el boxeo
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            <Link
+              href="https://tiktok.com/@rrboxingperu"
+              target="_blank"
+              className="flex items-center gap-2 bg-dark-200 hover:bg-dark-300 px-5 py-3 rounded-full transition-colors"
+            >
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1-.1z" />
+              </svg>
+              <span>@rrboxingperu</span>
+            </Link>
+            <Link
+              href="https://instagram.com/rrboxingperu"
+              target="_blank"
+              className="flex items-center gap-2 bg-dark-200 hover:bg-dark-300 px-5 py-3 rounded-full transition-colors"
+            >
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+              </svg>
+              <span>@rrboxingperu</span>
+            </Link>
+            <Link
+              href="https://facebook.com/rrboxingperu"
+              target="_blank"
+              className="flex items-center gap-2 bg-dark-200 hover:bg-dark-300 px-5 py-3 rounded-full transition-colors"
+            >
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+              </svg>
+              <span>RR Boxing Peru</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
