@@ -54,25 +54,29 @@ export default function Benefits() {
           prácticas y explicaciones claras.
         </p>
 
-        {/* Benefits Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 max-w-6xl mx-auto">
+        {/* Benefits - Horizontal scroll on mobile, grid on desktop */}
+        <div className="flex md:grid md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 max-w-6xl mx-auto overflow-x-auto pb-4 md:pb-0 snap-x snap-mandatory scrollbar-hide">
           {benefits.map((benefit, index) => (
             <div
               key={index}
-              className="card group hover:bg-dark-200"
+              className="flex-shrink-0 w-[260px] md:w-auto snap-center card group hover:bg-dark-200"
             >
-              <div className="w-14 h-14 bg-accent/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-accent/20 transition-colors">
-                <benefit.icon className="w-7 h-7 text-accent" />
+              <div className="w-12 h-12 md:w-14 md:h-14 bg-accent/10 rounded-xl flex items-center justify-center mb-3 md:mb-4 group-hover:bg-accent/20 transition-colors">
+                <benefit.icon className="w-6 h-6 md:w-7 md:h-7 text-accent" />
               </div>
-              <h3 className="text-xl font-bold mb-2 text-white">
+              <h3 className="text-lg md:text-xl font-bold mb-1 md:mb-2 text-white">
                 {benefit.title}
               </h3>
-              <p className="text-neutral">
+              <p className="text-neutral text-sm md:text-base">
                 {benefit.description}
               </p>
             </div>
           ))}
         </div>
+        {/* Scroll hint for mobile */}
+        <p className="text-center text-neutral text-xs mt-2 md:hidden">
+          ← Desliza para ver más →
+        </p>
       </div>
     </section>
   )
