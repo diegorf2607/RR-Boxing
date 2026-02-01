@@ -85,12 +85,18 @@ export default function Testimonials() {
           Personas reales que han transformado su condición física con RR Boxing Academy.
         </p>
 
-        {/* Testimonials Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 max-w-5xl mx-auto">
+        {/* Testimonials - Horizontal scroll on mobile, grid on desktop */}
+        <div className="flex md:grid md:grid-cols-3 gap-4 md:gap-6 max-w-5xl mx-auto overflow-x-auto pb-4 md:pb-0 snap-x snap-mandatory scrollbar-hide">
           {testimonials.map((testimonial, index) => (
-            <TestimonialCard key={index} testimonial={testimonial} />
+            <div key={index} className="flex-shrink-0 w-[280px] md:w-auto snap-center">
+              <TestimonialCard testimonial={testimonial} />
+            </div>
           ))}
         </div>
+        {/* Scroll hint for mobile */}
+        <p className="text-center text-neutral text-xs mt-2 md:hidden">
+          ← Desliza para ver más →
+        </p>
       </div>
     </section>
   )
