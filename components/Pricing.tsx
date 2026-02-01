@@ -29,7 +29,7 @@ export default function Pricing() {
           <div className="bg-dark-100 border-2 border-accent rounded-3xl overflow-hidden shadow-2xl shadow-accent/10">
             {/* Badge */}
             <div className="bg-red-600 text-white text-center py-2 font-bold">
-              50% OFF – Oferta de Pre-Lanzamiento
+              40% OFF – Oferta de Pre-Lanzamiento
             </div>
 
             {/* Content */}
@@ -42,8 +42,8 @@ export default function Pricing() {
 
               {/* Price */}
               <div className="text-center mb-8">
-                <span className="text-2xl text-neutral line-through mr-3">$49.99</span>
-                <span className="text-5xl font-bold text-accent">$24.99</span>
+                <span className="text-2xl text-neutral line-through mr-3">$79.99</span>
+                <span className="text-5xl font-bold text-accent">$47.99</span>
                 <p className="text-neutral text-sm mt-2">USD – Pago único</p>
               </div>
 

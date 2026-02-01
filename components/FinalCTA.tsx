@@ -27,7 +27,7 @@ export default function FinalCTA() {
           </Link>
 
           <p className="text-neutral text-sm mt-6">
-            Acceso inmediato • Pago único de $24.99 USD
+            Acceso inmediato • Pago único de $47.99 USD
           </p>
         </div>
       </div>

@@ -33,12 +33,12 @@ export default function Hero() {
         <div className="max-w-md mx-auto mb-8 animate-fade-in-up animate-delay-200">
           <div className="bg-dark-100/80 backdrop-blur-sm border-2 border-accent rounded-2xl p-6 md:p-8">
             <div className="bg-accent/20 text-accent text-sm font-bold py-2 px-4 rounded-full inline-block mb-4">
-              Aprovecha el 50% de descuento hasta el 2 de noviembre
+              Aprovecha el 40% de descuento hasta el 2 de noviembre
             </div>
             
             <div className="flex items-center justify-center gap-4 mb-6">
-              <span className="text-neutral line-through text-xl">$49.99</span>
-              <span className="text-4xl md:text-5xl font-bold text-accent">$24.99</span>
+              <span className="text-neutral line-through text-xl">$79.99</span>
+              <span className="text-4xl md:text-5xl font-bold text-accent">$47.99</span>
               <span className="text-neutral text-sm">USD</span>
             </div>
 
