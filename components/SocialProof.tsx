@@ -6,7 +6,7 @@ const socialStats = [
     platform: 'TikTok',
     handle: '@rrboxingperu',
     url: 'https://tiktok.com/@rrboxingperu',
-    followers: '245.4K',
+    followers: '+245K',
     followersLabel: 'Seguidores',
     icon: (
       <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
@@ -20,7 +20,7 @@ const socialStats = [
     platform: 'Instagram',
     handle: '@rrboxingperu',
     url: 'https://instagram.com/rrboxingperu',
-    followers: '45.6K',
+    followers: '+46K',
     followersLabel: 'Seguidores',
     icon: (
       <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
@@ -34,7 +34,7 @@ const socialStats = [
     platform: 'Facebook',
     handle: 'RR Boxing Peru',
     url: 'https://facebook.com/rrboxingperu',
-    followers: '135K',
+    followers: '+185K',
     followersLabel: 'Seguidores',
     icon: (
       <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
@@ -52,7 +52,7 @@ export default function SocialProof() {
       <div className="container mx-auto px-4">
         {/* Title */}
         <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-4">
-          Más de <span className="text-red-500">450,000 seguidores</span>
+          Más de <span className="text-red-500">476,000 seguidores</span>
           <br />
           confían en nosotros
         </h2>
