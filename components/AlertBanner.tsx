@@ -9,7 +9,7 @@ export default function AlertBanner() {
   if (!isVisible) return null
 
   return (
-    <div className="bg-accent text-dark py-2.5 px-4 relative z-50">
+    <div className="bg-red-500 text-white py-2.5 px-4 relative z-50">
       <div className="container mx-auto flex items-center justify-center gap-3 text-sm md:text-base">
         <Clock className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
         <p className="font-medium text-center">
@@ -20,7 +20,7 @@ export default function AlertBanner() {
         </p>
         <button
           onClick={() => setIsVisible(false)}
-          className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-dark/10 rounded-full transition-colors"
+          className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-white/20 rounded-full transition-colors"
           aria-label="Cerrar banner"
         >
           <X className="w-4 h-4" />
