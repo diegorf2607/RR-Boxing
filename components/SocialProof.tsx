@@ -4,40 +4,37 @@ import Link from 'next/link'
 const socialStats = [
   {
     platform: 'TikTok',
+    handle: '@rrboxingperu',
+    url: 'https://tiktok.com/@rrboxingperu',
     icon: (
       <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
         <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1-.1z" />
       </svg>
     ),
-    followers: '245.4K',
-    engagement: '2.7M',
-    engagementLabel: 'Me gusta',
     color: 'bg-gradient-to-r from-pink-500 to-cyan-500',
     image: '/TT.PNG',
   },
   {
     platform: 'Instagram',
+    handle: '@rrboxingperu',
+    url: 'https://instagram.com/rrboxingperu',
     icon: (
       <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
         <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
       </svg>
     ),
-    followers: '45.6K',
-    engagement: '+10M',
-    engagementLabel: 'Vistas',
     color: 'bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500',
     image: '/IG.PNG',
   },
   {
     platform: 'Facebook',
+    handle: 'RR Boxing Peru',
+    url: 'https://facebook.com/rrboxingperu',
     icon: (
       <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
         <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
       </svg>
     ),
-    followers: '135K',
-    engagement: '1.5M',
-    engagementLabel: 'Me gusta',
     color: 'bg-blue-600',
     image: '/FB.PNG',
   },
@@ -54,14 +51,19 @@ export default function SocialProof() {
           confían en nosotros
         </h2>
         <p className="section-subtitle">
-          Únete a nuestra comunidad de boxeadores en redes sociales
+          Únete a miles de personas que ya están transformando su vida con el boxeo
         </p>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 max-w-6xl mx-auto mb-8 md:mb-12">
           {/* Social Cards */}
           {socialStats.map((social, index) => (
-            <div key={index} className="card overflow-hidden p-0">
+            <Link 
+              key={index} 
+              href={social.url}
+              target="_blank"
+              className="card overflow-hidden p-0 cursor-pointer hover:scale-[1.02] transition-transform"
+            >
               {/* Card Image - Full screenshot showing follower numbers */}
               <div className="relative h-48 sm:h-64 md:h-80 lg:h-96">
                 <img
@@ -74,13 +76,13 @@ export default function SocialProof() {
 
               {/* Card Content */}
               <div className="p-2 md:p-4">
-                {/* Platform Badge */}
+                {/* Platform Badge with handle */}
                 <div className={`inline-flex items-center gap-1 md:gap-2 px-2 md:px-3 py-1 rounded-full text-white text-xs md:text-sm font-medium ${social.color}`}>
                   <span className="w-4 h-4 md:w-6 md:h-6">{social.icon}</span>
-                  <span>{social.platform}</span>
+                  <span>{social.handle}</span>
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
 
           {/* Instructor Card */}
@@ -120,44 +122,6 @@ export default function SocialProof() {
           </div>
         </div>
 
-        {/* Social Links */}
-        <div className="text-center">
-          <p className="text-neutral mb-4">
-            Únete a miles de personas que ya están transformando su vida con el boxeo
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-4">
-            <Link
-              href="https://tiktok.com/@rrboxingperu"
-              target="_blank"
-              className="flex items-center gap-2 bg-dark-200 hover:bg-dark-300 px-5 py-3 rounded-full transition-colors"
-            >
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1-.1z" />
-              </svg>
-              <span>@rrboxingperu</span>
-            </Link>
-            <Link
-              href="https://instagram.com/rrboxingperu"
-              target="_blank"
-              className="flex items-center gap-2 bg-dark-200 hover:bg-dark-300 px-5 py-3 rounded-full transition-colors"
-            >
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
-              </svg>
-              <span>@rrboxingperu</span>
-            </Link>
-            <Link
-              href="https://facebook.com/rrboxingperu"
-              target="_blank"
-              className="flex items-center gap-2 bg-dark-200 hover:bg-dark-300 px-5 py-3 rounded-full transition-colors"
-            >
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-              </svg>
-              <span>RR Boxing Peru</span>
-            </Link>
-          </div>
-        </div>
       </div>
     </section>
   )
