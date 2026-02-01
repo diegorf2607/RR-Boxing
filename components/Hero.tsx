@@ -69,6 +69,19 @@ export default function Hero() {
             <span>Garantía de 7 días</span>
           </div>
         </div>
+
+        {/* High Ticket CTA */}
+        <div className="mt-10 animate-fade-in-up animate-delay-400">
+          <Link
+            href="#personalizadas"
+            className="group inline-flex items-center gap-3 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-400 hover:via-teal-400 hover:to-cyan-400 text-white font-bold py-4 px-8 rounded-full transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-emerald-500/40 animate-pulse-slow"
+          >
+            <span className="text-lg md:text-xl">🥊 ¿Quiero clases más personalizadas?</span>
+            <svg className="w-6 h-6 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+          </Link>
+        </div>
       </div>
 
       {/* Scroll Indicator */}

@@ -57,6 +57,34 @@ export default function VideoSection() {
               </div>
             )}
           </div>
+
+          {/* High Ticket CTA */}
+          <div className="mt-10 text-center">
+            <div className="inline-block relative">
+              {/* Glow effect */}
+              <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 rounded-2xl blur-lg opacity-50 group-hover:opacity-75 animate-pulse"></div>
+              
+              <a
+                href="#personalizadas"
+                className="relative block bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-400 hover:via-teal-400 hover:to-cyan-400 text-white rounded-2xl p-6 md:p-8 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-2xl hover:shadow-emerald-500/30"
+              >
+                <div className="flex flex-col md:flex-row items-center justify-center gap-4">
+                  <div className="text-4xl">🎯</div>
+                  <div className="text-center md:text-left">
+                    <p className="text-xl md:text-2xl font-bold mb-1">
+                      ¿Quieres clases más personalizadas?
+                    </p>
+                    <p className="text-white/90 text-sm md:text-base">
+                      Entrenamiento 1 a 1 con Richard Rodríguez • Resultados garantizados
+                    </p>
+                  </div>
+                  <svg className="w-8 h-8 flex-shrink-0 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                </div>
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </section>

@@ -6,6 +6,7 @@ import Benefits from '@/components/Benefits'
 import SocialProof from '@/components/SocialProof'
 import Testimonials from '@/components/Testimonials'
 import Pricing from '@/components/Pricing'
+import HighTicket from '@/components/HighTicket'
 import FinalCTA from '@/components/FinalCTA'
 import Footer from '@/components/Footer'
 
@@ -43,6 +44,9 @@ export default function Home() {
       
       {/* Pricing Section */}
       <Pricing />
+
+      {/* High Ticket - Clases Personalizadas */}
+      <HighTicket />
       
       {/* Final CTA Section */}
       <FinalCTA />
