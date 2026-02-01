@@ -13,7 +13,7 @@ const socialStats = [
     engagement: '2.7M',
     engagementLabel: 'Me gusta',
     color: 'bg-gradient-to-r from-pink-500 to-cyan-500',
-    image: 'https://images.unsplash.com/photo-1517438322307-e67111335449?q=80&w=400',
+    image: '/TT.PNG',
   },
   {
     platform: 'Instagram',
@@ -26,7 +26,7 @@ const socialStats = [
     engagement: '+10M',
     engagementLabel: 'Vistas',
     color: 'bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500',
-    image: 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?q=80&w=400',
+    image: '/IG.PNG',
   },
   {
     platform: 'Facebook',
@@ -39,7 +39,7 @@ const socialStats = [
     engagement: '1.5M',
     engagementLabel: 'Me gusta',
     color: 'bg-blue-600',
-    image: 'https://images.unsplash.com/photo-1495555687398-3f50d6e79e1e?q=80&w=400',
+    image: '/FB.PNG',
   },
 ]
 
@@ -49,7 +49,7 @@ export default function SocialProof() {
       <div className="container mx-auto px-4">
         {/* Title */}
         <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-4">
-          Más de <span className="text-red-500">400,000 seguidores</span>
+          Más de <span className="text-red-500">450,000 seguidores</span>
           <br />
           confían en nosotros
         </h2>
@@ -99,7 +99,7 @@ export default function SocialProof() {
             <div
               className="h-32 bg-cover bg-center relative"
               style={{
-                backgroundImage: `url('https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?q=80&w=400')`,
+                backgroundImage: `url('/Richard.jpeg')`,
               }}
             >
               <div className="absolute inset-0 bg-gradient-to-t from-dark-100 to-transparent"></div>

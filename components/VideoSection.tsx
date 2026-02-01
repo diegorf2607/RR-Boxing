@@ -26,10 +26,10 @@ export default function VideoSection() {
                 <div
                   className="absolute inset-0 bg-cover bg-center"
                   style={{
-                    backgroundImage: `url('https://images.unsplash.com/photo-1517438322307-e67111335449?q=80&w=2071')`,
+                    backgroundImage: `url('https://img.youtube.com/vi/vO3AeRbPqM0/maxresdefault.jpg')`,
                   }}
                 >
-                  <div className="absolute inset-0 bg-dark/60"></div>
+                  <div className="absolute inset-0 bg-dark/40"></div>
                 </div>
 
                 {/* Play Button */}
@@ -50,11 +50,14 @@ export default function VideoSection() {
                 </div>
               </>
             ) : (
-              <div className="absolute inset-0 flex items-center justify-center bg-dark-200">
-                <p className="text-neutral">
-                  [Video del curso - Integrar con YouTube/Vimeo]
-                </p>
-              </div>
+              <iframe
+                className="absolute inset-0 w-full h-full"
+                src="https://www.youtube.com/embed/vO3AeRbPqM0?autoplay=1&rel=0"
+                title="RR Boxing Academy - Video de presentación"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              ></iframe>
             )}
           </div>
 
