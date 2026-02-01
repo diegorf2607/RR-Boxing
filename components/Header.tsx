@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
@@ -25,27 +26,13 @@ export default function Header() {
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 group">
-          <div className="relative">
-            <div className="w-12 h-12 md:w-14 md:h-14 bg-accent rounded-full flex items-center justify-center transition-transform group-hover:scale-110">
-              <svg viewBox="0 0 100 100" className="w-8 h-8 md:w-10 md:h-10">
-                <text
-                  x="50"
-                  y="55"
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  className="fill-dark font-bold text-3xl"
-                  style={{ fontFamily: 'Impact, sans-serif' }}
-                >
-                  RR
-                </text>
-              </svg>
-            </div>
-            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2">
-              <span className="text-[8px] md:text-[10px] font-bold text-accent tracking-wider">
-                BOXING
-              </span>
-            </div>
-          </div>
+          <Image
+            src="/rr-boxing-logo.png"
+            alt="RR Boxing"
+            width={56}
+            height={56}
+            className="w-12 h-12 md:w-14 md:h-14 transition-transform group-hover:scale-110"
+          />
         </Link>
 
         {/* CTA Button */}

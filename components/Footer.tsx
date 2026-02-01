@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default function Footer() {
   return (
@@ -9,11 +10,13 @@ export default function Footer() {
           <div className="md:col-span-1">
             {/* Logo */}
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center">
-                <span className="text-dark font-bold text-lg" style={{ fontFamily: 'Impact, sans-serif' }}>
-                  RR
-                </span>
-              </div>
+              <Image
+                src="/rr-boxing-logo.png"
+                alt="RR Boxing"
+                width={40}
+                height={40}
+                className="w-10 h-10"
+              />
             </div>
             <p className="text-neutral text-sm mb-4">
               Aprende boxeo desde cero en solo 7 días. Sin gimnasio, sin experiencia previa. Solo motivación.
