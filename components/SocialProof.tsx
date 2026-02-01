@@ -62,11 +62,13 @@ export default function SocialProof() {
           {/* Social Cards */}
           {socialStats.map((social, index) => (
             <div key={index} className="card overflow-hidden p-0">
-              {/* Card Image - Full screenshot */}
-              <div
-                className="h-64 md:h-72 bg-cover bg-bottom relative"
-                style={{ backgroundImage: `url('${social.image}')` }}
-              >
+              {/* Card Image - Full screenshot showing follower numbers */}
+              <div className="relative h-80 md:h-96">
+                <img
+                  src={social.image}
+                  alt={social.platform}
+                  className="w-full h-full object-cover object-top"
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-dark-100 via-transparent to-transparent"></div>
               </div>
 
@@ -84,12 +86,12 @@ export default function SocialProof() {
           {/* Instructor Card */}
           <div className="card overflow-hidden p-0">
             {/* Card Image */}
-            <div
-              className="h-64 md:h-72 bg-cover bg-center relative"
-              style={{
-                backgroundImage: `url('/Richard.jpeg')`,
-              }}
-            >
+            <div className="relative h-80 md:h-96">
+              <img
+                src="/Richard.jpeg"
+                alt="Richard Rodríguez"
+                className="w-full h-full object-cover object-center"
+              />
               <div className="absolute inset-0 bg-gradient-to-t from-dark-100 via-transparent to-transparent"></div>
               {/* Certified Badge */}
               <div className="absolute top-3 right-3 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded flex items-center gap-1">
