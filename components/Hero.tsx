@@ -3,7 +3,7 @@ import { Shield, Infinity, Globe } from 'lucide-react'
 
 export default function Hero() {
   return (
-    <section className="relative min-h-screen flex items-center justify-center pt-20 pb-12">
+    <section className="relative min-h-screen flex items-center justify-center pt-24 pb-16 px-2">
       {/* Background Image with Overlay */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -71,13 +71,13 @@ export default function Hero() {
         </div>
 
         {/* High Ticket CTA */}
-        <div className="mt-10 mb-20 animate-fade-in-up animate-delay-400">
+        <div className="mt-8 mb-16 md:mb-20 animate-fade-in-up animate-delay-400">
           <Link
             href="#personalizadas"
-            className="group inline-flex items-center gap-3 bg-gradient-to-r from-red-600 via-red-500 to-orange-500 hover:from-red-500 hover:via-red-400 hover:to-orange-400 text-white font-bold py-4 px-8 rounded-full transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-red-500/40 animate-pulse-slow"
+            className="group inline-flex items-center gap-2 md:gap-3 bg-gradient-to-r from-red-600 via-red-500 to-orange-500 hover:from-red-500 hover:via-red-400 hover:to-orange-400 text-white font-bold py-3 px-6 md:py-4 md:px-8 rounded-full transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-red-500/40 animate-pulse-slow"
           >
-            <span className="text-lg md:text-xl">🥊 Quiero clases más personalizadas</span>
-            <svg className="w-6 h-6 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <span className="text-sm md:text-xl">🥊 Quiero clases personalizadas</span>
+            <svg className="w-5 h-5 md:w-6 md:h-6 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
             </svg>
           </Link>

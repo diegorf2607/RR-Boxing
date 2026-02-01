@@ -42,7 +42,7 @@ const benefits = [
 
 export default function Benefits() {
   return (
-    <section className="py-20 bg-dark">
+    <section className="py-12 md:py-20 bg-dark">
       <div className="container mx-auto px-4">
         {/* Title */}
         <h2 className="section-title">
@@ -55,7 +55,7 @@ export default function Benefits() {
         </p>
 
         {/* Benefits Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 max-w-6xl mx-auto">
           {benefits.map((benefit, index) => (
             <div
               key={index}

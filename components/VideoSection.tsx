@@ -7,7 +7,7 @@ export default function VideoSection() {
   const [isPlaying, setIsPlaying] = useState(false)
 
   return (
-    <section className="py-20 bg-dark-100">
+    <section className="py-12 md:py-20 bg-dark-100">
       <div className="container mx-auto px-4">
         {/* Title */}
         <h2 className="section-title">
@@ -62,31 +62,26 @@ export default function VideoSection() {
           </div>
 
           {/* High Ticket CTA */}
-          <div className="mt-10 text-center">
-            <div className="inline-block relative">
-              {/* Glow effect */}
-              <div className="absolute -inset-1 bg-gradient-to-r from-red-600 via-red-500 to-orange-500 rounded-2xl blur-lg opacity-50 group-hover:opacity-75 animate-pulse"></div>
-              
-              <a
-                href="#personalizadas"
-                className="relative block bg-gradient-to-r from-red-600 via-red-500 to-orange-500 hover:from-red-500 hover:via-red-400 hover:to-orange-400 text-white rounded-2xl p-6 md:p-8 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-2xl hover:shadow-red-500/30"
-              >
-                <div className="flex flex-col md:flex-row items-center justify-center gap-4">
-                  <div className="text-4xl">🎯</div>
-                  <div className="text-center md:text-left">
-                    <p className="text-xl md:text-2xl font-bold mb-1">
-                      Quiero clases más personalizadas
-                    </p>
-                    <p className="text-white/90 text-sm md:text-base">
-                      Entrenamiento 1 a 1 con Richard Rodríguez • Resultados garantizados
-                    </p>
-                  </div>
-                  <svg className="w-8 h-8 flex-shrink-0 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                  </svg>
+          <div className="mt-8 md:mt-10 text-center">
+            <a
+              href="#personalizadas"
+              className="inline-block bg-gradient-to-r from-red-600 via-red-500 to-orange-500 hover:from-red-500 hover:via-red-400 hover:to-orange-400 text-white rounded-xl p-4 md:p-6 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-2xl hover:shadow-red-500/30"
+            >
+              <div className="flex items-center justify-center gap-3">
+                <span className="text-2xl">🎯</span>
+                <div className="text-left">
+                  <p className="text-base md:text-xl font-bold">
+                    Quiero clases personalizadas
+                  </p>
+                  <p className="text-white/80 text-xs md:text-sm">
+                    Entrenamiento 1 a 1 con Richard
+                  </p>
                 </div>
-              </a>
-            </div>
+                <svg className="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            </a>
           </div>
         </div>
       </div>

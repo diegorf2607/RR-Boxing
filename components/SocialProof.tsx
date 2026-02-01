@@ -45,7 +45,7 @@ const socialStats = [
 
 export default function SocialProof() {
   return (
-    <section className="py-20 bg-dark">
+    <section className="py-12 md:py-20 bg-dark">
       <div className="container mx-auto px-4">
         {/* Title */}
         <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-4">
@@ -58,12 +58,12 @@ export default function SocialProof() {
         </p>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto mb-12">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 max-w-6xl mx-auto mb-8 md:mb-12">
           {/* Social Cards */}
           {socialStats.map((social, index) => (
             <div key={index} className="card overflow-hidden p-0">
               {/* Card Image - Full screenshot showing follower numbers */}
-              <div className="relative h-80 md:h-96">
+              <div className="relative h-48 sm:h-64 md:h-80 lg:h-96">
                 <img
                   src={social.image}
                   alt={social.platform}
@@ -73,10 +73,10 @@ export default function SocialProof() {
               </div>
 
               {/* Card Content */}
-              <div className="p-4">
+              <div className="p-2 md:p-4">
                 {/* Platform Badge */}
-                <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-white text-sm font-medium ${social.color}`}>
-                  {social.icon}
+                <div className={`inline-flex items-center gap-1 md:gap-2 px-2 md:px-3 py-1 rounded-full text-white text-xs md:text-sm font-medium ${social.color}`}>
+                  <span className="w-4 h-4 md:w-6 md:h-6">{social.icon}</span>
                   <span>{social.platform}</span>
                 </div>
               </div>
@@ -86,7 +86,7 @@ export default function SocialProof() {
           {/* Instructor Card */}
           <div className="card overflow-hidden p-0">
             {/* Card Image */}
-            <div className="relative h-80 md:h-96">
+            <div className="relative h-48 sm:h-64 md:h-80 lg:h-96">
               <img
                 src="/Richard.jpeg"
                 alt="Richard Rodríguez"
@@ -94,19 +94,19 @@ export default function SocialProof() {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-dark-100 via-transparent to-transparent"></div>
               {/* Certified Badge */}
-              <div className="absolute top-3 right-3 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded flex items-center gap-1">
-                <CheckCircle className="w-3 h-3" />
+              <div className="absolute top-2 right-2 md:top-3 md:right-3 bg-green-500 text-white text-[10px] md:text-xs font-bold px-1.5 md:px-2 py-0.5 md:py-1 rounded flex items-center gap-1">
+                <CheckCircle className="w-2.5 h-2.5 md:w-3 md:h-3" />
                 CERTIFICADO
               </div>
             </div>
 
             {/* Card Content */}
-            <div className="p-4">
-              <h3 className="text-xl font-bold text-white mb-1">Richard Rodríguez</h3>
-              <p className="text-accent text-sm font-medium mb-3">
-                Entrenador Profesional de Boxeo
+            <div className="p-2 md:p-4">
+              <h3 className="text-sm md:text-xl font-bold text-white mb-0.5">Richard Rodríguez</h3>
+              <p className="text-accent text-xs md:text-sm font-medium mb-1 md:mb-3">
+                Entrenador Profesional
               </p>
-              <ul className="space-y-1 text-sm text-neutral">
+              <ul className="hidden md:block space-y-1 text-sm text-neutral">
                 <li className="flex items-center gap-2">
                   <span className="text-accent">•</span>
                   +15 años de experiencia

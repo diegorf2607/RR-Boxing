@@ -14,7 +14,7 @@ const features = [
 
 export default function Pricing() {
   return (
-    <section id="pricing" className="py-20 bg-dark">
+    <section id="pricing" className="py-12 md:py-20 bg-dark">
       <div className="container mx-auto px-4">
         {/* Title */}
         <h2 className="section-title">

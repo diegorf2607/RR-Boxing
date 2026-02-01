@@ -73,7 +73,7 @@ function TestimonialCard({ testimonial }: { testimonial: typeof testimonials[0] 
 
 export default function Testimonials() {
   return (
-    <section className="py-20 bg-dark-100">
+    <section className="py-12 md:py-20 bg-dark-100">
       <div className="container mx-auto px-4">
         {/* Title */}
         <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-4 italic">
@@ -86,7 +86,7 @@ export default function Testimonials() {
         </p>
 
         {/* Testimonials Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 max-w-5xl mx-auto">
           {testimonials.map((testimonial, index) => (
             <TestimonialCard key={index} testimonial={testimonial} />
           ))}
