@@ -33,50 +33,48 @@ export default function Pricing() {
             </div>
 
             {/* Content */}
-            <div className="p-8">
-              {/* Title */}
-              <h3 className="text-2xl font-bold text-center mb-2">RR Boxing Academy</h3>
-              <p className="text-neutral text-center mb-6">
-                Curso completo de boxeo para principiantes
-              </p>
-
-              {/* Price */}
-              <div className="text-center mb-8">
-                <span className="text-2xl text-neutral line-through mr-3">$79.99</span>
-                <span className="text-5xl font-bold text-accent">$47.99</span>
-                <p className="text-neutral text-sm mt-2">USD – Pago único</p>
+            <div className="p-6">
+              {/* Title & Price Row */}
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+                <div>
+                  <h3 className="text-xl font-bold">RR Boxing Academy</h3>
+                  <p className="text-neutral text-sm">Curso completo de boxeo para principiantes</p>
+                </div>
+                <div className="text-center md:text-right">
+                  <span className="text-lg text-neutral line-through mr-2">$79.99</span>
+                  <span className="text-3xl font-bold text-accent">$47.99</span>
+                  <p className="text-neutral text-xs">USD – Pago único</p>
+                </div>
               </div>
 
-              {/* Features */}
-              <ul className="space-y-3 mb-8">
+              {/* Features Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-6">
                 {features.map((feature, index) => (
-                  <li key={index} className="flex items-center gap-3">
-                    <Check className="w-5 h-5 text-accent flex-shrink-0" />
-                    <span className="text-neutral-light">{feature}</span>
-                  </li>
+                  <div key={index} className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-accent flex-shrink-0" />
+                    <span className="text-neutral-light text-sm">{feature}</span>
+                  </div>
                 ))}
-              </ul>
+              </div>
 
               {/* Security Badge */}
-              <div className="bg-dark-200 rounded-xl p-4 mb-6 flex items-center gap-3">
-                <Lock className="w-6 h-6 text-accent" />
+              <div className="bg-dark-200 rounded-lg p-3 mb-4 flex items-center gap-3">
+                <Lock className="w-5 h-5 text-accent" />
                 <div>
-                  <p className="font-bold text-white text-sm">Pago 100% seguro</p>
-                  <p className="text-neutral text-xs">
-                    Procesado por Stripe. Acceso inmediato después del pago.
-                  </p>
+                  <p className="font-bold text-white text-xs">Pago 100% seguro</p>
+                  <p className="text-neutral text-xs">Procesado por Stripe. Acceso inmediato.</p>
                 </div>
               </div>
 
               {/* CTA Button */}
               <Link
                 href="#"
-                className="btn-primary w-full flex items-center justify-center gap-2 text-lg py-4"
+                className="btn-primary w-full flex items-center justify-center gap-2 text-base py-3"
               >
                 Quiero unirme al curso ahora
               </Link>
 
-              <p className="text-center text-neutral text-sm mt-4">
+              <p className="text-center text-neutral text-xs mt-3">
                 Acceso inmediato • Pago único
               </p>
             </div>
