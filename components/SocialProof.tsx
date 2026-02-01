@@ -62,32 +62,20 @@ export default function SocialProof() {
           {/* Social Cards */}
           {socialStats.map((social, index) => (
             <div key={index} className="card overflow-hidden p-0">
-              {/* Card Image */}
+              {/* Card Image - Full screenshot */}
               <div
-                className="h-32 bg-cover bg-center relative"
+                className="h-64 md:h-72 bg-cover bg-bottom relative"
                 style={{ backgroundImage: `url('${social.image}')` }}
               >
-                <div className="absolute inset-0 bg-gradient-to-t from-dark-100 to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-dark-100 via-transparent to-transparent"></div>
               </div>
 
               {/* Card Content */}
               <div className="p-4">
                 {/* Platform Badge */}
-                <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-white text-sm font-medium mb-3 ${social.color}`}>
+                <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-white text-sm font-medium ${social.color}`}>
                   {social.icon}
                   <span>{social.platform}</span>
-                </div>
-
-                {/* Stats */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-2xl font-bold text-white">{social.followers}</p>
-                    <p className="text-sm text-neutral">Seguidores</p>
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-white">{social.engagement}</p>
-                    <p className="text-sm text-neutral">{social.engagementLabel}</p>
-                  </div>
                 </div>
               </div>
             </div>
@@ -97,12 +85,12 @@ export default function SocialProof() {
           <div className="card overflow-hidden p-0">
             {/* Card Image */}
             <div
-              className="h-32 bg-cover bg-center relative"
+              className="h-64 md:h-72 bg-cover bg-center relative"
               style={{
                 backgroundImage: `url('/Richard.jpeg')`,
               }}
             >
-              <div className="absolute inset-0 bg-gradient-to-t from-dark-100 to-transparent"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-dark-100 via-transparent to-transparent"></div>
               {/* Certified Badge */}
               <div className="absolute top-3 right-3 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded flex items-center gap-1">
                 <CheckCircle className="w-3 h-3" />
