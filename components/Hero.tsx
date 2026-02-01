@@ -71,7 +71,7 @@ export default function Hero() {
         </div>
 
         {/* High Ticket CTA */}
-        <div className="mt-10 animate-fade-in-up animate-delay-400">
+        <div className="mt-10 mb-20 animate-fade-in-up animate-delay-400">
           <Link
             href="#personalizadas"
             className="group inline-flex items-center gap-3 bg-gradient-to-r from-red-600 via-red-500 to-orange-500 hover:from-red-500 hover:via-red-400 hover:to-orange-400 text-white font-bold py-4 px-8 rounded-full transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-red-500/40 animate-pulse-slow"
@@ -85,7 +85,7 @@ export default function Hero() {
       </div>
 
       {/* Scroll Indicator */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce-slow">
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 animate-bounce-slow">
         <div className="w-6 h-10 border-2 border-accent/50 rounded-full flex items-start justify-center p-2">
           <div className="w-1.5 h-3 bg-accent rounded-full animate-pulse"></div>
         </div>
