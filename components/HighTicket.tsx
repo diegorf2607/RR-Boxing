@@ -85,7 +85,7 @@ export default function HighTicket() {
             <div className="relative bg-dark-100 border-2 border-red-500/50 rounded-3xl overflow-hidden">
               {/* Header */}
               <div className="bg-gradient-to-r from-red-600 via-red-500 to-orange-500 text-white text-center py-4">
-                <p className="font-bold text-lg">🔥 CUPOS LIMITADOS - Solo 5 alumnos por mes</p>
+                <p className="font-bold text-lg">🔥 CUPOS LIMITADOS - Solo 10 alumnos por mes</p>
               </div>
 
               {/* Content */}
