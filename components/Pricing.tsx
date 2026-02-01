@@ -21,7 +21,7 @@ export default function Pricing() {
           Únete al programa hoy
         </h2>
         <p className="section-subtitle">
-          Inversión única con acceso de por vida. Descuento válido hasta el 2 de noviembre.
+          Inversión única con acceso de por vida. Descuento válido por tiempo limitado.
         </p>
 
         {/* Pricing Card */}

@@ -13,10 +13,10 @@ export default function AlertBanner() {
       <div className="container mx-auto flex items-center justify-center gap-3 text-sm md:text-base">
         <Clock className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
         <p className="font-medium text-center">
-          <span className="hidden sm:inline">⏰ Faltan 0d 0h 0m 0s para el lanzamiento oficial</span>
+          <span className="hidden sm:inline">⏰ Faltan 20 días para el lanzamiento oficial</span>
           <span className="sm:hidden">⏰ ¡Últimos días!</span>
           <span className="mx-2">•</span>
-          <span className="font-bold">Aprovecha el descuento antes del 2 de noviembre</span>
+          <span className="font-bold">Aprovecha el descuento de lanzamiento</span>
         </p>
         <button
           onClick={() => setIsVisible(false)}
