@@ -3,10 +3,8 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
 import ContactModal from './ContactModal';
 
-type ModalType = 'highticket' | 'course' | null;
-
 interface ModalContextType {
-  openModal: (type: 'highticket' | 'course') => void;
+  openModal: () => void;
   closeModal: () => void;
 }
 
@@ -21,23 +19,22 @@ export function useModal() {
 }
 
 export function ModalProvider({ children }: { children: ReactNode }) {
-  const [modalType, setModalType] = useState<ModalType>(null);
+  const [isOpen, setIsOpen] = useState(false);
 
-  const openModal = (type: 'highticket' | 'course') => {
-    setModalType(type);
+  const openModal = () => {
+    setIsOpen(true);
   };
 
   const closeModal = () => {
-    setModalType(null);
+    setIsOpen(false);
   };
 
   return (
     <ModalContext.Provider value={{ openModal, closeModal }}>
       {children}
       <ContactModal
-        isOpen={modalType !== null}
+        isOpen={isOpen}
         onClose={closeModal}
-        type={modalType || 'course'}
       />
     </ModalContext.Provider>
   );

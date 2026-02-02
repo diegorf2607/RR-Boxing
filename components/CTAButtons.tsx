@@ -28,7 +28,7 @@ export function CourseButton({ variant = 'primary', size = 'md', className = '',
 
   return (
     <button
-      onClick={() => openModal('course')}
+      onClick={() => openModal()}
       className={`${baseStyles} ${sizeStyles[size]} ${variantStyles[variant]} ${className}`}
     >
       {children}
@@ -37,17 +37,19 @@ export function CourseButton({ variant = 'primary', size = 'md', className = '',
 }
 
 export function HighTicketButton({ size = 'md', className = '', children }: Omit<CTAButtonProps, 'variant'>) {
-  const { openModal } = useModal();
-
   const sizeStyles = {
     sm: 'px-4 py-2 text-sm',
     md: 'px-6 py-3 text-base',
     lg: 'px-8 py-4 text-lg',
   };
 
+  const handleClick = () => {
+    window.open('https://calendly.com/rrboxingperu/30min', '_blank');
+  };
+
   return (
     <button
-      onClick={() => openModal('highticket')}
+      onClick={handleClick}
       className={`font-bold rounded-xl transition-all transform hover:scale-105 bg-gradient-to-r from-red-600 via-red-500 to-orange-500 text-white shadow-lg shadow-red-500/30 hover:shadow-red-500/50 ${sizeStyles[size]} ${className}`}
     >
       {children}

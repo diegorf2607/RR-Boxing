@@ -5,7 +5,6 @@ import { useState } from 'react';
 interface ContactModalProps {
   isOpen: boolean;
   onClose: () => void;
-  type: 'highticket' | 'course';
 }
 
 const goals = [
@@ -17,7 +16,7 @@ const goals = [
   'Otro',
 ];
 
-export default function ContactModal({ isOpen, onClose, type }: ContactModalProps) {
+export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -70,7 +69,6 @@ export default function ContactModal({ isOpen, onClose, type }: ContactModalProp
       email: contactMethod === 'email' ? email : '',
       phone: contactMethod === 'phone' ? `${countryCode}${phone}` : '',
       goals: selectedGoals,
-      type,
       timestamp: new Date().toISOString(),
     };
 
@@ -79,14 +77,9 @@ export default function ContactModal({ isOpen, onClose, type }: ContactModalProp
     // Simular envío
     await new Promise(resolve => setTimeout(resolve, 500));
 
-    if (type === 'highticket') {
-      // Redirigir a Calendly
-      window.open('https://calendly.com/rrboxingperu/30min', '_blank');
-    } else {
-      // Redirigir a página de pago (por ahora alert)
-      alert('¡Gracias por tu interés! Serás redirigido a la página de pago.');
-      // window.location.href = '/checkout'; // Descomentar cuando tengas la página de pago
-    }
+    // Redirigir a página de pago (por ahora alert)
+    alert('¡Gracias por tu interés! Serás redirigido a la página de pago.');
+    // window.location.href = '/checkout'; // Descomentar cuando tengas la página de pago
 
     setIsSubmitting(false);
     onClose();
@@ -111,11 +104,7 @@ export default function ContactModal({ isOpen, onClose, type }: ContactModalProp
       {/* Modal */}
       <div className="relative bg-dark-200 border border-dark-300 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className={`sticky top-0 p-4 sm:p-6 border-b border-dark-300 ${
-          type === 'highticket' 
-            ? 'bg-gradient-to-r from-red-900/50 to-orange-900/50' 
-            : 'bg-gradient-to-r from-accent/20 to-yellow-600/20'
-        }`}>
+        <div className="sticky top-0 p-4 sm:p-6 border-b border-dark-300 bg-gradient-to-r from-accent/20 to-yellow-600/20">
           <button
             onClick={onClose}
             className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
@@ -126,16 +115,10 @@ export default function ContactModal({ isOpen, onClose, type }: ContactModalProp
           </button>
           
           <h2 className="text-xl sm:text-2xl font-bold text-white pr-8">
-            {type === 'highticket' 
-              ? '🥊 Agenda tu Llamada Personalizada' 
-              : '🥊 Inscríbete al Curso'
-            }
+            🥊 Inscríbete al Curso
           </h2>
           <p className="text-gray-300 text-sm mt-1">
-            {type === 'highticket'
-              ? 'Completa tus datos para agendar una llamada con Richard'
-              : 'Completa tus datos para acceder al curso'
-            }
+            Completa tus datos para acceder al curso
           </p>
         </div>
 
@@ -268,11 +251,7 @@ export default function ContactModal({ isOpen, onClose, type }: ContactModalProp
           <button
             type="submit"
             disabled={isSubmitting}
-            className={`w-full py-4 rounded-xl font-bold text-lg transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed ${
-              type === 'highticket'
-                ? 'bg-gradient-to-r from-red-600 via-red-500 to-orange-500 text-white shadow-lg shadow-red-500/30'
-                : 'bg-gradient-to-r from-accent via-yellow-500 to-amber-500 text-dark shadow-lg shadow-accent/30'
-            }`}
+            className="w-full py-4 rounded-xl font-bold text-lg transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r from-accent via-yellow-500 to-amber-500 text-dark shadow-lg shadow-accent/30"
           >
             {isSubmitting ? (
               <span className="flex items-center justify-center gap-2">
@@ -282,8 +261,6 @@ export default function ContactModal({ isOpen, onClose, type }: ContactModalProp
                 </svg>
                 Procesando...
               </span>
-            ) : type === 'highticket' ? (
-              '📅 Agendar mi Llamada'
             ) : (
               '🥊 Ir al Pago'
             )}
