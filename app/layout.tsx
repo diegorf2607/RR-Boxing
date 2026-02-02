@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import { ModalProvider } from '@/components/ModalProvider'
 
 export const metadata: Metadata = {
   title: 'RR Boxing Academy - Domina los Fundamentos del Boxeo en 7 Días',
@@ -20,7 +21,9 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className="antialiased">
-        {children}
+        <ModalProvider>
+          {children}
+        </ModalProvider>
       </body>
     </html>
   )

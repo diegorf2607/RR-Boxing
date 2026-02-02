@@ -1,5 +1,7 @@
-import Link from 'next/link'
+'use client'
+
 import { Shield, Infinity, Globe } from 'lucide-react'
+import { CourseButton, HighTicketButton } from './CTAButtons'
 
 export default function Hero() {
   return (
@@ -42,15 +44,12 @@ export default function Hero() {
               <span className="text-neutral text-sm">USD</span>
             </div>
 
-            <Link
-              href="#pricing"
-              className="btn-primary w-full flex items-center justify-center gap-2 text-lg"
-            >
+            <CourseButton size="lg" className="w-full flex items-center justify-center gap-2 text-lg">
               Inscríbete con descuento ahora
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
-            </Link>
+            </CourseButton>
           </div>
         </div>
 
@@ -72,15 +71,12 @@ export default function Hero() {
 
         {/* High Ticket CTA */}
         <div className="mt-8 mb-16 md:mb-20 animate-fade-in-up animate-delay-400">
-          <Link
-            href="#personalizadas"
-            className="group inline-flex items-center gap-2 md:gap-3 bg-gradient-to-r from-red-600 via-red-500 to-orange-500 hover:from-red-500 hover:via-red-400 hover:to-orange-400 text-white font-bold py-3 px-6 md:py-4 md:px-8 rounded-full transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-red-500/40 animate-pulse-slow"
-          >
+          <HighTicketButton size="lg" className="group inline-flex items-center gap-2 md:gap-3 py-3 px-6 md:py-4 md:px-8 rounded-full animate-pulse-slow">
             <span className="text-sm md:text-xl">🥊 Quiero clases personalizadas</span>
             <svg className="w-5 h-5 md:w-6 md:h-6 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
             </svg>
-          </Link>
+          </HighTicketButton>
         </div>
       </div>
 

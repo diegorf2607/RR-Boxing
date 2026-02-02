@@ -1,4 +1,6 @@
-import Link from 'next/link'
+'use client'
+
+import { CourseButton } from './CTAButtons'
 
 export default function FinalCTA() {
   return (
@@ -16,15 +18,12 @@ export default function FinalCTA() {
             correctas desde el principio y transforma tu condición física en solo 7 días.
           </p>
 
-          <Link
-            href="#pricing"
-            className="btn-secondary inline-flex items-center gap-2 text-lg"
-          >
+          <CourseButton size="lg" className="inline-flex items-center gap-2 text-lg bg-dark-300 text-white border border-accent/50 hover:bg-dark-200">
             Sí, quiero comenzar mi entrenamiento
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
             </svg>
-          </Link>
+          </CourseButton>
 
           <p className="text-neutral text-sm mt-6">
             Acceso inmediato • Pago único de $47.99 USD

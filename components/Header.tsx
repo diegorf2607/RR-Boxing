@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { CourseButton } from './CTAButtons'
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
@@ -36,12 +37,9 @@ export default function Header() {
         </Link>
 
         {/* CTA Button */}
-        <Link
-          href="#pricing"
-          className="btn-primary text-sm md:text-base"
-        >
+        <CourseButton size="sm" className="text-sm md:text-base px-4 py-2 md:px-6 md:py-3">
           Inscríbete Ahora
-        </Link>
+        </CourseButton>
       </div>
     </header>
   )

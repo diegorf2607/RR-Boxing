@@ -1,5 +1,7 @@
+'use client'
+
 import { Check, Lock } from 'lucide-react'
-import Link from 'next/link'
+import { CourseButton } from './CTAButtons'
 
 const features = [
   '7 días de contenido estructurado',
@@ -67,12 +69,9 @@ export default function Pricing() {
               </div>
 
               {/* CTA Button */}
-              <Link
-                href="#"
-                className="btn-primary w-full flex items-center justify-center gap-2 text-base py-3"
-              >
+              <CourseButton size="lg" className="w-full flex items-center justify-center gap-2 text-base py-3">
                 Quiero unirme al curso ahora
-              </Link>
+              </CourseButton>
 
               <p className="text-center text-neutral text-xs mt-3">
                 Acceso inmediato • Pago único

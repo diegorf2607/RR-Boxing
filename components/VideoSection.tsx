@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Play } from 'lucide-react'
+import { HighTicketButton } from './CTAButtons'
 
 export default function VideoSection() {
   const [isPlaying, setIsPlaying] = useState(false)
@@ -63,25 +64,20 @@ export default function VideoSection() {
 
           {/* High Ticket CTA */}
           <div className="mt-8 md:mt-10 text-center">
-            <a
-              href="#personalizadas"
-              className="inline-block bg-gradient-to-r from-red-600 via-red-500 to-orange-500 hover:from-red-500 hover:via-red-400 hover:to-orange-400 text-white rounded-xl p-4 md:p-6 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-2xl hover:shadow-red-500/30"
-            >
-              <div className="flex items-center justify-center gap-3">
-                <span className="text-2xl">🎯</span>
-                <div className="text-left">
-                  <p className="text-base md:text-xl font-bold">
-                    Quiero clases personalizadas
-                  </p>
-                  <p className="text-white/80 text-xs md:text-sm">
-                    Entrenamiento 1 a 1 con Richard
-                  </p>
-                </div>
-                <svg className="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
+            <HighTicketButton size="lg" className="inline-flex items-center gap-3 rounded-xl p-4 md:p-6">
+              <span className="text-2xl">🎯</span>
+              <div className="text-left">
+                <p className="text-base md:text-xl font-bold">
+                  Quiero clases personalizadas
+                </p>
+                <p className="text-white/80 text-xs md:text-sm">
+                  Agenda una llamada con Richard
+                </p>
               </div>
-            </a>
+              <svg className="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </HighTicketButton>
           </div>
         </div>
       </div>
