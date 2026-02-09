@@ -8,12 +8,20 @@ interface ContactModalProps {
 }
 
 const goals = [
-  'Ganar confianza en mí',
-  'Tener claridad sobre qué hacer y cómo avanzar',
-  'Sentirme más preparado/a y seguro/a',
-  'Cambiar mi rutina o estilo de vida',
+  'Aprender desde cero (fundamentos)',
+  'Mejorar condición física / cardio',
+  'Ganar confianza y seguridad',
   'Desarrollar una habilidad concreta',
   'Otro',
+];
+
+const obstacles = [
+  '',
+  'No sé por dónde empezar',
+  'Me falta constancia',
+  'Me falta tiempo',
+  'Tengo dolor o molestias',
+  'Me falta dinero',
 ];
 
 export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
@@ -22,8 +30,8 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
   const [phone, setPhone] = useState('');
   const [countryCode, setCountryCode] = useState('+51');
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
+  const [selectedObstacle, setSelectedObstacle] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [contactMethod, setContactMethod] = useState<'email' | 'phone'>('email');
 
   const handleGoalToggle = (goal: string) => {
     setSelectedGoals(prev =>
@@ -44,14 +52,14 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
       return;
     }
 
-    if (contactMethod === 'email' && !email.trim()) {
+    if (!email.trim()) {
       alert('Por favor ingresa tu correo electrónico');
       setIsSubmitting(false);
       return;
     }
 
-    if (contactMethod === 'phone' && !phone.trim()) {
-      alert('Por favor ingresa tu número de teléfono');
+    if (!phone.trim()) {
+      alert('Por favor ingresa tu número de celular');
       setIsSubmitting(false);
       return;
     }
@@ -66,9 +74,10 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
     // Por ahora, guardamos en localStorage y redirigimos
     const formData = {
       name,
-      email: contactMethod === 'email' ? email : '',
-      phone: contactMethod === 'phone' ? `${countryCode}${phone}` : '',
+      email,
+      phone: `${countryCode}${phone}`,
       goals: selectedGoals,
+      obstacle: selectedObstacle,
       timestamp: new Date().toISOString(),
     };
 
@@ -89,6 +98,7 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
     setEmail('');
     setPhone('');
     setSelectedGoals([]);
+    setSelectedObstacle('');
   };
 
   if (!isOpen) return null;
@@ -139,79 +149,60 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
             />
           </div>
 
-          {/* Método de contacto */}
+          {/* Email */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              ¿Cómo prefieres que te contactemos? *
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">
+              Correo electrónico *
             </label>
-            <div className="flex gap-4 mb-3">
-              <button
-                type="button"
-                onClick={() => setContactMethod('email')}
-                className={`flex-1 py-2 px-4 rounded-lg border transition-all ${
-                  contactMethod === 'email'
-                    ? 'bg-accent/20 border-accent text-accent'
-                    : 'bg-dark-300 border-dark-400 text-gray-400 hover:border-gray-500'
-                }`}
-              >
-                📧 Correo
-              </button>
-              <button
-                type="button"
-                onClick={() => setContactMethod('phone')}
-                className={`flex-1 py-2 px-4 rounded-lg border transition-all ${
-                  contactMethod === 'phone'
-                    ? 'bg-accent/20 border-accent text-accent'
-                    : 'bg-dark-300 border-dark-400 text-gray-400 hover:border-gray-500'
-                }`}
-              >
-                📱 Teléfono
-              </button>
-            </div>
-
-            {contactMethod === 'email' ? (
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="tu@correo.com"
-                className="w-full px-4 py-3 bg-dark-300 border border-dark-400 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-accent transition-colors"
-              />
-            ) : (
-              <div className="flex gap-2">
-                <select
-                  value={countryCode}
-                  onChange={(e) => setCountryCode(e.target.value)}
-                  className="w-24 px-2 py-3 bg-dark-300 border border-dark-400 rounded-lg text-white focus:outline-none focus:border-accent transition-colors"
-                >
-                  <option value="+51">🇵🇪 +51</option>
-                  <option value="+52">🇲🇽 +52</option>
-                  <option value="+54">🇦🇷 +54</option>
-                  <option value="+56">🇨🇱 +56</option>
-                  <option value="+57">🇨🇴 +57</option>
-                  <option value="+58">🇻🇪 +58</option>
-                  <option value="+34">🇪🇸 +34</option>
-                  <option value="+1">🇺🇸 +1</option>
-                  <option value="+593">🇪🇨 +593</option>
-                  <option value="+591">🇧🇴 +591</option>
-                  <option value="+595">🇵🇾 +595</option>
-                  <option value="+598">🇺🇾 +598</option>
-                </select>
-                <input
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="999 999 999"
-                  className="flex-1 px-4 py-3 bg-dark-300 border border-dark-400 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-accent transition-colors"
-                />
-              </div>
-            )}
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="tu@correo.com"
+              className="w-full px-4 py-3 bg-dark-300 border border-dark-400 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-accent transition-colors"
+              required
+            />
           </div>
 
-          {/* Objetivos */}
+          {/* Celular */}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">
+              Número de celular *
+            </label>
+            <div className="flex gap-2">
+              <select
+                value={countryCode}
+                onChange={(e) => setCountryCode(e.target.value)}
+                className="w-24 px-2 py-3 bg-dark-300 border border-dark-400 rounded-lg text-white focus:outline-none focus:border-accent transition-colors"
+              >
+                <option value="+51">🇵🇪 +51</option>
+                <option value="+52">🇲🇽 +52</option>
+                <option value="+54">🇦🇷 +54</option>
+                <option value="+56">🇨🇱 +56</option>
+                <option value="+57">🇨🇴 +57</option>
+                <option value="+58">🇻🇪 +58</option>
+                <option value="+34">🇪🇸 +34</option>
+                <option value="+1">🇺🇸 +1</option>
+                <option value="+593">🇪🇨 +593</option>
+                <option value="+591">🇧🇴 +591</option>
+                <option value="+595">🇵🇾 +595</option>
+                <option value="+598">🇺🇾 +598</option>
+              </select>
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="999 999 999"
+                className="flex-1 px-4 py-3 bg-dark-300 border border-dark-400 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-accent transition-colors"
+                required
+              />
+            </div>
+          </div>
+
+          {/* Pregunta 1: Objetivos */}
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              ¿Qué es lo que más te gustaría lograr con este entrenamiento? *
+              ¿Qué es lo que más te gustaría lograr con el curso / entrenamiento? *
               <span className="block text-xs text-gray-500 mt-0.5">Puedes elegir más de uno</span>
             </label>
             <div className="space-y-2">
@@ -245,6 +236,23 @@ export default function ContactModal({ isOpen, onClose }: ContactModalProps) {
                 </label>
               ))}
             </div>
+          </div>
+
+          {/* Pregunta 2: Obstáculos (opcional) */}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">
+              ¿Qué es lo que más te frena hoy para avanzar?
+            </label>
+            <select
+              value={selectedObstacle}
+              onChange={(e) => setSelectedObstacle(e.target.value)}
+              className="w-full px-4 py-3 bg-dark-300 border border-dark-400 rounded-lg text-white focus:outline-none focus:border-accent transition-colors"
+            >
+              <option value="">Selecciona una opción</option>
+              {obstacles.filter(o => o !== '').map((obstacle) => (
+                <option key={obstacle} value={obstacle}>{obstacle}</option>
+              ))}
+            </select>
           </div>
 
           {/* Submit Button */}
