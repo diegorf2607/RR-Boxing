@@ -1,0 +1,74 @@
+[
+  {
+    "id": "prod_gloves_pro",
+    "slug": "guantes-pro-training",
+    "name": "Guantes Pro Training RRBOXING",
+    "description": "Guantes de alto rendimiento con proteccion reforzada para sparring y manoplas.",
+    "category": "Guantes",
+    "featured": true,
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?q=80&w=1200",
+      "https://images.unsplash.com/photo-1612874742237-6526221588e3?q=80&w=1200"
+    ],
+    "prices": [
+      { "country": "PE", "currency": "PEN", "amount": 249, "compareAtAmount": 299 },
+      { "country": "MX", "currency": "MXN", "amount": 1299, "compareAtAmount": 1499 },
+      { "country": "CO", "currency": "COP", "amount": 289000, "compareAtAmount": 349000 },
+      { "country": "CL", "currency": "CLP", "amount": 64990, "compareAtAmount": 79990 },
+      { "country": "US", "currency": "USD", "amount": 79, "compareAtAmount": 99 }
+    ],
+    "stock": 24,
+    "active": true,
+    "rating": 4.8,
+    "reviewCount": 132,
+    "variants": [
+      { "id": "v1", "name": "Talla", "value": "12oz" },
+      { "id": "v2", "name": "Talla", "value": "14oz" },
+      { "id": "v3", "name": "Color", "value": "Negro/Dorado" }
+    ]
+  },
+  {
+    "id": "prod_wraps_elite",
+    "slug": "vendas-elite-4m",
+    "name": "Vendas Elite 4m RRBOXING",
+    "description": "Vendas de compresion para proteger munecas y nudillos durante sesiones intensas.",
+    "category": "Accesorios",
+    "featured": true,
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1605296867304-46d5465a13f1?q=80&w=1200"
+    ],
+    "prices": [
+      { "country": "PE", "currency": "PEN", "amount": 69 },
+      { "country": "MX", "currency": "MXN", "amount": 359 },
+      { "country": "CO", "currency": "COP", "amount": 79000 },
+      { "country": "CL", "currency": "CLP", "amount": 17990 },
+      { "country": "US", "currency": "USD", "amount": 19 }
+    ],
+    "stock": 70,
+    "active": true,
+    "rating": 4.9,
+    "reviewCount": 214
+  },
+  {
+    "id": "prod_headguard_comp",
+    "slug": "careta-competition",
+    "name": "Careta Competition RRBOXING",
+    "description": "Proteccion ergonomica para entrenamiento tecnico y trabajo de contacto controlado.",
+    "category": "Proteccion",
+    "featured": false,
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1517438476312-10d79c077509?q=80&w=1200"
+    ],
+    "prices": [
+      { "country": "PE", "currency": "PEN", "amount": 219 },
+      { "country": "MX", "currency": "MXN", "amount": 1099 },
+      { "country": "CO", "currency": "COP", "amount": 249000 },
+      { "country": "CL", "currency": "CLP", "amount": 56990 },
+      { "country": "US", "currency": "USD", "amount": 69 }
+    ],
+    "stock": 12,
+    "active": true,
+    "rating": 4.7,
+    "reviewCount": 64
+  }
+]

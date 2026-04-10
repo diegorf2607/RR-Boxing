@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { CourseButton } from './CTAButtons'
+import { CourseButton, HighTicketButton } from './CTAButtons'
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
@@ -36,10 +36,17 @@ export default function Header() {
           />
         </Link>
 
-        {/* CTA Button */}
-        <CourseButton size="sm" className="text-sm md:text-base px-4 py-2 md:px-6 md:py-3">
-          Inscríbete Ahora
-        </CourseButton>
+        <div className="flex items-center gap-2">
+          <Link href="/store" className="hidden rounded-lg border border-dark-300 px-3 py-2 text-sm text-white hover:bg-dark-100 md:inline-block">
+            Tienda
+          </Link>
+          <HighTicketButton size="sm" className="text-sm px-3 py-2">
+            Quiero clases personalizadas
+          </HighTicketButton>
+          <CourseButton size="sm" className="text-sm md:text-base px-4 py-2 md:px-6 md:py-3">
+            Inscríbete Ahora
+          </CourseButton>
+        </div>
       </div>
     </header>
   )

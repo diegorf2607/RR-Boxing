@@ -36,14 +36,26 @@ export default function Footer() {
           </div>
           {/* Links in row */}
           <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-neutral mb-3">
-            <Link href="#pricing" className="hover:text-accent">Precio</Link>
-            <Link href="/terminos" className="hover:text-accent">Términos</Link>
-            <Link href="/privacidad" className="hover:text-accent">Privacidad</Link>
-            <Link href="/reembolso" className="hover:text-accent">Reembolso</Link>
+            <Link href="/store" className="hover:text-accent">
+              Tienda
+            </Link>
+            <Link href="/consulta" className="hover:text-accent">
+              Clases 1 a 1
+            </Link>
+            <Link href="#pricing" className="hover:text-accent">
+              Precio
+            </Link>
+            <Link href="/terminos" className="hover:text-accent">
+              Términos
+            </Link>
+            <Link href="/privacidad" className="hover:text-accent">
+              Privacidad
+            </Link>
+            <Link href="/reembolso" className="hover:text-accent">
+              Reembolso
+            </Link>
           </div>
-          <p className="text-center text-neutral text-xs">
-            © 2025 RR Boxing Academy
-          </p>
+          <p className="text-center text-neutral text-xs">© 2026 RRBOXING</p>
         </div>
 
         {/* Desktop: Full footer */}
@@ -84,14 +96,35 @@ export default function Footer() {
 
             <div></div>
 
-            {/* Curso Links */}
+            {/* Marca y tienda */}
             <div>
-              <h4 className="font-bold text-white mb-4">Curso</h4>
+              <h4 className="font-bold text-white mb-4">RRBOXING</h4>
               <ul className="space-y-2">
-                <li><Link href="#video" className="text-neutral hover:text-accent transition-colors text-sm">Programa</Link></li>
-                <li><Link href="#social" className="text-neutral hover:text-accent transition-colors text-sm">Instructor</Link></li>
-                <li><Link href="#pricing" className="text-neutral hover:text-accent transition-colors text-sm">Precio</Link></li>
-                <li><Link href="#testimonials" className="text-neutral hover:text-accent transition-colors text-sm">Testimonios</Link></li>
+                <li>
+                  <Link href="/store" className="text-neutral hover:text-accent transition-colors text-sm">
+                    Tienda oficial
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/consulta" className="text-neutral hover:text-accent transition-colors text-sm">
+                    Clases personalizadas
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/account" className="text-neutral hover:text-accent transition-colors text-sm">
+                    Mi cuenta
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#video" className="text-neutral hover:text-accent transition-colors text-sm">
+                    Programa
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#pricing" className="text-neutral hover:text-accent transition-colors text-sm">
+                    Precio curso
+                  </Link>
+                </li>
               </ul>
             </div>
 
@@ -108,9 +141,7 @@ export default function Footer() {
 
           {/* Copyright */}
           <div className="border-t border-dark-300 pt-8">
-            <p className="text-center text-neutral text-sm">
-              © 2025 RR Boxing Academy. Todos los derechos reservados.
-            </p>
+            <p className="text-center text-neutral text-sm">© 2026 RRBOXING. Todos los derechos reservados.</p>
           </div>
         </div>
       </div>

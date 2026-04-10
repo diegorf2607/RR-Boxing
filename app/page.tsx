@@ -8,6 +8,8 @@ import Pricing from '@/components/Pricing'
 import HighTicket from '@/components/HighTicket'
 import FinalCTA from '@/components/FinalCTA'
 import Footer from '@/components/Footer'
+import BrandEcosystem from '@/components/BrandEcosystem'
+import StorePreview from '@/components/StorePreview'
 
 export default function Home() {
   return (
@@ -36,6 +38,12 @@ export default function Home() {
 
       {/* 7) High Ticket */}
       <HighTicket />
+
+      {/* Brand authority + ecosystem */}
+      <BrandEcosystem />
+
+      {/* Ecommerce preview */}
+      <StorePreview />
 
       {/* 8) Final CTA */}
       <FinalCTA />
