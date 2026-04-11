@@ -36,14 +36,17 @@ export default function Footer() {
           </div>
           {/* Links in row */}
           <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-neutral mb-3">
-            <Link href="/store" className="hover:text-accent">
+            <Link href="/" className="hover:text-accent">
               Tienda
             </Link>
             <Link href="/consulta" className="hover:text-accent">
               Clases 1 a 1
             </Link>
-            <Link href="#pricing" className="hover:text-accent">
-              Precio
+            <Link href="/#beneficios" className="hover:text-accent">
+              Beneficios
+            </Link>
+            <Link href="/#testimonios" className="hover:text-accent">
+              Testimonios
             </Link>
             <Link href="/terminos" className="hover:text-accent">
               Términos
@@ -73,7 +76,7 @@ export default function Footer() {
                 />
               </div>
               <p className="text-neutral text-sm mb-4">
-                Aprende boxeo desde cero en solo 7 días. Sin gimnasio, sin experiencia previa. Solo motivación.
+                Tienda oficial RRBOXING y entrenamiento personalizado. Precio de clases 1 a 1 en tu llamada.
               </p>
               <div className="flex gap-3">
                 <Link href="https://instagram.com/rrboxingperu" target="_blank" className="w-9 h-9 bg-dark-300 hover:bg-accent hover:text-dark rounded-full flex items-center justify-center transition-colors">
@@ -101,7 +104,7 @@ export default function Footer() {
               <h4 className="font-bold text-white mb-4">RRBOXING</h4>
               <ul className="space-y-2">
                 <li>
-                  <Link href="/store" className="text-neutral hover:text-accent transition-colors text-sm">
+                  <Link href="/" className="text-neutral hover:text-accent transition-colors text-sm">
                     Tienda oficial
                   </Link>
                 </li>
@@ -111,18 +114,13 @@ export default function Footer() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="/account" className="text-neutral hover:text-accent transition-colors text-sm">
-                    Mi cuenta
+                  <Link href="/#beneficios" className="text-neutral hover:text-accent transition-colors text-sm">
+                    Beneficios
                   </Link>
                 </li>
                 <li>
-                  <Link href="#video" className="text-neutral hover:text-accent transition-colors text-sm">
-                    Programa
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#pricing" className="text-neutral hover:text-accent transition-colors text-sm">
-                    Precio curso
+                  <Link href="/#testimonios" className="text-neutral hover:text-accent transition-colors text-sm">
+                    Testimonios
                   </Link>
                 </li>
               </ul>

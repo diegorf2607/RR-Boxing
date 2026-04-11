@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import LogoutButton from '@/features/auth/LogoutButton'
 
 const links = [
   { href: '/admin', label: 'Dashboard' },
@@ -18,6 +19,9 @@ export default function AdminNav() {
           </Link>
         ))}
       </nav>
+      <div className="mt-6 border-t border-dark-300 pt-4">
+        <LogoutButton />
+      </div>
     </aside>
   )
 }

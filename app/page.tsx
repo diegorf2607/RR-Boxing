@@ -1,54 +1,32 @@
-import AlertBanner from '@/components/AlertBanner'
-import Header from '@/components/Header'
-import VideoGatedCalendly from '@/components/VideoGatedCalendly'
-import Benefits from '@/components/Benefits'
+import type { Metadata } from 'next'
+import MainNav from '@/components/MainNav'
+import StoreHeroCarousel from '@/components/StoreHeroCarousel'
+import StoreClient from '@/features/store/StoreClient'
+import StoreAboutSection from '@/components/StoreAboutSection'
 import SocialProof from '@/components/SocialProof'
-import Testimonials from '@/components/Testimonials'
-import Pricing from '@/components/Pricing'
-import HighTicket from '@/components/HighTicket'
-import FinalCTA from '@/components/FinalCTA'
+import ClassesPromoSection from '@/components/ClassesPromoSection'
 import Footer from '@/components/Footer'
-import BrandEcosystem from '@/components/BrandEcosystem'
-import StorePreview from '@/components/StorePreview'
+
+export const metadata: Metadata = {
+  title: 'Tienda oficial RRBOXING | Equipamiento y marca',
+  description:
+    'Tienda oficial RRBOXING. Equipamiento premium y acceso a clases personalizadas 1 a 1. La propuesta y el precio de entrenamiento se definen en tu llamada.',
+  openGraph: {
+    title: 'RRBOXING — Tienda oficial',
+    description: 'Equipamiento oficial y clases personalizadas. Precio de entrenamiento en la llamada.',
+    type: 'website',
+  },
+}
 
 export default function Home() {
   return (
-    <main className="min-h-screen">
-      <AlertBanner />
-      <Header />
-      <VideoGatedCalendly />
-
-      {/* 3) Benefits */}
-      <section id="benefits">
-        <Benefits />
-      </section>
-
-      {/* 4) Social Proof */}
-      <section id="social">
-        <SocialProof />
-      </section>
-
-      {/* 5) Testimonials */}
-      <section id="testimonials">
-        <Testimonials />
-      </section>
-
-      {/* 6) Pricing */}
-      <Pricing />
-
-      {/* 7) High Ticket */}
-      <HighTicket />
-
-      {/* Brand authority + ecosystem */}
-      <BrandEcosystem />
-
-      {/* Ecommerce preview */}
-      <StorePreview />
-
-      {/* 8) Final CTA */}
-      <FinalCTA />
-
-      {/* 9) Footer */}
+    <main className="min-h-screen bg-dark">
+      <MainNav />
+      <StoreHeroCarousel />
+      <StoreClient />
+      <StoreAboutSection />
+      <SocialProof />
+      <ClassesPromoSection />
       <Footer />
     </main>
   )

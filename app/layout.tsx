@@ -3,12 +3,16 @@ import './globals.css'
 import AppProviders from '@/components/AppProviders'
 
 export const metadata: Metadata = {
-  title: 'RR Boxing Academy - Domina los Fundamentos del Boxeo en 7 Días',
-  description: 'Aprende boxeo desde cero con nuestro curso online. Sin gimnasio. Sin experiencia. Solo motivación. Más de 400,000 seguidores confían en nosotros.',
-  keywords: 'boxeo, curso boxeo online, aprender boxeo, RR Boxing, entrenamiento boxeo, boxeo para principiantes',
+  title: {
+    default: 'RRBOXING — Tienda y clases personalizadas',
+    template: '%s | RRBOXING',
+  },
+  description:
+    'RRBOXING: tienda oficial y entrenamiento personalizado. Las clases 1 a 1 se cotizan en tu llamada.',
+  keywords: 'RRBOXING, boxeo, tienda boxeo, clases personalizadas boxeo, equipamiento boxeo',
   openGraph: {
-    title: 'RR Boxing Academy - Curso de Boxeo Online',
-    description: 'Domina los fundamentos del boxeo en solo 7 días. Acceso de por vida, 100% online.',
+    title: 'RRBOXING',
+    description: 'Tienda oficial y clases personalizadas. Precio de entrenamiento en la llamada.',
     type: 'website',
   },
 }

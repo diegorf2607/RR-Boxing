@@ -1,102 +1,73 @@
 'use client'
 
-import { Star, Play } from 'lucide-react'
-import { useState } from 'react'
+import { Star, Quote } from 'lucide-react'
+import Image from 'next/image'
 
 const testimonials = [
   {
     name: 'Carlos M.',
     age: 29,
     rating: 5,
+    quote:
+      'Llevaba años sin deporte. Con RRBOXING entendí la técnica desde cero y en las clases 1 a 1 me corrigen cosas que en un gimnasio general ni miran.',
     image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=400',
   },
   {
     name: 'Laura P.',
     age: 26,
     rating: 5,
+    quote:
+      'Sigo el contenido en redes hace tiempo; reservé la llamada y el plan personalizado me encajó con mi trabajo. Se nota que hay método detrás.',
     image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=400',
   },
   {
     name: 'Diego S.',
     age: 33,
     rating: 5,
+    quote:
+      'Ya boxeaba pero quería técnica fina. La combinación de lo que comparten online más el seguimiento directo me subió un nivel.',
     image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=400',
   },
 ]
 
-function TestimonialCard({ testimonial }: { testimonial: typeof testimonials[0] }) {
-  const [isPlaying, setIsPlaying] = useState(false)
-
-  return (
-    <div className="card overflow-hidden p-0">
-      {/* Video Container */}
-      <div className="relative aspect-[3/4] bg-dark-200">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url('${testimonial.image}')` }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-t from-dark via-dark/20 to-transparent"></div>
-        </div>
-
-        {/* Play Button */}
-        <button
-          onClick={() => setIsPlaying(!isPlaying)}
-          className="absolute inset-0 flex items-center justify-center group"
-        >
-          <div className="w-16 h-16 bg-accent rounded-full flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:shadow-xl group-hover:shadow-accent/40">
-            <Play className="w-6 h-6 text-dark ml-1" fill="currentColor" />
-          </div>
-        </button>
-
-        {/* Duration Badge */}
-        <div className="absolute bottom-20 left-4 bg-dark/80 px-2 py-1 rounded text-sm">
-          0:00
-        </div>
-      </div>
-
-      {/* Info */}
-      <div className="p-4">
-        {/* Stars */}
-        <div className="flex items-center gap-1 mb-2">
-          {[...Array(testimonial.rating)].map((_, i) => (
-            <Star key={i} className="w-4 h-4 text-accent fill-accent" />
-          ))}
-        </div>
-        
-        {/* Name & Age */}
-        <p className="font-bold text-white">{testimonial.name}</p>
-        <p className="text-sm text-neutral">{testimonial.age} años</p>
-      </div>
-    </div>
-  )
-}
-
 export default function Testimonials() {
   return (
-    <section className="py-12 md:py-20 bg-dark-100">
+    <section id="testimonios" className="bg-dark-100 py-12 md:py-20">
       <div className="container mx-auto px-4">
-        {/* Title */}
-        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-4 italic">
-          Lo que dicen
+        <h2 className="mb-4 text-center text-3xl font-bold italic md:text-4xl lg:text-5xl">
+          Quiénes respaldan
           <br />
-          nuestros alumnos
+          <span className="not-italic text-accent">las clases y el método</span>
         </h2>
         <p className="section-subtitle">
-          Personas reales que han transformado su condición física con RR Boxing Academy.
+          Personas reales que entrenan con la visión RRBOXING: comunidad, técnica y, cuando aplica, acompañamiento 1 a 1.
         </p>
 
-        {/* Testimonials - Horizontal scroll on mobile, grid on desktop */}
-        <div className="flex md:grid md:grid-cols-3 gap-4 md:gap-6 max-w-5xl mx-auto overflow-x-auto pb-4 md:pb-0 snap-x snap-mandatory scrollbar-hide">
-          {testimonials.map((testimonial, index) => (
-            <div key={index} className="flex-shrink-0 w-[280px] md:w-auto snap-center">
-              <TestimonialCard testimonial={testimonial} />
-            </div>
+        <div className="mx-auto flex max-w-5xl gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory md:grid md:grid-cols-3 md:gap-6 md:overflow-visible md:pb-0">
+          {testimonials.map((t, index) => (
+            <article
+              key={index}
+              className="card relative w-[300px] flex-shrink-0 snap-center overflow-hidden p-0 md:w-auto"
+            >
+              <div className="relative h-44 w-full md:h-52">
+                <Image src={t.image} alt={t.name} fill className="object-cover" sizes="(max-width:768px) 300px, 33vw" />
+                <div className="absolute inset-0 bg-gradient-to-t from-dark-100 to-transparent" />
+                <Quote className="absolute right-3 top-3 h-8 w-8 text-accent/80" aria-hidden />
+              </div>
+              <div className="p-4 md:p-5">
+                <div className="mb-2 flex gap-0.5">
+                  {[...Array(t.rating)].map((_, i) => (
+                    <Star key={i} className="h-4 w-4 fill-accent text-accent" />
+                  ))}
+                </div>
+                <p className="mb-4 text-sm leading-relaxed text-neutral-light">&ldquo;{t.quote}&rdquo;</p>
+                <p className="font-bold text-white">{t.name}</p>
+                <p className="text-sm text-neutral">{t.age} años · Alumno RRBOXING</p>
+              </div>
+            </article>
           ))}
         </div>
-        {/* Scroll hint for mobile */}
-        <p className="text-center text-neutral text-xs mt-2 md:hidden">
-          ← Desliza para ver más →
-        </p>
+        <p className="mt-2 text-center text-xs text-neutral md:hidden">← Desliza para ver más →</p>
       </div>
     </section>
   )

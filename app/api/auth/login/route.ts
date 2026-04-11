@@ -14,9 +14,9 @@ export async function POST(req: Request) {
 
   if (body.email === adminEmail && body.password === adminPassword) {
     await createSession({ sub: 'admin', email: body.email, role: 'admin' })
-    return NextResponse.json({ ok: true })
+    return NextResponse.json({ ok: true, role: 'admin' as const })
   }
 
   await createSession({ sub: body.email, email: body.email, role: 'customer' })
-  return NextResponse.json({ ok: true })
+  return NextResponse.json({ ok: true, role: 'customer' as const })
 }

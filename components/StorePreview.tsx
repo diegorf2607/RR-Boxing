@@ -12,7 +12,7 @@ export default async function StorePreview() {
             <h2 className="section-title !mb-2 !text-left">Tienda Oficial RRBOXING</h2>
             <p className="text-neutral-light">Equipamiento premium para sostener tu progreso.</p>
           </div>
-          <Link href="/store" className="hidden text-accent underline md:block">
+          <Link href="/" className="hidden text-accent underline md:block">
             Ver tienda completa
           </Link>
         </div>
@@ -28,7 +28,7 @@ export default async function StorePreview() {
             </article>
           ))}
         </div>
-        <Link href="/store" className="mt-6 inline-block text-accent underline md:hidden">
+        <Link href="/" className="mt-6 inline-block text-accent underline md:hidden">
           Ver tienda completa
         </Link>
       </div>

@@ -1,6 +1,32 @@
-export type CountryCode = 'PE' | 'MX' | 'CO' | 'CL' | 'US'
+/** Sudamérica (sin Brasil) + México + Centroamérica (USD) + EE.UU. */
+export type CountryCode =
+  | 'AR'
+  | 'BO'
+  | 'CL'
+  | 'CO'
+  | 'EC'
+  | 'GY'
+  | 'PY'
+  | 'PE'
+  | 'SR'
+  | 'UY'
+  | 'VE'
+  | 'MX'
+  | 'CAM'
+  | 'US'
 
-export type CurrencyCode = 'PEN' | 'MXN' | 'COP' | 'CLP' | 'USD'
+export type CurrencyCode =
+  | 'ARS'
+  | 'BOB'
+  | 'CLP'
+  | 'COP'
+  | 'GYD'
+  | 'MXN'
+  | 'PEN'
+  | 'PYG'
+  | 'SRD'
+  | 'USD'
+  | 'UYU'
 
 export interface ProductPrice {
   country: CountryCode

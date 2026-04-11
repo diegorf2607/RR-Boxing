@@ -20,6 +20,7 @@ export default async function AdminSettingsPage() {
             </p>
             <ul className="list-inside list-disc text-sm text-neutral-light">
               <li>STRIPE_SECRET_KEY</li>
+              <li>NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY (o STRIPE_PUBLISHABLE_KEY; ver next.config.js)</li>
               <li>STRIPE_WEBHOOK_SECRET</li>
               <li>NEXT_PUBLIC_APP_URL</li>
               <li>AUTH_SECRET</li>

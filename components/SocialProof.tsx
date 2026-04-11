@@ -52,12 +52,13 @@ export default function SocialProof() {
       <div className="container mx-auto px-4">
         {/* Title */}
         <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-4">
-          Más de <span className="text-red-500">476,000 seguidores</span>
+          Comunidad en redes que
           <br />
-          confían en nosotros
+          <span className="text-accent">impulsa RRBOXING</span>
         </h2>
         <p className="section-subtitle">
-          Únete a miles de personas que ya están transformando su vida con el boxeo
+          Cientos de miles de personas siguen el contenido, la técnica y la energía de la marca. Esa misma autoridad
+          respalda la tienda oficial y las clases personalizadas.
         </p>
 
         {/* Stats Grid */}

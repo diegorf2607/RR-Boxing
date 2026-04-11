@@ -11,16 +11,15 @@ async function getPayload(token: string) {
 export async function middleware(request: NextRequest) {
   const token = request.cookies.get('rrboxing_session')?.value
   const path = request.nextUrl.pathname
-  const isProtected = path.startsWith('/account') || path.startsWith('/admin')
   const isAdmin = path.startsWith('/admin')
 
-  if (!isProtected) return NextResponse.next()
+  if (!isAdmin) return NextResponse.next()
   if (!token) return NextResponse.redirect(new URL('/login', request.url))
 
   try {
     const payload = await getPayload(token)
-    if (isAdmin && payload.role !== 'admin') {
-      return NextResponse.redirect(new URL('/account', request.url))
+    if (payload.role !== 'admin') {
+      return NextResponse.redirect(new URL('/login', request.url))
     }
     return NextResponse.next()
   } catch {
@@ -29,5 +28,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/account/:path*', '/admin/:path*'],
+  matcher: ['/admin/:path*'],
 }

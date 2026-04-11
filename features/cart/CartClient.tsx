@@ -12,11 +12,13 @@ export default function CartClient() {
   const { items, removeItem, updateQuantity } = useCart()
   const { country } = useCountry()
   const [products, setProducts] = useState<Product[]>([])
+  const [productsLoaded, setProductsLoaded] = useState(false)
 
   useEffect(() => {
     fetch('/api/products')
       .then((res) => res.json())
       .then((data) => setProducts(data.products ?? []))
+      .finally(() => setProductsLoaded(true))
   }, [])
 
   const rows = useMemo(() => {
@@ -46,13 +48,30 @@ export default function CartClient() {
   const shipping = config.shippingFlatAmount
   const total = subtotal + shipping
 
+  const waitingForCatalog = items.length > 0 && !productsLoaded
+  const trulyEmpty = items.length === 0
+  const orphanLines = productsLoaded && items.length > 0 && rows.length === 0
+
   return (
     <section className="container mx-auto px-4 py-10">
       <h1 className="mb-6 text-4xl font-bold">Carrito</h1>
-      {rows.length === 0 ? (
+      {waitingForCatalog ? (
+        <div className="card">
+          <p className="text-neutral-light">Cargando tu carrito…</p>
+        </div>
+      ) : trulyEmpty ? (
         <div className="card">
           <p className="text-neutral-light">Tu carrito esta vacio.</p>
-          <Link href="/store" className="mt-4 inline-block text-accent underline">
+          <Link href="/" className="mt-4 inline-block text-accent underline">
+            Ir a tienda
+          </Link>
+        </div>
+      ) : orphanLines ? (
+        <div className="card">
+          <p className="text-neutral-light">
+            Hay productos en tu carrito que ya no estan disponibles. Vuelve a la tienda y agregalos de nuevo.
+          </p>
+          <Link href="/" className="mt-4 inline-block text-accent underline">
             Ir a tienda
           </Link>
         </div>

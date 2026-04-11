@@ -3,49 +3,44 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { CourseButton, HighTicketButton } from './CTAButtons'
+import { HighTicketButton } from './CTAButtons'
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50)
-    }
+    const handleScroll = () => setIsScrolled(window.scrollY > 50)
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
-        isScrolled
-          ? 'bg-dark/90 backdrop-blur-md shadow-lg'
-          : 'bg-transparent'
+      className={`fixed left-0 right-0 top-0 z-40 transition-all duration-300 ${
+        isScrolled ? 'bg-dark/90 shadow-lg backdrop-blur-md' : 'bg-transparent'
       }`}
     >
-      <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 group">
+      <div className="container mx-auto flex items-center justify-between px-4 py-4">
+        <Link href="/" className="group flex items-center gap-2">
           <Image
             src="/rr-boxing-logo.png"
-            alt="RR Boxing"
+            alt="RRBOXING"
             width={56}
             height={56}
-            className="w-12 h-12 md:w-14 md:h-14 transition-transform group-hover:scale-110"
+            className="h-12 w-12 transition-transform group-hover:scale-110 md:h-14 md:w-14"
           />
         </Link>
 
         <div className="flex items-center gap-2">
-          <Link href="/store" className="hidden rounded-lg border border-dark-300 px-3 py-2 text-sm text-white hover:bg-dark-100 md:inline-block">
+          <Link
+            href="/"
+            className="hidden rounded-lg border border-dark-300 px-3 py-2 text-sm text-white hover:bg-dark-100 md:inline-block"
+          >
             Tienda
           </Link>
-          <HighTicketButton size="sm" className="text-sm px-3 py-2">
-            Quiero clases personalizadas
+          <HighTicketButton size="sm" className="px-3 py-2 text-sm">
+            Clases personalizadas
           </HighTicketButton>
-          <CourseButton size="sm" className="text-sm md:text-base px-4 py-2 md:px-6 md:py-3">
-            Inscríbete Ahora
-          </CourseButton>
         </div>
       </div>
     </header>

@@ -19,7 +19,8 @@ export default function LoginForm() {
       setError('Credenciales invalidas')
       return
     }
-    window.location.href = '/account'
+    const data = (await res.json()) as { role?: string }
+    window.location.href = data.role === 'admin' ? '/admin' : '/'
   }
 
   return (

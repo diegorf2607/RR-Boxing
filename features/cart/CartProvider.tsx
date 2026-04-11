@@ -16,15 +16,27 @@ const CartContext = createContext<CartContextValue | undefined>(undefined)
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
+  /** Evita escribir [] en localStorage antes de leer (eso borraba el carrito en cada carga). */
+  const [hydrated, setHydrated] = useState(false)
 
   useEffect(() => {
-    const stored = localStorage.getItem('rrboxing_cart')
-    if (stored) setItems(JSON.parse(stored))
+    try {
+      const stored = localStorage.getItem('rrboxing_cart')
+      if (stored) {
+        const parsed = JSON.parse(stored) as CartItem[]
+        if (Array.isArray(parsed)) setItems(parsed)
+      }
+    } catch {
+      /* ignore corrupt storage */
+    } finally {
+      setHydrated(true)
+    }
   }, [])
 
   useEffect(() => {
+    if (!hydrated) return
     localStorage.setItem('rrboxing_cart', JSON.stringify(items))
-  }, [items])
+  }, [items, hydrated])
 
   const addItem = (productId: string, quantity = 1) => {
     setItems((prev) => {

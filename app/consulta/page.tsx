@@ -1,14 +1,22 @@
+import MainNav from '@/components/MainNav'
+import Benefits from '@/components/Benefits'
+import Testimonials from '@/components/Testimonials'
 import VideoGatedCalendly from '@/components/VideoGatedCalendly'
 
 export const metadata = {
-  title: 'Agenda tu Consultoría | RR Boxing Academy',
-  description: 'Agenda una llamada de consultoría gratuita con Richard Rodríguez para conocer las clases personalizadas de boxeo.',
+  title: 'Clases personalizadas | RRBOXING',
+  description:
+    'Reserva tu llamada con RRBOXING. Conoce el método y acuerda propuesta y precio de entrenamiento 1 a 1 en la consulta.',
 }
 
 export default function ConsultaPage() {
   return (
     <main className="min-h-screen bg-dark">
-      <VideoGatedCalendly />
+      <MainNav />
+      <VideoGatedCalendly>
+        <Benefits />
+        <Testimonials />
+      </VideoGatedCalendly>
     </main>
   )
 }

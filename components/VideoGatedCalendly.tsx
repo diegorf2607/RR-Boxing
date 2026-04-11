@@ -1,10 +1,18 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, type ReactNode } from 'react'
 import { Lock, Calendar, CheckCircle } from 'lucide-react'
 
-export default function VideoGatedCalendly() {
-  const [timeRemaining, setTimeRemaining] = useState(60)
+/** Tiempo de espera antes de poder agendar (segundos). */
+const UNLOCK_SECONDS = 30
+
+type Props = {
+  /** Contenido entre el contador y la agenda (ej. beneficios y testimonios). */
+  children?: ReactNode
+}
+
+export default function VideoGatedCalendly({ children }: Props) {
+  const [timeRemaining, setTimeRemaining] = useState(UNLOCK_SECONDS)
   const [isUnlocked, setIsUnlocked] = useState(false)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
 
@@ -36,6 +44,7 @@ export default function VideoGatedCalendly() {
 
   return (
     <section className="min-h-screen bg-gradient-to-b from-dark via-dark-100 to-dark py-8 md:py-12">
+      {/* Bloque superior: cabecera, video y contador (ancho contenido estándar) */}
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-8">
@@ -47,7 +56,8 @@ export default function VideoGatedCalendly() {
             Clases Personalizadas <span className="text-accent">1 a 1</span>
           </h1>
           <p className="text-neutral-light text-lg max-w-2xl mx-auto">
-            Mira el video completo para desbloquear tu agenda con Richard
+            Mira el video completo para desbloquear tu agenda con Richard. Propuesta y precio de las clases 1 a 1 se
+            acuerdan en la llamada, no en la web.
           </p>
         </div>
 
@@ -104,13 +114,18 @@ export default function VideoGatedCalendly() {
               <div className="h-2 bg-dark-300 rounded-full overflow-hidden">
                 <div
                   className={`h-full transition-all duration-1000 ${isUnlocked ? 'bg-green-500' : 'bg-accent'}`}
-                  style={{ width: `${((60 - timeRemaining) / 60) * 100}%` }}
+                  style={{ width: `${((UNLOCK_SECONDS - timeRemaining) / UNLOCK_SECONDS) * 100}%` }}
                 />
               </div>
             </div>
           </div>
         </div>
+      </div>
 
+      {/* Beneficios y testimonios: ancho completo (sus propias secciones con container interno) */}
+      {children}
+
+      <div className="container mx-auto px-4 pt-6 md:pt-10">
         {/* Calendly Section */}
         <div className="max-w-5xl mx-auto">
           <div className={`relative transition-all duration-500 ${!isUnlocked ? 'opacity-50 pointer-events-none' : ''}`}>
