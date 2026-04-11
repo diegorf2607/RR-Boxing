@@ -1,7 +1,17 @@
 'use client'
 
 import { Star, Quote } from 'lucide-react'
-import Image from 'next/image'
+
+/** Mismos nombres que subiste; deben vivir en `public/clases-personalizadas/` (no en `app/`). */
+const TESTIMONIAL_VIDEOS = [
+  'WhatsApp Video 2026-04-11 at 5.16.18 PM.mp4',
+  'WhatsApp Video 2026-04-11 at 5.16.26 PM.mp4',
+  'WhatsApp Video 2026-04-11 at 5.16.33 PM.mp4',
+] as const
+
+function testimonialVideoSrc(filename: string) {
+  return `/clases-personalizadas/${encodeURIComponent(filename)}`
+}
 
 const testimonials = [
   {
@@ -10,7 +20,7 @@ const testimonials = [
     rating: 5,
     quote:
       'Llevaba años sin deporte. Con RRBOXING entendí la técnica desde cero y en las clases 1 a 1 me corrigen cosas que en un gimnasio general ni miran.',
-    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=400',
+    videoFile: TESTIMONIAL_VIDEOS[0],
   },
   {
     name: 'Laura P.',
@@ -18,7 +28,7 @@ const testimonials = [
     rating: 5,
     quote:
       'Sigo el contenido en redes hace tiempo; reservé la llamada y el plan personalizado me encajó con mi trabajo. Se nota que hay método detrás.',
-    image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=400',
+    videoFile: TESTIMONIAL_VIDEOS[1],
   },
   {
     name: 'Diego S.',
@@ -26,7 +36,7 @@ const testimonials = [
     rating: 5,
     quote:
       'Ya boxeaba pero quería técnica fina. La combinación de lo que comparten online más el seguimiento directo me subió un nivel.',
-    image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=400',
+    videoFile: TESTIMONIAL_VIDEOS[2],
   },
 ]
 
@@ -49,10 +59,19 @@ export default function Testimonials() {
               key={index}
               className="card relative w-[300px] flex-shrink-0 snap-center overflow-hidden p-0 md:w-auto"
             >
-              <div className="relative h-44 w-full md:h-52">
-                <Image src={t.image} alt={t.name} fill className="object-cover" sizes="(max-width:768px) 300px, 33vw" />
-                <div className="absolute inset-0 bg-gradient-to-t from-dark-100 to-transparent" />
-                <Quote className="absolute right-3 top-3 h-8 w-8 text-accent/80" aria-hidden />
+              <div className="relative h-44 w-full bg-dark md:h-52">
+                <video
+                  className="h-full w-full object-cover"
+                  src={testimonialVideoSrc(t.videoFile)}
+                  controls
+                  playsInline
+                  preload="metadata"
+                  aria-label={`Video testimonio de ${t.name}`}
+                />
+                <Quote
+                  className="pointer-events-none absolute right-3 top-3 z-10 h-8 w-8 text-accent/80 drop-shadow-md"
+                  aria-hidden
+                />
               </div>
               <div className="p-4 md:p-5">
                 <div className="mb-2 flex gap-0.5">

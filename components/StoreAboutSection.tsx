@@ -6,19 +6,15 @@ export default function StoreAboutSection() {
     <section className="border-t border-dark-300 bg-gradient-to-b from-dark-100/80 to-dark py-14 md:py-20">
       <div className="container mx-auto px-4">
         <div className="mx-auto grid max-w-6xl gap-10 md:grid-cols-2 md:items-center md:gap-14">
-          <div className="relative mx-auto aspect-square w-full max-w-md overflow-hidden rounded-2xl border border-dark-300 md:mx-0">
+          <div className="relative mx-auto aspect-[3/4] w-full max-w-sm overflow-hidden rounded-2xl border border-dark-300 bg-dark-200 md:mx-0 md:max-w-md">
             <Image
-              src="/Richard.jpeg"
-              alt="Richard Rodríguez — RRBOXING"
+              src="/RR%20BOXING%20VERTICAL%20TRAZADO.png"
+              alt="RRBOXING — logo vertical"
               fill
-              className="object-cover object-center"
+              className="object-contain p-6 md:p-8"
               sizes="(max-width: 768px) 100vw, 400px"
               priority={false}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-dark via-transparent to-transparent" />
-            <p className="absolute bottom-4 left-4 right-4 text-sm font-medium text-white drop-shadow-md">
-              Richard Rodríguez — entrenamiento y método RRBOXING
-            </p>
           </div>
 
           <div>

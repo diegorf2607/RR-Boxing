@@ -24,25 +24,30 @@ export default function MainNav() {
   return (
     <>
       <header className="fixed inset-x-0 top-0 z-50 border-b border-dark-300 bg-dark/95 backdrop-blur supports-[backdrop-filter]:bg-dark/80">
-        <div className="container mx-auto flex items-center justify-between gap-2 px-4 py-3">
-          <Link href="/" className="font-heading text-xl tracking-wide text-accent md:text-2xl">
-            RRBOXING
-          </Link>
-          <Link
-            href="/consulta"
-            className="rounded-lg border border-red-500/40 px-2 py-1.5 text-xs font-semibold text-orange-300 md:hidden"
+        <div className="container relative mx-auto flex items-center gap-2 px-4 py-3">
+          <div className="flex min-w-0 flex-1 items-center gap-2">
+            <Link href="/" className="font-heading text-xl tracking-wide text-accent md:text-2xl">
+              RRBOXING
+            </Link>
+            <Link
+              href="/consulta"
+              className="rounded-lg border border-red-500/40 px-2 py-1.5 text-xs font-semibold text-orange-300 md:hidden"
+            >
+              Clases 1 a 1
+            </Link>
+          </div>
+          <nav
+            className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-6 md:flex"
+            aria-label="Principal"
           >
-            Clases 1 a 1
-          </Link>
-          <nav className="hidden items-center gap-6 md:flex">
-            <Link href="/" className="text-sm font-medium text-white hover:text-accent">
+            <Link href="/" className="text-sm font-medium whitespace-nowrap text-white hover:text-accent">
               Tienda
             </Link>
-            <Link href="/consulta" className="text-sm text-neutral-light hover:text-white">
+            <Link href="/consulta" className="text-sm whitespace-nowrap text-neutral-light hover:text-white">
               Clases personalizadas
             </Link>
           </nav>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-1 items-center justify-end gap-3">
             <select
               className="rounded-lg border border-dark-300 bg-dark-100 px-2 py-1 text-sm"
               value={country}
