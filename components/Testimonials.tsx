@@ -1,44 +1,41 @@
 'use client'
 
-import { Star, Quote } from 'lucide-react'
+import { Play } from 'lucide-react'
 
-/** Mismos nombres que subiste; deben vivir en `public/clases-personalizadas/` (no en `app/`). */
-const TESTIMONIAL_VIDEOS = [
-  'WhatsApp Video 2026-04-11 at 5.16.18 PM.mp4',
-  'WhatsApp Video 2026-04-11 at 5.16.26 PM.mp4',
-  'WhatsApp Video 2026-04-11 at 5.16.33 PM.mp4',
-] as const
-
-function testimonialVideoSrc(filename: string) {
-  return `/clases-personalizadas/${encodeURIComponent(filename)}`
-}
-
-const testimonials = [
-  {
-    name: 'Carlos M.',
-    age: 29,
-    rating: 5,
-    quote:
-      'Llevaba años sin deporte. Con RRBOXING entendí la técnica desde cero y en las clases 1 a 1 me corrigen cosas que en un gimnasio general ni miran.',
-    videoFile: TESTIMONIAL_VIDEOS[0],
-  },
-  {
-    name: 'Laura P.',
-    age: 26,
-    rating: 5,
-    quote:
-      'Sigo el contenido en redes hace tiempo; reservé la llamada y el plan personalizado me encajó con mi trabajo. Se nota que hay método detrás.',
-    videoFile: TESTIMONIAL_VIDEOS[1],
-  },
-  {
-    name: 'Diego S.',
-    age: 33,
-    rating: 5,
-    quote:
-      'Ya boxeaba pero quería técnica fina. La combinación de lo que comparten online más el seguimiento directo me subió un nivel.',
-    videoFile: TESTIMONIAL_VIDEOS[2],
-  },
+/** Shorts de testimonio (IDs de youtube.com/shorts/...). */
+const TESTIMONIAL_YOUTUBE_IDS: [string, string, string] = [
+  'lJtlyW-hU1Y',
+  'tvStTwBAYZw',
+  'SWoRQDhuK3s',
 ]
+
+function VerticalTestimonialFrame({ youtubeId, index }: { youtubeId: string | null; index: number }) {
+  if (youtubeId) {
+    return (
+      <div className="relative mx-auto aspect-[9/16] w-full max-w-[min(100%,280px)] overflow-hidden rounded-2xl border border-dark-300 bg-black shadow-lg">
+        <iframe
+          className="absolute inset-0 h-full w-full"
+          src={`https://www.youtube.com/embed/${youtubeId}?rel=0&modestbranding=1`}
+          title={`Testimonio ${index + 1}`}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowFullScreen
+        />
+      </div>
+    )
+  }
+
+  return (
+    <div
+      className="relative mx-auto flex aspect-[9/16] w-full max-w-[min(100%,280px)] flex-col items-center justify-center overflow-hidden rounded-2xl border border-dashed border-dark-300 bg-gradient-to-b from-dark-200/90 to-dark bg-dark-100"
+      aria-hidden
+    >
+      <Play className="mb-3 h-14 w-14 text-accent/35" strokeWidth={1.25} />
+      <p className="px-4 text-center text-xs font-medium uppercase tracking-[0.2em] text-neutral">
+        Video próximamente
+      </p>
+    </div>
+  )
+}
 
 export default function Testimonials() {
   return (
@@ -53,36 +50,13 @@ export default function Testimonials() {
           Personas reales que entrenan con la visión RRBOXING: comunidad, técnica y, cuando aplica, acompañamiento 1 a 1.
         </p>
 
-        <div className="mx-auto flex max-w-5xl gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory md:grid md:grid-cols-3 md:gap-6 md:overflow-visible md:pb-0">
-          {testimonials.map((t, index) => (
+        <div className="mx-auto flex max-w-6xl justify-start gap-6 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory md:grid md:grid-cols-3 md:justify-center md:gap-8 md:overflow-visible md:pb-0">
+          {TESTIMONIAL_YOUTUBE_IDS.map((youtubeId, index) => (
             <article
               key={index}
-              className="card relative w-[300px] flex-shrink-0 snap-center overflow-hidden p-0 md:w-auto"
+              className="card flex w-[min(85vw,280px)] flex-shrink-0 snap-center justify-center border-dark-300 bg-dark-100/50 p-4 md:w-auto md:max-w-none md:p-5"
             >
-              <div className="relative h-44 w-full bg-dark md:h-52">
-                <video
-                  className="h-full w-full object-cover"
-                  src={testimonialVideoSrc(t.videoFile)}
-                  controls
-                  playsInline
-                  preload="metadata"
-                  aria-label={`Video testimonio de ${t.name}`}
-                />
-                <Quote
-                  className="pointer-events-none absolute right-3 top-3 z-10 h-8 w-8 text-accent/80 drop-shadow-md"
-                  aria-hidden
-                />
-              </div>
-              <div className="p-4 md:p-5">
-                <div className="mb-2 flex gap-0.5">
-                  {[...Array(t.rating)].map((_, i) => (
-                    <Star key={i} className="h-4 w-4 fill-accent text-accent" />
-                  ))}
-                </div>
-                <p className="mb-4 text-sm leading-relaxed text-neutral-light">&ldquo;{t.quote}&rdquo;</p>
-                <p className="font-bold text-white">{t.name}</p>
-                <p className="text-sm text-neutral">{t.age} años · Alumno RRBOXING</p>
-              </div>
+              <VerticalTestimonialFrame youtubeId={youtubeId} index={index} />
             </article>
           ))}
         </div>
