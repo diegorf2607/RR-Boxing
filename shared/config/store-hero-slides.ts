@@ -1,6 +1,6 @@
 /**
  * Slides del hero principal de la tienda (antes del catálogo).
- * Edita este archivo para cambiar imágenes, textos y enlaces (productos, clases, noticias, etc.).
+ * Edita este archivo para cambiar imágenes, textos y enlaces (productos, clases, etc.).
  */
 export type StoreHeroSlide = {
   id: string
@@ -16,6 +16,9 @@ export type StoreHeroSlide = {
   /** Alineación del bloque de texto */
   align?: 'left' | 'right'
 }
+
+/** Fondo del slide “Clases personalizadas” (`public/clases-personalizadas/…`). */
+const CLASES_HERO_IMAGE = `/clases-personalizadas/${encodeURIComponent('Entrenamiento de boxeo en acción.png')}`
 
 export const STORE_HERO_SLIDES: StoreHeroSlide[] = [
   {
@@ -42,24 +45,12 @@ export const STORE_HERO_SLIDES: StoreHeroSlide[] = [
   },
   {
     id: 'clases',
-    imageUrl:
-      'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?q=80&w=2000&auto=format&fit=crop',
+    imageUrl: CLASES_HERO_IMAGE,
     eyebrow: '1 a 1',
     headline: 'Clases personalizadas',
     text: 'Plan a tu medida: técnica, condición y mentalidad. La propuesta y el precio los ves en tu llamada.',
     href: '/consulta',
     cta: 'Pedir información',
-    align: 'left',
-  },
-  {
-    id: 'novedades',
-    imageUrl:
-      'https://images.unsplash.com/photo-1518611012118-696072aa579a?q=80&w=2000&auto=format&fit=crop',
-    eyebrow: 'Comunidad',
-    headline: 'Novedades & eventos',
-    text: 'Campamentos, alianzas y notas del equipo. Pronto más contenido en esta sección.',
-    href: '/#catalogo',
-    cta: 'Explorar la tienda',
     align: 'left',
   },
 ]
