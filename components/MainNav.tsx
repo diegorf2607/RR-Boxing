@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ShoppingCart } from 'lucide-react'
+import { Calendar, ShoppingCart } from 'lucide-react'
 import { useCart } from '@/features/cart/CartProvider'
 import { useCountry } from '@/features/country/CountryProvider'
 import type { CountryCode } from '@/shared/types/commerce'
@@ -28,12 +28,6 @@ export default function MainNav() {
           <div className="flex min-w-0 flex-1 items-center gap-2">
             <Link href="/" className="font-heading text-xl tracking-wide text-accent md:text-2xl">
               RRBOXING
-            </Link>
-            <Link
-              href="/consulta"
-              className="rounded-lg border border-red-500/40 px-2 py-1.5 text-xs font-semibold text-orange-300 md:hidden"
-            >
-              Clases 1 a 1
             </Link>
           </div>
           <nav
@@ -81,6 +75,16 @@ export default function MainNav() {
     </header>
       {/* Reserva altura para que el contenido no quede bajo la barra fija */}
       <div className="h-14 shrink-0 md:h-16" aria-hidden />
+
+      {/* Móvil: acceso a clases sin solapar país/carrito (antes estaba en el header) */}
+      <Link
+        href="/consulta"
+        className="fixed bottom-5 right-4 z-40 flex max-w-[calc(100vw-2rem)] items-center gap-2 rounded-full border border-accent/50 bg-accent py-3 pl-4 pr-4 text-xs font-bold uppercase tracking-wide text-dark shadow-xl shadow-black/50 transition hover:bg-accent-light md:hidden"
+        aria-label="Ir a clases personalizadas 1 a 1"
+      >
+        <Calendar className="h-4 w-4 shrink-0" aria-hidden />
+        <span>Clases 1 a 1</span>
+      </Link>
     </>
   )
 }
