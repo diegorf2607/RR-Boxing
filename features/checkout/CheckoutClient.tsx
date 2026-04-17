@@ -618,7 +618,12 @@ export default function CheckoutClient() {
                   <div className="flex justify-between text-neutral-light">
                     <span className="inline-flex items-center gap-1">
                       Envío
-                      <HelpCircle className="h-3.5 w-3.5 text-neutral" title="Según el método elegido a la izquierda." aria-hidden />
+                      <span
+                        className="inline-flex text-neutral"
+                        title="Según el método elegido a la izquierda."
+                      >
+                        <HelpCircle className="h-3.5 w-3.5" aria-hidden />
+                      </span>
                     </span>
                     <span className="font-medium text-white">
                       {shippingAmount === 0 ? (
