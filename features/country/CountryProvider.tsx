@@ -2,7 +2,8 @@
 
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import type { CountryCode } from '@/shared/types/commerce'
-import { COUNTRY_CONFIG, DEFAULT_COUNTRY } from '@/shared/lib/country'
+import { DEFAULT_COUNTRY } from '@/shared/lib/country'
+import { COUNTRIES_WITH_STORE, isCommerceCountry } from '@/shared/constants/country-select'
 
 interface CountryContextValue {
   country: CountryCode
@@ -16,12 +17,16 @@ export function CountryProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const stored = localStorage.getItem('rrboxing_country') as CountryCode | null
-    if (stored && COUNTRY_CONFIG.some((item) => item.code === stored)) {
+    if (stored && isCommerceCountry(stored)) {
       setCountryState(stored)
+    } else if (stored && !isCommerceCountry(stored)) {
+      setCountryState(DEFAULT_COUNTRY)
+      localStorage.setItem('rrboxing_country', DEFAULT_COUNTRY)
     }
   }, [])
 
   const setCountry = (nextCountry: CountryCode) => {
+    if (!COUNTRIES_WITH_STORE.includes(nextCountry)) return
     setCountryState(nextCountry)
     localStorage.setItem('rrboxing_country', nextCountry)
   }

@@ -1,4 +1,5 @@
 import { CheckCircle } from 'lucide-react'
+import Image from 'next/image'
 import Link from 'next/link'
 
 const socialStats = [
@@ -48,18 +49,21 @@ const socialStats = [
 
 export default function SocialProof() {
   return (
-    <section className="py-12 md:py-20 bg-dark">
+    <section id="comunidad" className="scroll-mt-24 bg-dark py-12 md:py-20">
       <div className="container mx-auto px-4">
-        {/* Title */}
-        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-4">
-          Comunidad en redes que
-          <br />
-          <span className="text-accent">impulsa RRBOXING</span>
-        </h2>
-        <p className="section-subtitle">
-          Cientos de miles de personas siguen el contenido, la técnica y la energía de la marca. Esa misma autoridad
-          respalda la tienda oficial y las clases personalizadas.
+        <p className="mb-3 text-center text-xs font-bold uppercase tracking-[0.35em] text-accent md:text-sm">
+          Comunidad
         </p>
+        <div className="mx-auto mb-10 max-w-4xl text-center">
+          <h2 className="font-heading text-4xl font-bold leading-[0.95] tracking-tight text-white antialiased sm:text-5xl md:text-6xl lg:text-7xl">
+            Más de <span className="text-accent">400 000</span> personas
+          </h2>
+          <p className="section-subtitle mt-4 max-w-3xl mx-auto">
+            Solo entre TikTok, Instagram y Facebook: la energía que ya viste en redes es la misma autoridad —
+            contenido, técnica y disciplina con respaldo real — detrás de{' '}
+            <span className="text-accent">RRBOXING</span>, la tienda oficial y las clases personalizadas.
+          </p>
+        </div>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 max-w-6xl mx-auto mb-8 md:mb-12">
@@ -101,12 +105,14 @@ export default function SocialProof() {
           <div className="card overflow-hidden p-0">
             {/* Card Image */}
             <div className="relative h-48 sm:h-64 md:h-80 lg:h-96">
-              <img
+              <Image
                 src="/Richard.jpeg"
-                alt="Richard Rodríguez"
-                className="w-full h-full object-cover object-center"
+                alt="Richard Rodríguez — RRBOXING"
+                fill
+                className="object-cover object-center"
+                sizes="(max-width: 768px) 100vw, 400px"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-dark-100 via-transparent to-transparent"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-dark-100 via-transparent to-transparent" />
               {/* Certified Badge */}
               <div className="absolute top-2 right-2 md:top-3 md:right-3 bg-green-500 text-white text-[10px] md:text-xs font-bold px-1.5 md:px-2 py-0.5 md:py-1 rounded flex items-center gap-1">
                 <CheckCircle className="w-2.5 h-2.5 md:w-3 md:h-3" />

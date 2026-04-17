@@ -1,3 +1,5 @@
+'use client'
+
 import { Target, Dumbbell, UserCheck, Shield, TrendingUp, ShoppingBag } from 'lucide-react'
 
 const benefits = [

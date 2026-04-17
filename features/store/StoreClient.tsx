@@ -41,13 +41,10 @@ export default function StoreClient() {
   }, [products, query, category, inStockOnly, featuredOnly, sortBy])
 
   return (
-    <section id="catalogo" className="scroll-mt-24 container mx-auto px-4 py-12 md:py-16">
-      <div className="mb-10 border-b border-dark-300 pb-8">
-        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.25em] text-accent">Catálogo</p>
-        <h1 className="mb-3 font-heading text-4xl tracking-wide text-white md:text-5xl">Tienda RRBOXING</h1>
-        <p className="max-w-2xl text-neutral-light">
-          Equipamiento premium para entrenamiento real y rendimiento competitivo. Filtra, ordena y añade al carrito.
-        </p>
+    <section className="container mx-auto px-4 py-10">
+      <div className="mb-8">
+        <h1 className="mb-3 text-4xl font-bold">Tienda RRBOXING</h1>
+        <p className="text-neutral-light">Equipamiento premium para entrenamiento real y rendimiento competitivo.</p>
       </div>
 
       <div className="mb-8 grid gap-3 md:grid-cols-2 lg:grid-cols-5">

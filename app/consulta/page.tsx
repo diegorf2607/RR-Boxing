@@ -1,7 +1,8 @@
 import MainNav from '@/components/MainNav'
+import VideoGatedCalendly from '@/components/VideoGatedCalendly'
 import Benefits from '@/components/Benefits'
 import Testimonials from '@/components/Testimonials'
-import VideoGatedCalendly from '@/components/VideoGatedCalendly'
+import Footer from '@/components/Footer'
 
 export const metadata = {
   title: 'Clases personalizadas | RRBOXING',
@@ -13,10 +14,10 @@ export default function ConsultaPage() {
   return (
     <main className="min-h-screen bg-dark">
       <MainNav />
-      <VideoGatedCalendly>
-        <Benefits />
-        <Testimonials />
-      </VideoGatedCalendly>
+      <VideoGatedCalendly />
+      <Benefits />
+      <Testimonials />
+      <Footer />
     </main>
   )
 }

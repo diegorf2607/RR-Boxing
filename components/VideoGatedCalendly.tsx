@@ -1,17 +1,12 @@
 'use client'
 
-import { useState, useEffect, useRef, type ReactNode } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Lock, Calendar, CheckCircle } from 'lucide-react'
 
 /** Tiempo de espera antes de poder agendar (segundos). */
 const UNLOCK_SECONDS = 30
 
-type Props = {
-  /** Contenido entre el contador y la agenda (ej. beneficios y testimonios). */
-  children?: ReactNode
-}
-
-export default function VideoGatedCalendly({ children }: Props) {
+export default function VideoGatedCalendly() {
   const [timeRemaining, setTimeRemaining] = useState(UNLOCK_SECONDS)
   const [isUnlocked, setIsUnlocked] = useState(false)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
@@ -44,7 +39,6 @@ export default function VideoGatedCalendly({ children }: Props) {
 
   return (
     <section className="min-h-screen bg-gradient-to-b from-dark via-dark-100 to-dark py-8 md:py-12">
-      {/* Bloque superior: cabecera, video y contador (ancho contenido estándar) */}
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-8">
@@ -66,7 +60,7 @@ export default function VideoGatedCalendly({ children }: Props) {
           <div className="relative aspect-video rounded-2xl overflow-hidden shadow-2xl border border-dark-400">
             <iframe
               className="absolute inset-0 w-full h-full"
-              src="https://www.youtube.com/embed/y3iBiH7Vr_k?autoplay=1&mute=1&rel=0&modestbranding=1"
+              src="https://www.youtube.com/embed/vO3AeRbPqM0?autoplay=1&mute=1&rel=0&modestbranding=1"
               title="RR Boxing Academy – Video de presentación"
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -120,12 +114,7 @@ export default function VideoGatedCalendly({ children }: Props) {
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Beneficios y testimonios: ancho completo (sus propias secciones con container interno) */}
-      {children}
-
-      <div className="container mx-auto px-4 pt-6 md:pt-10">
         {/* Calendly Section */}
         <div className="max-w-5xl mx-auto">
           <div className={`relative transition-all duration-500 ${!isUnlocked ? 'opacity-50 pointer-events-none' : ''}`}>

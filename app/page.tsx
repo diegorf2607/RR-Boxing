@@ -3,6 +3,7 @@ import MainNav from '@/components/MainNav'
 import StoreHeroCarousel from '@/components/StoreHeroCarousel'
 import StoreClient from '@/features/store/StoreClient'
 import StoreAboutSection from '@/components/StoreAboutSection'
+import StoreFAQSection from '@/components/StoreFAQSection'
 import SocialProof from '@/components/SocialProof'
 import ClassesPromoSection from '@/components/ClassesPromoSection'
 import Footer from '@/components/Footer'
@@ -26,6 +27,7 @@ export default function Home() {
       <StoreClient />
       <StoreAboutSection />
       <SocialProof />
+      <StoreFAQSection />
       <ClassesPromoSection />
       <Footer />
     </main>

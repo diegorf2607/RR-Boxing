@@ -1,39 +1,47 @@
 'use client'
 
-import { Play } from 'lucide-react'
+import Link from 'next/link'
 
-/** Shorts de testimonio (IDs de youtube.com/shorts/...). */
-const TESTIMONIAL_YOUTUBE_IDS: [string, string, string] = [
-  'lJtlyW-hU1Y',
-  'tvStTwBAYZw',
-  'SWoRQDhuK3s',
+/** IDs extraídos de los enlaces youtube.com/shorts/… */
+const testimonials = [
+  {
+    videoId: 'lJtlyW-hU1Y',
+    href: 'https://youtube.com/shorts/lJtlyW-hU1Y?si=9BYIkmVoIvUbVK2f',
+  },
+  {
+    videoId: 'tvStTwBAYZw',
+    href: 'https://youtube.com/shorts/tvStTwBAYZw?si=FDsmxZdYvuICyYk4',
+  },
+  {
+    videoId: 'SWoRQDhuK3s',
+    href: 'https://youtube.com/shorts/SWoRQDhuK3s?si=Y6VkokLRn07_9Yiw',
+  },
 ]
 
-function VerticalTestimonialFrame({ youtubeId, index }: { youtubeId: string | null; index: number }) {
-  if (youtubeId) {
-    return (
-      <div className="relative mx-auto aspect-[9/16] w-full max-w-[min(100%,280px)] overflow-hidden rounded-2xl border border-dark-300 bg-black shadow-lg">
-        <iframe
-          className="absolute inset-0 h-full w-full"
-          src={`https://www.youtube.com/embed/${youtubeId}?rel=0&modestbranding=1`}
-          title={`Testimonio ${index + 1}`}
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowFullScreen
-        />
-      </div>
-    )
-  }
+function TestimonialShortCard({ item }: { item: (typeof testimonials)[0] }) {
+  const embedSrc = `https://www.youtube.com/embed/${item.videoId}`
 
   return (
-    <div
-      className="relative mx-auto flex aspect-[9/16] w-full max-w-[min(100%,280px)] flex-col items-center justify-center overflow-hidden rounded-2xl border border-dashed border-dark-300 bg-gradient-to-b from-dark-200/90 to-dark bg-dark-100"
-      aria-hidden
-    >
-      <Play className="mb-3 h-14 w-14 text-accent/35" strokeWidth={1.25} />
-      <p className="px-4 text-center text-xs font-medium uppercase tracking-[0.2em] text-neutral">
-        Video próximamente
-      </p>
-    </div>
+    <article className="card relative w-[min(100%,280px)] flex-shrink-0 snap-center overflow-hidden p-0 md:w-auto">
+      <div className="relative aspect-[9/16] w-full bg-dark-200">
+        <iframe
+          src={embedSrc}
+          title={`Testimonio RRBOXING en YouTube (${item.videoId})`}
+          className="absolute inset-0 h-full w-full border-0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowFullScreen
+          loading="lazy"
+        />
+        <a
+          href={item.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="absolute bottom-2 right-2 rounded bg-dark/90 px-2 py-1 text-[10px] font-medium text-accent underline-offset-2 hover:text-white md:text-xs"
+        >
+          Abrir en YouTube
+        </a>
+      </div>
+    </article>
   )
 }
 
@@ -50,17 +58,24 @@ export default function Testimonials() {
           Personas reales que entrenan con la visión RRBOXING: comunidad, técnica y, cuando aplica, acompañamiento 1 a 1.
         </p>
 
-        <div className="mx-auto flex max-w-6xl justify-start gap-6 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory md:grid md:grid-cols-3 md:justify-center md:gap-8 md:overflow-visible md:pb-0">
-          {TESTIMONIAL_YOUTUBE_IDS.map((youtubeId, index) => (
-            <article
-              key={index}
-              className="card flex w-[min(85vw,280px)] flex-shrink-0 snap-center justify-center border-dark-300 bg-dark-100/50 p-4 md:w-auto md:max-w-none md:p-5"
-            >
-              <VerticalTestimonialFrame youtubeId={youtubeId} index={index} />
-            </article>
+        <div className="mx-auto flex max-w-5xl snap-x snap-mandatory gap-4 overflow-x-auto pb-4 scrollbar-hide md:grid md:grid-cols-3 md:gap-6 md:overflow-visible md:pb-0">
+          {testimonials.map((t) => (
+            <TestimonialShortCard key={t.videoId} item={t} />
           ))}
         </div>
         <p className="mt-2 text-center text-xs text-neutral md:hidden">← Desliza para ver más →</p>
+
+        <div className="mt-10 flex flex-col items-center justify-center gap-3 px-2 text-center">
+          <p className="max-w-md text-sm text-neutral-light">
+            ¿Listo para hablar de objetivos, disponibilidad y cómo encajan las clases 1 a 1 con vos?
+          </p>
+          <Link
+            href="/consulta"
+            className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-red-600 via-red-500 to-orange-500 px-8 py-3.5 text-base font-bold text-white shadow-lg shadow-red-500/30 transition hover:scale-[1.02] hover:brightness-110"
+          >
+            Reservar mi llamada
+          </Link>
+        </div>
       </div>
     </section>
   )

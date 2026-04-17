@@ -2,12 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Caveat:wght@600;700&family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 :root {
   --font-geist-sans: 'Inter', system-ui, sans-serif;
   --font-bebas: 'Bebas Neue', Impact, sans-serif;
-  --font-hero-script: 'Caveat', cursive;
   --accent-color: #FFD700;
   --dark-bg: #0a0a0a;
 }
@@ -41,12 +40,6 @@ body {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-  }
-}
-
-@layer utilities {
-  .font-hero-script {
-    font-family: var(--font-hero-script);
   }
 }
 
@@ -121,13 +114,3 @@ body {
 .animate-delay-300 { animation-delay: 300ms; }
 .animate-delay-400 { animation-delay: 400ms; }
 .animate-delay-500 { animation-delay: 500ms; }
-
-/* Barra de progreso del hero de tienda (duración definida en el componente) */
-@keyframes storeHeroProgress {
-  from {
-    width: 0%;
-  }
-  to {
-    width: 100%;
-  }
-}

@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { Star, Truck, RotateCcw, Shield } from 'lucide-react'
 import type { Product } from '@/shared/types/commerce'
 
@@ -43,7 +44,12 @@ export default function ProductTrustBlocks({ product }: { product: Product }) {
           <h3 className="font-semibold">Confianza RRBOXING</h3>
         </div>
         <p className="text-sm text-neutral-light">
-          Marca con trayectoria en enseñanza y entrenamiento. No es una tienda genérica: es el canal oficial de quienes entrenan con método y disciplina.
+          Marca con trayectoria en enseñanza y entrenamiento. No es una tienda genérica: es el canal oficial de quienes
+          entrenan con método y disciplina. Condiciones de garantía y devoluciones:{' '}
+          <Link href="/garantia" className="text-accent underline hover:text-accent-light">
+            ver documento de garantía de compra
+          </Link>
+          .
         </p>
       </div>
     </div>

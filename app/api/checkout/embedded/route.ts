@@ -68,11 +68,16 @@ export async function POST(req: Request) {
       mode: 'payment',
       customer_email: body.email,
       return_url: `${appUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-      line_items: [...data.productLines, ...data.shippingLine],
+      line_items: [...data.productLines, ...data.giftLines, ...data.shippingLine],
       metadata: {
         country: body.country,
         customerName: body.name,
         address: body.address,
+        shippingMethod: body.shippingMethod ?? 'standard',
+        phone: body.phone ?? '',
+        giftFree: data.giftFree ? '1' : '0',
+        giftChargePen: String(data.giftChargeAmount),
+        includeGiftPack: body.includeGiftPack ? '1' : '0',
       },
     })
 

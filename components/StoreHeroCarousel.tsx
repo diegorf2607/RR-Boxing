@@ -41,8 +41,6 @@ export default function StoreHeroCarousel() {
     return () => window.removeEventListener('keydown', onKey)
   }, [go])
 
-  const wa = process.env.NEXT_PUBLIC_WHATSAPP_URL
-
   return (
     <section
       className="relative w-full overflow-hidden bg-dark"
@@ -178,27 +176,15 @@ export default function StoreHeroCarousel() {
         </div>
       </div>
 
-      {/* Flotante: WhatsApp si hay URL; si no, contacto por consulta */}
+      {/* Flotante izquierda: consulta (WhatsApp compras va en layout, abajo derecha) */}
       <div className="pointer-events-none fixed bottom-6 left-6 z-[60] flex flex-col gap-3">
-        {wa ? (
-          <a
-            href={wa}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg shadow-black/40 transition hover:scale-105"
-            aria-label="WhatsApp"
-          >
-            <MessageCircle className="h-7 w-7" />
-          </a>
-        ) : (
-          <Link
-            href="/consulta"
-            className="pointer-events-auto flex items-center gap-2 rounded-full border border-accent/40 bg-dark/90 px-4 py-3 text-sm font-semibold text-white shadow-lg backdrop-blur-md transition hover:border-accent hover:text-accent"
-          >
-            <MessageCircle className="h-5 w-5 text-accent" />
-            <span className="hidden sm:inline">Agenda tu clase</span>
-          </Link>
-        )}
+        <Link
+          href="/consulta"
+          className="pointer-events-auto flex items-center gap-2 rounded-full border border-accent/40 bg-dark/90 px-4 py-3 text-sm font-semibold text-white shadow-lg backdrop-blur-md transition hover:border-accent hover:text-accent"
+        >
+          <MessageCircle className="h-5 w-5 text-accent" />
+          <span className="hidden sm:inline">Agenda tu clase</span>
+        </Link>
       </div>
     </section>
   )

@@ -6,6 +6,8 @@ import type { CartItem } from '@/shared/types/commerce'
 interface CartContextValue {
   items: CartItem[]
   addItem: (productId: string, quantity?: number) => void
+  /** Deja solo este producto y cantidad (ej. Comprar ahora → checkout). */
+  replaceCartWith: (productId: string, quantity?: number) => void
   removeItem: (productId: string) => void
   updateQuantity: (productId: string, quantity: number) => void
   clearCart: () => void
@@ -50,6 +52,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     })
   }
 
+  const replaceCartWith = (productId: string, quantity = 1) => {
+    const q = Math.max(1, Math.floor(quantity) || 1)
+    setItems([{ productId, quantity: q }])
+  }
+
   const removeItem = (productId: string) => {
     setItems((prev) => prev.filter((item) => item.productId !== productId))
   }
@@ -66,7 +73,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const count = items.reduce((acc, item) => acc + item.quantity, 0)
 
   const value = useMemo(
-    () => ({ items, addItem, removeItem, updateQuantity, clearCart, count }),
+    () => ({ items, addItem, replaceCartWith, removeItem, updateQuantity, clearCart, count }),
     [items, count]
   )
 

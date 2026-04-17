@@ -48,6 +48,15 @@ export default function Footer() {
             <Link href="/#testimonios" className="hover:text-accent">
               Testimonios
             </Link>
+            <Link href="/#comunidad" className="hover:text-accent">
+              Comunidad
+            </Link>
+            <Link href="/garantia" className="hover:text-accent">
+              Garantía
+            </Link>
+            <Link href="/#preguntas-frecuentes" className="hover:text-accent">
+              Preguntas
+            </Link>
             <Link href="/terminos" className="hover:text-accent">
               Términos
             </Link>
@@ -123,6 +132,19 @@ export default function Footer() {
                     Testimonios
                   </Link>
                 </li>
+                <li>
+                  <Link href="/#comunidad" className="text-neutral hover:text-accent transition-colors text-sm">
+                    Comunidad
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/#preguntas-frecuentes"
+                    className="text-neutral hover:text-accent transition-colors text-sm"
+                  >
+                    Preguntas frecuentes
+                  </Link>
+                </li>
               </ul>
             </div>
 
@@ -130,6 +152,11 @@ export default function Footer() {
             <div>
               <h4 className="font-bold text-white mb-4">Legal</h4>
               <ul className="space-y-2">
+                <li>
+                  <Link href="/garantia" className="text-neutral hover:text-accent transition-colors text-sm">
+                    Garantía de compra
+                  </Link>
+                </li>
                 <li><Link href="/terminos" className="text-neutral hover:text-accent transition-colors text-sm">Términos y Condiciones</Link></li>
                 <li><Link href="/privacidad" className="text-neutral hover:text-accent transition-colors text-sm">Política de Privacidad</Link></li>
                 <li><Link href="/reembolso" className="text-neutral hover:text-accent transition-colors text-sm">Política de Reembolso</Link></li>

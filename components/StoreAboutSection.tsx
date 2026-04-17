@@ -1,17 +1,20 @@
 import Link from 'next/link'
 import Image from 'next/image'
 
+/** Logo vertical oficial (también en `app/admin/` del repo). */
+const LOGO_VERTICAL_SRC = '/RR BOXING VERTICAL TRAZADO.png'
+
 export default function StoreAboutSection() {
   return (
     <section className="border-t border-dark-300 bg-gradient-to-b from-dark-100/80 to-dark py-14 md:py-20">
       <div className="container mx-auto px-4">
         <div className="mx-auto grid max-w-6xl gap-10 md:grid-cols-2 md:items-center md:gap-14">
-          <div className="relative mx-auto aspect-[3/4] w-full max-w-sm overflow-hidden rounded-2xl border border-dark-300 bg-dark-200 md:mx-0 md:max-w-md">
+          <div className="relative mx-auto flex aspect-[4/5] w-full max-w-sm items-center justify-center overflow-hidden rounded-2xl border border-dark-300 bg-dark-100 md:mx-0 md:max-w-md">
             <Image
-              src="/RR%20BOXING%20VERTICAL%20TRAZADO.png"
+              src={LOGO_VERTICAL_SRC}
               alt="RRBOXING — logo vertical"
               fill
-              className="object-contain p-6 md:p-8"
+              className="object-contain p-8 md:p-12"
               sizes="(max-width: 768px) 100vw, 400px"
               priority={false}
             />
@@ -26,6 +29,9 @@ export default function StoreAboutSection() {
               Llevamos años construyendo comunidad, técnica y disciplina en boxeo. La{' '}
               <strong className="text-white">tienda oficial</strong> existe para que entrenes con el mismo criterio que
               aplicamos en pista: equipamiento seleccionado, calidad y coherencia con lo que enseñamos.
+            </p>
+            <p className="mb-2 text-sm font-medium text-white">
+              Richard Rodríguez — entrenamiento y método RRBOXING
             </p>
             <p className="mb-6 text-neutral-light leading-relaxed">
               Las <strong className="text-white">clases personalizadas 1 a 1</strong> son el siguiente nivel: plan
