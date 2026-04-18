@@ -96,22 +96,9 @@ function GiftBlock({
     )
   }
 
+  /** Si el pack va gratis, el copy completo va en `GiftMegaBanner`; evitamos duplicar el mismo mensaje. */
   if (giftFree) {
-    return (
-      <div
-        className={`rounded-xl border-2 border-accent/60 bg-gradient-to-br from-dark-100 to-dark p-4 shadow-lg shadow-accent/10 ${
-          compact ? 'text-sm' : ''
-        }`}
-      >
-        <p className="mb-1 text-xs font-bold uppercase tracking-wider text-accent">REGALO — sin cargo</p>
-        <p className={`font-bold leading-snug text-white ${compact ? 'text-base' : 'text-lg'}`}>
-          Guía PDF + clase virtual grabada: incluidas porque superaste S/ {GIFT_THRESHOLD_PE_PEN} en productos.
-        </p>
-        <p className={`mt-2 text-neutral-light ${compact ? 'text-xs' : 'text-sm'} leading-relaxed`}>
-          Mismo criterio técnico de la academia. Lo desbloqueás al confirmar el pago.
-        </p>
-      </div>
-    )
+    return null
   }
 
   if (compact) {
@@ -362,14 +349,11 @@ export default function CheckoutClient() {
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)] lg:gap-8">
           {/* Columna izquierda: contacto + entrega + envío */}
-          <div className="space-y-8 rounded-2xl border border-dark-300 bg-dark-100 p-6 shadow-xl md:p-8">
+          <div className="space-y-8 rounded-2xl border border-dark-300 bg-dark-100 p-6 shadow-xl md:p-8 lg:order-2">
             {/* Contacto */}
             <section>
-              <div className="mb-4 flex items-center justify-between">
+              <div className="mb-4">
                 <h2 className="text-lg font-semibold text-white">Contacto</h2>
-                <Link href="/login" className="text-sm text-accent hover:underline">
-                  Iniciar sesión
-                </Link>
               </div>
               <label htmlFor="co-email" className={labelClass}>
                 Correo electrónico
@@ -543,7 +527,7 @@ export default function CheckoutClient() {
           </div>
 
           {/* Columna derecha: resumen + regalo + cupón + totales */}
-          <div className="h-fit space-y-6 rounded-2xl border border-dark-300 bg-dark-100 p-6 shadow-xl md:p-8">
+          <div className="h-fit space-y-6 rounded-2xl border border-dark-300 bg-dark-100 p-6 shadow-xl md:p-8 lg:order-1">
             {rows.length === 0 ? (
               <p className="text-sm text-neutral-light">Tu carrito está vacío.</p>
             ) : (
@@ -680,3 +664,4 @@ export default function CheckoutClient() {
     </div>
   )
 }
+
