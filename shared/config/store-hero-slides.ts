@@ -37,7 +37,7 @@ export const STORE_HERO_SLIDES: StoreHeroSlide[] = [
     imageUrl:
       'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?q=80&w=2000&auto=format&fit=crop',
     eyebrow: 'Destacado',
-    headline: 'Guantes Woesad',
+    headline: 'Guantes de boxeo',
     text: 'Cuero PU, 12 oz, compresión y soporte para entrenar seguro. Disponible para combo con 10% OFF + regalo.',
     href: '/product/guantes-boxeo-woesad',
     cta: 'Ver producto',

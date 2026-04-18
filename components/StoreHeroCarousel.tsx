@@ -90,7 +90,7 @@ export default function StoreHeroCarousel() {
                     {slide.eyebrow}
                   </p>
                   <h2
-                    className="font-hero-script max-w-xl text-5xl font-semibold leading-[0.95] text-accent drop-shadow-lg sm:text-6xl md:text-7xl lg:text-8xl"
+                    className="font-heading max-w-xl text-5xl font-bold uppercase leading-[0.95] tracking-wide text-accent drop-shadow-lg sm:text-6xl md:text-7xl lg:text-8xl"
                   >
                     {slide.headline}
                   </h2>
