@@ -41,6 +41,9 @@ export default function StoreComboSection() {
           <h2 id="combos-heading" className="font-heading text-3xl font-bold text-white md:text-4xl">
             Arma tu combo
           </h2>
+          <p className="mt-2 text-sm text-neutral md:text-base">
+            Complemento a la tienda: armá tu pedido arriba y acá ves ideas de packs con beneficio.
+          </p>
           <p className="mt-3 text-base text-neutral-light md:text-lg">
             Combina tus productos favoritos y obtén <strong className="text-white">10% de descuento</strong> +{' '}
             <strong className="text-accent">un regalo sorpresa</strong>. Llévate cualquier combo con beneficio

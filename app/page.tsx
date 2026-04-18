@@ -25,8 +25,8 @@ export default function Home() {
     <main className="min-h-screen bg-dark">
       <MainNav />
       <StoreHeroCarousel />
-      <StoreComboSection />
       <StoreClient />
+      <StoreComboSection />
       <StoreAboutSection />
       <SocialProof />
       <StoreFAQSection />
