@@ -90,7 +90,7 @@ function GiftBlock({
       >
         <p className="text-xs font-bold uppercase tracking-wider text-accent">Bienvenida RRBOXING</p>
         <p className={`mt-1 font-semibold text-white ${compact ? 'text-sm' : ''}`}>
-          Tras pagar, en la confirmación accedés a la guía y material de apoyo según tu región.
+          Tras pagar, en la confirmación accedes a la guía y material de apoyo según tu región.
         </p>
       </div>
     )
@@ -120,8 +120,8 @@ function GiftBlock({
     <div className="rounded-xl border-2 border-accent/40 bg-dark-100 p-4 shadow-lg shadow-black/40">
       <p className="mb-1 text-xs font-bold uppercase tracking-wider text-accent">PACK DE BIENVENIDA — OPCIONAL</p>
       <p className="font-bold leading-snug text-white md:text-lg">
-        Si tu compra es menor a S/ {GIFT_THRESHOLD_PE_PEN} en productos, podés sumar la guía en PDF y la clase grabada
-        marcando la opción en el resumen (dos ítems en Stripe).
+        Si tu compra es menor a S/ {GIFT_THRESHOLD_PE_PEN} en productos, puedes sumar la guía en PDF y la clase grabada
+        marcando la opción en el resumen del pedido.
       </p>
       <div className="mt-3 space-y-1.5 rounded-lg border border-dark-300 bg-dark/80 px-3 py-2 text-sm font-semibold text-white">
         <div className="flex justify-between gap-2">
@@ -134,7 +134,7 @@ function GiftBlock({
         </div>
       </div>
       <p className="mt-2 text-sm text-neutral-light leading-relaxed">
-        Si superás S/ {GIFT_THRESHOLD_PE_PEN} en productos, el mismo pack se incluye <strong className="text-accent">sin cargo</strong> automáticamente.
+        Si superas S/ {GIFT_THRESHOLD_PE_PEN} en productos, el mismo pack se incluye <strong className="text-accent">sin cargo</strong> automáticamente.
       </p>
     </div>
   )
@@ -647,7 +647,7 @@ export default function CheckoutClient() {
                   </div>
                 </div>
                 <p className="text-xs leading-relaxed text-neutral">
-                  Al completar el pago asegurás stock y accedés al material indicado en la confirmación.
+                  Al completar el pago aseguras stock y accedes al material indicado en la confirmación.
                   {appliesGift && !giftFree ? (
                     <>
                       {' '}

@@ -42,12 +42,6 @@ export default function Footer() {
             <Link href="/consulta" className="hover:text-accent">
               Clases 1 a 1
             </Link>
-            <Link href="/#beneficios" className="hover:text-accent">
-              Beneficios
-            </Link>
-            <Link href="/#testimonios" className="hover:text-accent">
-              Testimonios
-            </Link>
             <Link href="/#comunidad" className="hover:text-accent">
               Comunidad
             </Link>
@@ -120,16 +114,6 @@ export default function Footer() {
                 <li>
                   <Link href="/consulta" className="text-neutral hover:text-accent transition-colors text-sm">
                     Clases personalizadas
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/#beneficios" className="text-neutral hover:text-accent transition-colors text-sm">
-                    Beneficios
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/#testimonios" className="text-neutral hover:text-accent transition-colors text-sm">
-                    Testimonios
                   </Link>
                 </li>
                 <li>

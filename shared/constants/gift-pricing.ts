@@ -1,8 +1,8 @@
 /** Subtotal solo productos (PEN). Si es estrictamente mayor a este monto, el pack regalo no se cobra. */
 export const GIFT_THRESHOLD_PE_PEN = 100
 
-export const GIFT_GUIDE_PRICE_PEN = 9.99
-export const GIFT_CLASS_PRICE_PEN = 4.99
+export const GIFT_GUIDE_PRICE_PEN = 14.99
+export const GIFT_CLASS_PRICE_PEN = 19.99
 
 export function isGiftFreePePen(productSubtotalPen: number): boolean {
   return productSubtotalPen > GIFT_THRESHOLD_PE_PEN
