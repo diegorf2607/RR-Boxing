@@ -37,9 +37,16 @@ export default function ProductCard({ product }: { product: Product }) {
           </span>
         ) : null}
       </Link>
-      <span className="mb-2 inline-block rounded-full bg-dark-300 px-2 py-1 text-xs text-neutral-light">
-        {product.category}
-      </span>
+      <div className="mb-2 flex flex-wrap items-center gap-2">
+        <span className="inline-block rounded-full bg-dark-300 px-2 py-1 text-xs text-neutral-light">
+          {product.category}
+        </span>
+        {product.comboEligible !== false ? (
+          <span className="inline-block rounded-full border border-accent/50 bg-dark px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-accent">
+            Disponible para combo
+          </span>
+        ) : null}
+      </div>
       <h3 className="mb-2 text-lg font-bold">{product.name}</h3>
       <p className="mb-4 text-sm text-neutral-light">{product.description}</p>
       <div className="mt-auto flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">

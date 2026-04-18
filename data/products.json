@@ -1,74 +1,108 @@
 [
   {
-    "id": "prod_gloves_pro",
-    "slug": "guantes-pro-training",
-    "name": "Guantes Pro Training RRBOXING",
-    "description": "Guantes de alto rendimiento con proteccion reforzada para sparring y manoplas.",
+    "id": "prod_guantes_woesad",
+    "slug": "guantes-boxeo-woesad",
+    "name": "Guantes de boxeo Woesad",
+    "description": "Guantes de boxeo diseñados para brindar compresión, soporte y comodidad durante el entrenamiento.",
+    "longDescription": "Estos guantes de boxeo Woesad están fabricados en cuero PU y cuentan con un diseño pensado para ofrecer buen ajuste, soporte cómodo y seguridad en cada sesión. Incorporan cierre de velcro para un mejor ajuste de la muñeca, una estructura que permite el movimiento natural del pulgar y los nudillos, y un diseño interno especial para los dedos que favorece la ventilación de las manos. Además, su forro interior con telas absorbentes ayuda a mantener las manos más frescas, secas y cómodas durante el entrenamiento.",
+    "features": [
+      "Material de cuero PU",
+      "Marca Woesad",
+      "Cierre de velcro para mejor ajuste y soporte",
+      "Diseño que permite doblar naturalmente el pulgar y los nudillos",
+      "Diseño interior ventilado para mayor comodidad",
+      "Forro interior con telas absorbentes",
+      "Ayuda a absorber la humedad",
+      "Disponible en color negro y blanco",
+      "Medida de 12 oz"
+    ],
+    "attributes": [
+      { "label": "Marca", "value": "Woesad" },
+      { "label": "Material", "value": "Cuero PU" },
+      { "label": "Colores disponibles", "value": "Negro, blanco" },
+      { "label": "Medida", "value": "12 oz" }
+    ],
     "category": "Guantes",
     "featured": true,
     "imageUrls": [
-      "https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?q=80&w=1200",
-      "https://images.unsplash.com/photo-1612874742237-6526221588e3?q=80&w=1200"
+      "https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1612874742237-6526221588e3?q=80&w=1200&auto=format&fit=crop"
     ],
     "prices": [
-      { "country": "PE", "currency": "PEN", "amount": 249, "compareAtAmount": 299 },
-      { "country": "MX", "currency": "MXN", "amount": 1299, "compareAtAmount": 1499 },
-      { "country": "CO", "currency": "COP", "amount": 289000, "compareAtAmount": 349000 },
-      { "country": "CL", "currency": "CLP", "amount": 64990, "compareAtAmount": 79990 },
-      { "country": "US", "currency": "USD", "amount": 79, "compareAtAmount": 99 }
+      { "country": "PE", "currency": "PEN", "amount": 124.99 },
+      { "country": "MX", "currency": "MXN", "amount": 649 },
+      { "country": "CO", "currency": "COP", "amount": 144000 },
+      { "country": "CL", "currency": "CLP", "amount": 32990 },
+      { "country": "US", "currency": "USD", "amount": 35 }
     ],
-    "stock": 24,
+    "stock": 40,
     "active": true,
-    "rating": 4.8,
-    "reviewCount": 132,
+    "rating": 4.9,
+    "reviewCount": 86,
     "variants": [
-      { "id": "v1", "name": "Talla", "value": "12oz" },
-      { "id": "v2", "name": "Talla", "value": "14oz" },
-      { "id": "v3", "name": "Color", "value": "Negro/Dorado" }
+      { "id": "wo-oz", "name": "Medida", "value": "12 oz" },
+      { "id": "wo-col", "name": "Color", "value": "Negro / blanco" }
     ]
   },
   {
-    "id": "prod_wraps_elite",
-    "slug": "vendas-elite-4m",
-    "name": "Vendas Elite 4m RRBOXING",
-    "description": "Vendas de compresion para proteger munecas y nudillos durante sesiones intensas.",
+    "id": "prod_vendas_boxeo",
+    "slug": "vendas-boxeo-45m",
+    "name": "Vendas para boxeo",
+    "description": "Vendas de boxeo de 4.5 metros ideales para dar soporte y protección durante tus entrenamientos.",
+    "longDescription": "Estas vendas para boxeo de 4.5 metros están diseñadas para brindar mayor estabilidad, ajuste y protección en manos y muñecas. Son ideales para usarse debajo de los guantes, ayudando a reducir el impacto y mejorar la seguridad en cada entrenamiento. Su longitud permite envolver correctamente la mano para una mayor sujeción.",
+    "features": [
+      "Largo de 4.5 metros",
+      "Brindan soporte a manos y muñecas",
+      "Ayudan a mejorar la estabilidad",
+      "Ideales para usar debajo de los guantes",
+      "Pensadas para entrenamiento de boxeo"
+    ],
+    "attributes": [{ "label": "Medida", "value": "4.5 metros" }],
     "category": "Accesorios",
-    "featured": true,
-    "imageUrls": [
-      "https://images.unsplash.com/photo-1605296867304-46d5465a13f1?q=80&w=1200"
-    ],
-    "prices": [
-      { "country": "PE", "currency": "PEN", "amount": 69 },
-      { "country": "MX", "currency": "MXN", "amount": 359 },
-      { "country": "CO", "currency": "COP", "amount": 79000 },
-      { "country": "CL", "currency": "CLP", "amount": 17990 },
-      { "country": "US", "currency": "USD", "amount": 19 }
-    ],
-    "stock": 70,
-    "active": true,
-    "rating": 4.9,
-    "reviewCount": 214
-  },
-  {
-    "id": "prod_headguard_comp",
-    "slug": "careta-competition",
-    "name": "Careta Competition RRBOXING",
-    "description": "Proteccion ergonomica para entrenamiento tecnico y trabajo de contacto controlado.",
-    "category": "Proteccion",
     "featured": false,
     "imageUrls": [
-      "https://images.unsplash.com/photo-1517438476312-10d79c077509?q=80&w=1200"
+      "https://images.unsplash.com/photo-1605296867304-46d5465a13f1?q=80&w=1200&auto=format&fit=crop"
     ],
     "prices": [
-      { "country": "PE", "currency": "PEN", "amount": 219 },
-      { "country": "MX", "currency": "MXN", "amount": 1099 },
-      { "country": "CO", "currency": "COP", "amount": 249000 },
-      { "country": "CL", "currency": "CLP", "amount": 56990 },
-      { "country": "US", "currency": "USD", "amount": 69 }
+      { "country": "PE", "currency": "PEN", "amount": 19.99 },
+      { "country": "MX", "currency": "MXN", "amount": 109 },
+      { "country": "CO", "currency": "COP", "amount": 24000 },
+      { "country": "CL", "currency": "CLP", "amount": 5990 },
+      { "country": "US", "currency": "USD", "amount": 6 }
     ],
-    "stock": 12,
+    "stock": 120,
+    "active": true,
+    "rating": 4.8,
+    "reviewCount": 142
+  },
+  {
+    "id": "prod_cuerda_salto",
+    "slug": "cuerda-salto-boxeo",
+    "name": "Cuerda de salto para boxeo",
+    "description": "Cuerda de salto ideal para entrenamientos de boxeo, cardio y mejora de resistencia.",
+    "longDescription": "Esta cuerda de salto para boxeo es ideal para complementar entrenamientos enfocados en agilidad, coordinación, resistencia y condición física. Es una excelente opción para rutinas de calentamiento, cardio y trabajo de pies, ayudando a mejorar el rendimiento dentro y fuera del ring.",
+    "features": [
+      "Ideal para entrenamiento de boxeo",
+      "Útil para cardio y calentamiento",
+      "Ayuda a mejorar la resistencia",
+      "Mejora coordinación y agilidad",
+      "Ideal para trabajo de pies"
+    ],
+    "category": "Cardio",
+    "featured": false,
+    "imageUrls": [
+      "https://images.unsplash.com/photo-1434596922112-19c563067271?q=80&w=1200&auto=format&fit=crop"
+    ],
+    "prices": [
+      { "country": "PE", "currency": "PEN", "amount": 24.99 },
+      { "country": "MX", "currency": "MXN", "amount": 139 },
+      { "country": "CO", "currency": "COP", "amount": 29900 },
+      { "country": "CL", "currency": "CLP", "amount": 7490 },
+      { "country": "US", "currency": "USD", "amount": 7 }
+    ],
+    "stock": 80,
     "active": true,
     "rating": 4.7,
-    "reviewCount": 64
+    "reviewCount": 58
   }
 ]

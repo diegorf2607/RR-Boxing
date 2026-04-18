@@ -10,6 +10,12 @@ import {
   GIFT_GUIDE_PRICE_PEN,
   isGiftFreePePen,
 } from '@/shared/constants/gift-pricing'
+import {
+  comboDiscountApplies,
+  computeComboDiscountAmount,
+  roundMoney,
+  totalCartUnits,
+} from '@/shared/lib/combo-promo'
 
 const CHECKOUT_COUNTRY_CODES = COUNTRY_CONFIG.map((c) => c.code) as [
   CountryCode,
@@ -54,6 +60,30 @@ export type PreparedCartCheckout = {
   /** Solo Perú PEN: pack regalo sin cargo si el subtotal de productos supera S/ 100. */
   giftFree: boolean
   giftChargeAmount: number
+  /** Subtotal de productos antes del descuento combo. */
+  productSubtotalGross: number
+  comboApplied: boolean
+  comboDiscountAmount: number
+}
+
+function allocateComboDiscountToOrderItems(
+  items: OrderItem[],
+  grossSubtotal: number,
+  discountAmount: number
+): OrderItem[] {
+  if (discountAmount <= 0) return items
+  let assigned = 0
+  return items.map((item, index, arr) => {
+    const lineGross = roundMoney(item.unitAmount * item.quantity)
+    const isLast = index === arr.length - 1
+    const lineDiscount = isLast
+      ? roundMoney(discountAmount - assigned)
+      : roundMoney((lineGross / grossSubtotal) * discountAmount)
+    assigned += lineDiscount
+    const lineNet = roundMoney(lineGross - lineDiscount)
+    const newUnit = roundMoney(lineNet / item.quantity)
+    return { ...item, unitAmount: newUnit }
+  })
 }
 
 export async function prepareCartCheckout(
@@ -90,7 +120,20 @@ export async function prepareCartCheckout(
 
   const currencyLower = firstCurrency.toLowerCase()
 
-  const productLines: Stripe.Checkout.SessionCreateParams.LineItem[] = orderItems.map((item) => ({
+  const productSubtotalGross = roundMoney(
+    orderItems.reduce((acc, item) => acc + item.unitAmount * item.quantity, 0)
+  )
+  const cartUnits = totalCartUnits(body.items)
+  const comboApplied = comboDiscountApplies(cartUnits)
+  const comboDiscountAmount = comboApplied
+    ? computeComboDiscountAmount(productSubtotalGross, cartUnits)
+    : 0
+
+  const orderItemsForCharge = comboApplied
+    ? allocateComboDiscountToOrderItems(orderItems, productSubtotalGross, comboDiscountAmount)
+    : orderItems
+
+  const productLines: Stripe.Checkout.SessionCreateParams.LineItem[] = orderItemsForCharge.map((item) => ({
     quantity: item.quantity,
     price_data: {
       currency: item.currency.toLowerCase(),
@@ -101,7 +144,9 @@ export async function prepareCartCheckout(
     },
   }))
 
-  const subtotalProducts = orderItems.reduce((acc, item) => acc + item.unitAmount * item.quantity, 0)
+  const subtotalProducts = roundMoney(
+    orderItemsForCharge.reduce((acc, item) => acc + item.unitAmount * item.quantity, 0)
+  )
 
   let shippingLine: Stripe.Checkout.SessionCreateParams.LineItem[] = []
   let shippingFlatAmount = 0
@@ -148,7 +193,7 @@ export async function prepareCartCheckout(
   let giftFree = false
 
   if (country === 'PE' && firstCurrency === 'PEN') {
-    giftFree = isGiftFreePePen(subtotalProducts)
+    giftFree = isGiftFreePePen(productSubtotalGross)
     if (!giftFree && body.includeGiftPack) {
       giftChargeAmount = GIFT_GUIDE_PRICE_PEN + GIFT_CLASS_PRICE_PEN
       giftLines = [
@@ -181,7 +226,7 @@ export async function prepareCartCheckout(
   return {
     ok: true,
     data: {
-      orderItems,
+      orderItems: orderItemsForCharge,
       productLines,
       giftLines,
       shippingLine,
@@ -191,6 +236,9 @@ export async function prepareCartCheckout(
       currency: firstCurrency,
       giftFree,
       giftChargeAmount,
+      productSubtotalGross,
+      comboApplied,
+      comboDiscountAmount,
     },
   }
 }

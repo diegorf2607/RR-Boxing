@@ -78,6 +78,9 @@ export async function POST(req: Request) {
         giftFree: data.giftFree ? '1' : '0',
         giftChargePen: String(data.giftChargeAmount),
         includeGiftPack: body.includeGiftPack ? '1' : '0',
+        comboApplied: data.comboApplied ? '1' : '0',
+        comboDiscountAmount: String(data.comboDiscountAmount),
+        productSubtotalGross: String(data.productSubtotalGross),
       },
     })
 

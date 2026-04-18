@@ -9,6 +9,10 @@ import { useCountry } from '@/features/country/CountryProvider'
 import type { CurrencyCode, Product } from '@/shared/types/commerce'
 import { getCountryConfig, formatCurrency } from '@/shared/lib/country'
 import { getPriceForCountry } from '@/features/store/pricing'
+import {
+  computeComboDiscountAmount,
+  subtotalAfterComboDiscount,
+} from '@/shared/lib/combo-promo'
 
 function CartLineSkeleton() {
   return (
@@ -61,6 +65,8 @@ export default function CartClient() {
   const config = getCountryConfig(country)
   const subtotal = rows.reduce((acc, row) => acc + row.lineTotal, 0)
   const itemCount = rows.reduce((acc, row) => acc + row.quantity, 0)
+  const comboDiscount = computeComboDiscountAmount(subtotal, itemCount)
+  const subtotalConCombo = subtotalAfterComboDiscount(subtotal, itemCount)
 
   const waitingForCatalog = items.length > 0 && !productsLoaded
   const trulyEmpty = items.length === 0
@@ -241,11 +247,21 @@ export default function CartClient() {
                     <dt>Subtotal productos</dt>
                     <dd className="font-semibold text-white">{formatCurrency(subtotal, config.currency, config.locale)}</dd>
                   </div>
+                  {comboDiscount > 0 ? (
+                    <div className="flex justify-between gap-4 rounded-lg border border-accent/25 bg-accent/5 px-2 py-2 text-accent">
+                      <dt className="font-semibold">Promo combo (10%) + regalo</dt>
+                      <dd className="font-bold tabular-nums">−{formatCurrency(comboDiscount, config.currency, config.locale)}</dd>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-neutral">
+                      Agregá otro artículo y activá <strong className="text-accent">10% OFF</strong> + regalo en el checkout.
+                    </p>
+                  )}
                 </dl>
                 <div className="my-5 h-px bg-dark-300" />
                 <div className="flex justify-between gap-4 font-heading text-2xl tracking-wide">
-                  <span className="text-neutral-light">Total</span>
-                  <span className="text-accent">{formatCurrency(subtotal, config.currency, config.locale)}</span>
+                  <span className="text-neutral-light">Total estimado</span>
+                  <span className="text-accent">{formatCurrency(subtotalConCombo, config.currency, config.locale)}</span>
                 </div>
                 <p className="mt-4 flex items-start gap-2 rounded-lg border border-dark-300 bg-dark/60 px-3 py-2.5 text-xs leading-relaxed text-neutral-light">
                   <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent" aria-hidden />

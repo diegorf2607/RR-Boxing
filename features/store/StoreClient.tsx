@@ -45,6 +45,14 @@ export default function StoreClient() {
       <div className="mb-8">
         <h1 className="mb-3 text-4xl font-bold">Tienda RRBOXING</h1>
         <p className="text-neutral-light">Equipamiento premium para entrenamiento real y rendimiento competitivo.</p>
+        <p className="mt-4 rounded-xl border border-accent/35 bg-accent/5 px-4 py-3 text-sm leading-relaxed text-neutral-light">
+          <span className="font-semibold text-accent">Arma tu combo:</span> con 2 o más productos en tu carrito obtenés{' '}
+          <strong className="text-white">10% de descuento</strong> sobre el subtotal y{' '}
+          <strong className="text-accent">regalo sorpresa</strong>.{' '}
+          <a href="#combos" className="text-accent underline underline-offset-2 hover:text-white">
+            Ver combos sugeridos
+          </a>
+        </p>
       </div>
 
       <div className="mb-8 grid gap-3 md:grid-cols-2 lg:grid-cols-5">

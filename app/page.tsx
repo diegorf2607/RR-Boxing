@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import MainNav from '@/components/MainNav'
 import StoreHeroCarousel from '@/components/StoreHeroCarousel'
 import StoreClient from '@/features/store/StoreClient'
+import StoreComboSection from '@/components/StoreComboSection'
 import StoreAboutSection from '@/components/StoreAboutSection'
 import StoreFAQSection from '@/components/StoreFAQSection'
 import SocialProof from '@/components/SocialProof'
@@ -24,6 +25,7 @@ export default function Home() {
     <main className="min-h-screen bg-dark">
       <MainNav />
       <StoreHeroCarousel />
+      <StoreComboSection />
       <StoreClient />
       <StoreAboutSection />
       <SocialProof />

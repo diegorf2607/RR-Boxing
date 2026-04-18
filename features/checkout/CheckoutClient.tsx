@@ -18,6 +18,11 @@ import {
   GIFT_THRESHOLD_PE_PEN,
   isGiftFreePePen,
 } from '@/shared/constants/gift-pricing'
+import {
+  computeComboDiscountAmount,
+  subtotalAfterComboDiscount,
+  totalCartUnits,
+} from '@/shared/lib/combo-promo'
 
 type Step = 'form' | 'pay'
 
@@ -193,6 +198,9 @@ export default function CheckoutClient() {
 
   const config = getCountryConfig(country)
   const subtotal = rows.reduce((acc, row) => acc + row.lineTotal, 0)
+  const totalUnits = totalCartUnits(rows)
+  const comboDiscountAmount = computeComboDiscountAmount(subtotal, totalUnits)
+  const productSubtotalAfterCombo = subtotalAfterComboDiscount(subtotal, totalUnits)
   const currency = (rows[0]?.price.currency ?? 'PEN') as CurrencyCode
   const appliesGift = country === 'PE' && currency === 'PEN'
   const giftFree = appliesGift && isGiftFreePePen(subtotal)
@@ -208,7 +216,7 @@ export default function CheckoutClient() {
     return config.shippingFlatAmount
   }, [country, shippingMethod, config, rows])
 
-  const total = subtotal + shippingAmount + giftCharge
+  const total = productSubtotalAfterCombo + shippingAmount + giftCharge
 
   const fullName = `${firstName} ${lastName}`.trim()
   const fullAddress = useMemo(() => {
@@ -596,9 +604,23 @@ export default function CheckoutClient() {
 
                 <div className="space-y-2 border-t border-dark-300 pt-4 text-sm">
                   <div className="flex justify-between text-neutral-light">
-                    <span>Subtotal</span>
+                    <span>Subtotal productos</span>
                     <span className="font-medium text-white">{formatCurrency(subtotal, currency, config.locale)}</span>
                   </div>
+                  {comboDiscountAmount > 0 ? (
+                    <div className="flex justify-between rounded-lg border border-accent/25 bg-accent/5 px-2 py-1.5 text-accent">
+                      <span className="font-semibold">Promo combo (10% OFF) + regalo sorpresa</span>
+                      <span className="font-bold tabular-nums">−{formatCurrency(comboDiscountAmount, currency, config.locale)}</span>
+                    </div>
+                  ) : null}
+                  {comboDiscountAmount > 0 ? (
+                    <div className="flex justify-between text-xs text-neutral-light">
+                      <span>Productos con promo</span>
+                      <span className="font-medium text-white">
+                        {formatCurrency(productSubtotalAfterCombo, currency, config.locale)}
+                      </span>
+                    </div>
+                  ) : null}
                   <div className="flex justify-between text-neutral-light">
                     <span className="inline-flex items-center gap-1">
                       Envío

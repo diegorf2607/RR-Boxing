@@ -15,13 +15,27 @@ export interface ProductVariant {
   value: string
 }
 
+export interface ProductAttribute {
+  label: string
+  value: string
+}
+
 export interface Product {
   id: string
   slug: string
   name: string
+  /** Texto breve (cards, listados). */
   description: string
+  /** Detalle extendido (ficha de producto). */
+  longDescription?: string
+  /** Viñetas para ficha de producto. */
+  features?: string[]
+  /** Pares etiqueta / valor (ficha). */
+  attributes?: ProductAttribute[]
   category: string
   featured?: boolean
+  /** Si es false, no se muestra badge “Disponible para combo”. Por defecto entra en la promo. */
+  comboEligible?: boolean
   imageUrls: string[]
   prices: ProductPrice[]
   stock: number
