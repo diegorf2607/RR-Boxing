@@ -28,7 +28,7 @@ export const STORE_HERO_SLIDES: StoreHeroSlide[] = [
     eyebrow: 'Nuevo en tienda',
     headline: 'Equipamiento oficial',
     text: 'Guantes, protección y accesorios pensados para entrenar fuerte con estándar RRBOXING.',
-    href: '/#catalogo',
+    href: '#catalogo',
     cta: 'Ver catálogo',
     align: 'left',
   },

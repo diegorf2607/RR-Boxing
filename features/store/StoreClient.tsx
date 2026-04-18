@@ -41,7 +41,7 @@ export default function StoreClient() {
   }, [products, query, category, inStockOnly, featuredOnly, sortBy])
 
   return (
-    <section className="container mx-auto px-4 py-10">
+    <section id="catalogo" className="scroll-mt-24 container mx-auto px-4 py-10">
       <div className="mb-8">
         <h1 className="mb-3 text-4xl font-bold">Tienda RRBOXING</h1>
         <p className="text-neutral-light">Equipamiento premium para entrenamiento real y rendimiento competitivo.</p>

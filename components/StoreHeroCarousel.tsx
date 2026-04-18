@@ -98,18 +98,27 @@ export default function StoreHeroCarousel() {
                     {slide.text}
                   </p>
                   <div className={`mt-8 flex flex-wrap gap-3 ${alignRight ? 'justify-end' : ''}`}>
-                    <Link
-                      href={slide.href}
-                      className="inline-flex items-center justify-center rounded-full bg-accent px-8 py-3.5 text-sm font-bold uppercase tracking-wide text-dark shadow-lg shadow-accent/30 transition hover:bg-accent-light"
-                    >
-                      {slide.cta}
-                    </Link>
-                    <Link
-                      href="/#catalogo"
+                    {slide.href.startsWith('#') ? (
+                      <a
+                        href={slide.href}
+                        className="inline-flex items-center justify-center rounded-full bg-accent px-8 py-3.5 text-sm font-bold uppercase tracking-wide text-dark shadow-lg shadow-accent/30 transition hover:bg-accent-light"
+                      >
+                        {slide.cta}
+                      </a>
+                    ) : (
+                      <Link
+                        href={slide.href}
+                        className="inline-flex items-center justify-center rounded-full bg-accent px-8 py-3.5 text-sm font-bold uppercase tracking-wide text-dark shadow-lg shadow-accent/30 transition hover:bg-accent-light"
+                      >
+                        {slide.cta}
+                      </Link>
+                    )}
+                    <a
+                      href="#catalogo"
                       className="inline-flex items-center justify-center rounded-full border border-white/40 bg-white/5 px-6 py-3.5 text-sm font-semibold text-white backdrop-blur-sm transition hover:border-accent/60 hover:text-accent"
                     >
                       Ver tienda
-                    </Link>
+                    </a>
                   </div>
                 </div>
               </div>
