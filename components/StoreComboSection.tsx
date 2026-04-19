@@ -32,25 +32,23 @@ export default function StoreComboSection() {
   return (
     <section
       id="combos"
-      className="scroll-mt-24 border-y border-dark-300 bg-gradient-to-b from-dark-100/80 to-dark bg-[length:100%_100%] py-12 md:py-16"
+      className="scroll-mt-24 border-y border-dark-300 bg-gradient-to-b from-dark-100/80 to-dark py-12 md:py-16"
       aria-labelledby="combos-heading"
     >
       <div className="container mx-auto px-4">
-        <div className="mx-auto mb-10 max-w-3xl text-center">
-          <p className="mb-2 font-heading text-xs uppercase tracking-[0.35em] text-accent">Promoción</p>
-          <h2 id="combos-heading" className="font-heading text-3xl font-bold text-white md:text-4xl">
-            Arma tu combo
+        <div className="mx-auto mb-10 max-w-2xl text-center">
+          <h2 id="combos-heading" className="font-heading text-3xl font-bold tracking-wide text-white md:text-4xl">
+            Armá tu pedido
           </h2>
-          <p className="mt-2 text-sm text-neutral md:text-base">
-            Complemento a la tienda: armá tu pedido arriba y acá ves ideas de packs con beneficio.
+          <p className="mt-2 text-sm text-neutral md:text-base">Acá puedes ver ideas de packs con beneficio.</p>
+          <p className="mt-4 text-base font-semibold text-white md:text-lg">
+            Combina tus productos y obtén 10% OFF + regalo sorpresa.
           </p>
-          <p className="mt-3 text-base text-neutral-light md:text-lg">
-            Combina tus productos favoritos y obtén <strong className="text-white">10% de descuento</strong> +{' '}
-            <strong className="text-accent">un regalo sorpresa</strong>. Llévate cualquier combo con beneficio
-            especial: añadí 2 o más unidades al carrito y el descuento se aplica solo en el checkout.
+          <p className="mt-3 text-sm leading-relaxed text-neutral-light">
+            Si agregas 2 o más artículos al carrito, el descuento se aplica automáticamente en el checkout.
           </p>
-          <p className="mt-2 text-sm font-semibold text-accent">
-            Promo combo: 10% OFF + regalo sorpresa · Válido con 2+ artículos en tu pedido.
+          <p className="mt-4 inline-block rounded-full border border-accent/40 bg-accent/10 px-4 py-1.5 text-xs font-bold uppercase tracking-wide text-accent">
+            Promo combo: 10% OFF + regalo sorpresa.
           </p>
         </div>
 
@@ -76,7 +74,7 @@ export default function StoreComboSection() {
                   <Gift className="h-4 w-4 text-accent" aria-hidden />
                   Incluye regalo
                 </p>
-                <p className="mt-1 text-xs text-neutral">Ahorro referencial: {PEN(off)} vs. precio de lista.</p>
+                <p className="mt-1 text-xs text-neutral">Ahorro: {PEN(off)}</p>
                 <Link
                   href="#catalogo"
                   className="mt-6 inline-flex w-full items-center justify-center rounded-xl border border-accent bg-transparent py-3 text-sm font-bold text-accent transition hover:bg-accent/10"
