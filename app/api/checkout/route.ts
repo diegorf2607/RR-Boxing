@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
-import type { CountryCode, OrderItem } from '@/shared/types/commerce'
+import type { CountryCode, Order, OrderItem } from '@/shared/types/commerce'
 import { appendOrder, getProducts } from '@/shared/lib/data-store'
 import { getPriceForCountry } from '@/features/store/pricing'
 import { getStripeClient } from '@/shared/lib/stripe'
@@ -97,17 +97,21 @@ export async function POST(req: Request) {
 
   const totalAmount = orderItems.reduce((acc, item) => acc + item.unitAmount * item.quantity, 0)
 
-  await appendOrder({
+  const newOrder: Order = {
     id: `ord_${Date.now()}`,
     customerEmail: body.email,
+    customerName: body.name,
     country,
     items: orderItems,
     totalAmount: totalAmount + countryConfig.shippingFlatAmount,
     currency: orderItems[0].currency,
     status: 'pending',
+    paymentStatus: 'unpaid',
+    paymentMethod: 'stripe',
     stripeSessionId: session.id,
     createdAt: new Date().toISOString(),
-  })
+  }
+  await appendOrder(newOrder)
 
   return NextResponse.json({ url: session.url })
 }

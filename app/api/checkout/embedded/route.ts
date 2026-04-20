@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getStripeClient } from '@/shared/lib/stripe'
 import { appendOrder } from '@/shared/lib/data-store'
 import { checkoutCartBodySchema, prepareCartCheckout } from '@/shared/lib/cart-checkout'
+import type { Order } from '@/shared/types/commerce'
 
 function appBaseUrl() {
   return (process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000').replace(/\/$/, '')
@@ -91,17 +92,21 @@ export async function POST(req: Request) {
       )
     }
 
-    await appendOrder({
+    const newOrder: Order = {
       id: `ord_${Date.now()}`,
       customerEmail: body.email,
+      customerName: body.name,
       country: data.country,
       items: data.orderItems,
       totalAmount: data.totalAmount,
       currency: data.currency,
       status: 'pending',
+      paymentStatus: 'unpaid',
+      paymentMethod: 'stripe',
       stripeSessionId: session.id,
       createdAt: new Date().toISOString(),
-    })
+    }
+    await appendOrder(newOrder)
 
     return NextResponse.json({ clientSecret: session.client_secret })
   } catch (e) {

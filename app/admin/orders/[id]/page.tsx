@@ -2,14 +2,11 @@ import { redirect } from 'next/navigation'
 import MainNav from '@/components/MainNav'
 import AdminNav from '@/components/AdminNav'
 import { getSession } from '@/shared/lib/auth'
-import { getDashboardSnapshot } from '@/shared/lib/data-store'
-import DashboardAdminClient from '@/features/admin/DashboardAdminClient'
+import OrderDetailClient from '@/features/admin/OrderDetailClient'
 
-export default async function AdminDashboardPage() {
+export default async function AdminOrderDetailPage({ params }: { params: { id: string } }) {
   const session = await getSession()
   if (!session || session.role !== 'admin') redirect('/login')
-
-  const snapshot = await getDashboardSnapshot()
 
   return (
     <main className="min-h-screen bg-dark">
@@ -17,7 +14,8 @@ export default async function AdminDashboardPage() {
       <section className="container mx-auto grid gap-6 px-4 py-10 md:grid-cols-[240px_1fr]">
         <AdminNav />
         <div>
-          <DashboardAdminClient snapshot={snapshot} />
+          <h1 className="mb-6 text-3xl font-bold text-white">Pedido</h1>
+          <OrderDetailClient orderId={params.id} />
         </div>
       </section>
     </main>

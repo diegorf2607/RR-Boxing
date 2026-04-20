@@ -1,6 +1,7 @@
-import type { Order, Product } from '@/shared/types/commerce'
+import type { Order, Product, ProductImage, ListingStatus, PaymentStatus, OrderStatus } from '@/shared/types/commerce'
+import type { AdminNotification, AdminNotificationType, StoreSettings } from '@/shared/types/admin'
 import { getSupabaseAdmin } from '@/shared/lib/supabase-admin'
-import type { CountryCode, CurrencyCode, OrderStatus } from '@/shared/types/commerce'
+import type { CountryCode, CurrencyCode } from '@/shared/types/commerce'
 
 type ProductRow = {
   id: string
@@ -17,12 +18,20 @@ type ProductRow = {
   active: boolean
   rating: number | null
   review_count: number
+  listing_status?: string | null
+  sku?: string | null
+  display_order?: number | null
+  weight_grams?: number | null
+  internal_notes?: string | null
+  created_at?: string
+  updated_at?: string
 }
 
 type ProductImageRow = {
   product_id: string
   url: string
   sort_order: number
+  is_primary?: boolean | null
 }
 
 type ProductPriceRow = {
@@ -36,10 +45,14 @@ type ProductPriceRow = {
 type OrderRow = {
   id: string
   customer_email: string
+  customer_name?: string | null
   country: CountryCode
   total_amount: number
   currency: CurrencyCode
   status: OrderStatus
+  payment_status?: PaymentStatus | null
+  payment_method?: string | null
+  internal_notes?: string | null
   created_at: string
   stripe_session_id: string | null
 }
@@ -53,15 +66,29 @@ type OrderItemRow = {
   currency: CurrencyCode
 }
 
-function mapProduct(
-  row: ProductRow,
-  imageRows: ProductImageRow[],
-  priceRows: ProductPriceRow[]
-): Product {
-  const imageUrls = imageRows
-    .filter((img) => img.product_id === row.id)
-    .sort((a, b) => a.sort_order - b.sort_order)
-    .map((img) => img.url)
+function listingFromRow(row: ProductRow): ListingStatus {
+  const ls = row.listing_status
+  if (ls === 'draft' || ls === 'inactive' || ls === 'active') return ls
+  return row.active ? 'active' : 'inactive'
+}
+
+function sortImageRows(rows: ProductImageRow[]): ProductImageRow[] {
+  return [...rows].sort((a, b) => {
+    const ap = a.is_primary ? 1 : 0
+    const bp = b.is_primary ? 1 : 0
+    if (ap !== bp) return bp - ap
+    return a.sort_order - b.sort_order
+  })
+}
+
+function mapProduct(row: ProductRow, imageRows: ProductImageRow[], priceRows: ProductPriceRow[]): Product {
+  const ownImages = sortImageRows(imageRows.filter((img) => img.product_id === row.id))
+  const productImages: ProductImage[] = ownImages.map((img) => ({
+    url: img.url,
+    sortOrder: img.sort_order,
+    isPrimary: !!img.is_primary,
+  }))
+  const imageUrls = ownImages.map((img) => img.url)
 
   const prices = priceRows
     .filter((price) => price.product_id === row.id)
@@ -84,9 +111,17 @@ function mapProduct(
     featured: row.featured,
     comboEligible: row.combo_eligible,
     imageUrls,
+    productImages,
     prices,
     stock: row.stock,
     active: row.active,
+    listingStatus: listingFromRow(row),
+    sku: row.sku ?? undefined,
+    displayOrder: row.display_order ?? 0,
+    weightGrams: row.weight_grams ?? undefined,
+    internalNotes: row.internal_notes ?? undefined,
+    ...(row.created_at ? { createdAt: row.created_at } : {}),
+    ...(row.updated_at ? { updatedAt: row.updated_at } : {}),
     ...(row.rating != null ? { rating: Number(row.rating) } : {}),
     reviewCount: row.review_count ?? 0,
   }
@@ -96,6 +131,7 @@ function mapOrder(order: OrderRow, items: OrderItemRow[]): Order {
   return {
     id: order.id,
     customerEmail: order.customer_email,
+    ...(order.customer_name ? { customerName: order.customer_name } : {}),
     country: order.country,
     items: items
       .filter((item) => item.order_id === order.id)
@@ -109,94 +145,148 @@ function mapOrder(order: OrderRow, items: OrderItemRow[]): Order {
     totalAmount: Number(order.total_amount),
     currency: order.currency,
     status: order.status,
+    paymentStatus: (order.payment_status as PaymentStatus) ?? (order.status === 'paid' ? 'paid' : 'unpaid'),
+    paymentMethod: order.payment_method ?? undefined,
+    internalNotes: order.internal_notes ?? undefined,
     createdAt: order.created_at,
     ...(order.stripe_session_id ? { stripeSessionId: order.stripe_session_id } : {}),
   }
 }
 
-export async function getProducts(): Promise<Product[]> {
-  const supabase = getSupabaseAdmin()
+async function loadProductRelations(
+  supabase: ReturnType<typeof getSupabaseAdmin>,
+  ids: string[]
+): Promise<{ imageRows: ProductImageRow[]; priceRows: ProductPriceRow[] }> {
+  if (ids.length === 0) return { imageRows: [], priceRows: [] }
+  const [{ data: imageRows, error: imagesError }, { data: priceRows, error: pricesError }] =
+    await Promise.all([
+      supabase
+        .from('product_images')
+        .select('product_id,url,sort_order,is_primary')
+        .in('product_id', ids)
+        .order('sort_order', { ascending: true }),
+      supabase.from('product_prices').select('product_id,country,currency,amount,compare_at_amount').in('product_id', ids),
+    ])
+  if (imagesError) {
+    throw new Error(`Failed to load product images: ${imagesError.message}`)
+  }
+  if (pricesError) {
+    throw new Error(`Failed to load product prices: ${pricesError.message}`)
+  }
+  return {
+    imageRows: (imageRows ?? []) as ProductImageRow[],
+    priceRows: (priceRows ?? []) as ProductPriceRow[],
+  }
+}
 
+/** Catálogo tienda: activos y listados como activos (listing en código si la columna falta). */
+export async function getStoreProducts(): Promise<Product[]> {
+  const supabase = getSupabaseAdmin()
   const { data: productRows, error: productsError } = await supabase
     .from('products')
     .select('*')
+    .eq('active', true)
     .order('created_at', { ascending: true })
 
   if (productsError) {
     throw new Error(`Failed to load products: ${productsError.message}`)
   }
 
-  const rows = (productRows ?? []) as ProductRow[]
+  const rowsRaw = (productRows ?? []) as ProductRow[]
+  const rows = [...rowsRaw]
+    .filter((r) => listingFromRow(r) === 'active')
+    .sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0))
   const ids = rows.map((row) => row.id)
-  if (ids.length === 0) return []
+  const { imageRows, priceRows } = await loadProductRelations(supabase, ids)
+  return rows.map((row) => mapProduct(row, imageRows, priceRows))
+}
 
-  const [{ data: imageRows, error: imagesError }, { data: priceRows, error: pricesError }] =
-    await Promise.all([
-      supabase
-        .from('product_images')
-        .select('product_id,url,sort_order')
-        .in('product_id', ids)
-        .order('sort_order', { ascending: true }),
-      supabase.from('product_prices').select('product_id,country,currency,amount,compare_at_amount').in('product_id', ids),
-    ])
+export async function getProducts(): Promise<Product[]> {
+  return getStoreProducts()
+}
 
-  if (imagesError) {
-    throw new Error(`Failed to load product images: ${imagesError.message}`)
+/** Admin: todos los productos. */
+export async function getAdminProducts(): Promise<Product[]> {
+  const supabase = getSupabaseAdmin()
+  const { data: productRows, error: productsError } = await supabase
+    .from('products')
+    .select('*')
+    .order('created_at', { ascending: true })
+
+  if (productsError) {
+    throw new Error(`Failed to load admin products: ${productsError.message}`)
   }
-  if (pricesError) {
-    throw new Error(`Failed to load product prices: ${pricesError.message}`)
-  }
 
-  return rows.map((row) =>
-    mapProduct(row, (imageRows ?? []) as ProductImageRow[], (priceRows ?? []) as ProductPriceRow[])
+  const rows = [...((productRows ?? []) as ProductRow[])].sort(
+    (a, b) => (a.display_order ?? 0) - (b.display_order ?? 0)
   )
+  const ids = rows.map((row) => row.id)
+  const { imageRows, priceRows } = await loadProductRelations(supabase, ids)
+  return rows.map((row) => mapProduct(row, imageRows, priceRows))
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | undefined> {
   const supabase = getSupabaseAdmin()
-  const { data: row, error } = await supabase
-    .from('products')
-    .select('*')
-    .eq('slug', slug)
-    .eq('active', true)
-    .maybeSingle()
+  const { data: row, error } = await supabase.from('products').select('*').eq('slug', slug).eq('active', true).maybeSingle()
 
   if (error) {
     throw new Error(`Failed to load product by slug: ${error.message}`)
   }
   if (!row) return undefined
   const productRow = row as ProductRow
+  if (listingFromRow(productRow) !== 'active') return undefined
 
-  const [{ data: imageRows, error: imagesError }, { data: priceRows, error: pricesError }] =
-    await Promise.all([
-      supabase
-        .from('product_images')
-        .select('product_id,url,sort_order')
-        .eq('product_id', productRow.id)
-        .order('sort_order', { ascending: true }),
-      supabase
-        .from('product_prices')
-        .select('product_id,country,currency,amount,compare_at_amount')
-        .eq('product_id', productRow.id),
-    ])
+  const { imageRows, priceRows } = await loadProductRelations(supabase, [productRow.id])
+  return mapProduct(productRow, imageRows, priceRows)
+}
 
-  if (imagesError) {
-    throw new Error(`Failed to load product images: ${imagesError.message}`)
+export async function getAdminProductById(id: string): Promise<Product | undefined> {
+  const supabase = getSupabaseAdmin()
+  const { data: row, error } = await supabase.from('products').select('*').eq('id', id).maybeSingle()
+  if (error) throw new Error(`Failed to load product: ${error.message}`)
+  if (!row) return undefined
+  const productRow = row as ProductRow
+  const { imageRows, priceRows } = await loadProductRelations(supabase, [productRow.id])
+  return mapProduct(productRow, imageRows, priceRows)
+}
+
+export async function isProductSlugTaken(slug: string, excludeProductId?: string): Promise<boolean> {
+  const supabase = getSupabaseAdmin()
+  let q = supabase.from('products').select('id').eq('slug', slug).limit(1)
+  if (excludeProductId) {
+    q = q.neq('id', excludeProductId)
   }
-  if (pricesError) {
-    throw new Error(`Failed to load product prices: ${pricesError.message}`)
-  }
+  const { data, error } = await q.maybeSingle()
+  if (error) throw new Error(`Slug check failed: ${error.message}`)
+  return !!data
+}
 
-  return mapProduct(
-    productRow,
-    (imageRows ?? []) as ProductImageRow[],
-    (priceRows ?? []) as ProductPriceRow[]
-  )
+function normalizeProductImages(product: Product): ProductImage[] {
+  if (product.productImages && product.productImages.length > 0) {
+    const sorted = [...product.productImages].sort((a, b) => a.sortOrder - b.sortOrder)
+    let primaryIdx = sorted.findIndex((i) => i.isPrimary)
+    if (primaryIdx < 0) {
+      primaryIdx = 0
+    }
+    return sorted.map((img, i) => ({
+      ...img,
+      sortOrder: i,
+      isPrimary: i === primaryIdx,
+    }))
+  }
+  return product.imageUrls.map((url, i) => ({
+    url,
+    sortOrder: i,
+    isPrimary: i === 0,
+  }))
 }
 
 export async function upsertProduct(product: Product): Promise<Product> {
   const supabase = getSupabaseAdmin()
   const db = supabase as any
+
+  const listingStatus = product.listingStatus ?? (product.active ? 'active' : 'inactive')
+  const nowIso = new Date().toISOString()
 
   const { error: productError } = await db.from('products').upsert({
     id: product.id,
@@ -211,8 +301,14 @@ export async function upsertProduct(product: Product): Promise<Product> {
     combo_eligible: product.comboEligible ?? true,
     stock: product.stock,
     active: product.active,
+    listing_status: listingStatus,
+    sku: product.sku?.trim() ? product.sku.trim() : null,
+    display_order: product.displayOrder ?? 0,
+    weight_grams: product.weightGrams ?? null,
+    internal_notes: product.internalNotes ?? null,
     rating: product.rating ?? null,
     review_count: product.reviewCount ?? 0,
+    updated_at: nowIso,
   })
 
   if (productError) {
@@ -228,12 +324,14 @@ export async function upsertProduct(product: Product): Promise<Product> {
     throw new Error(`Failed to replace product prices: ${deletePricesError.message}`)
   }
 
-  if (product.imageUrls.length > 0) {
+  const imgs = normalizeProductImages(product)
+  if (imgs.length > 0) {
     const { error: insertImagesError } = await db.from('product_images').insert(
-      product.imageUrls.map((url, idx) => ({
+      imgs.map((img) => ({
         product_id: product.id,
-        url,
-        sort_order: idx,
+        url: img.url,
+        sort_order: img.sortOrder,
+        is_primary: img.isPrimary,
       }))
     )
     if (insertImagesError) {
@@ -256,23 +354,54 @@ export async function upsertProduct(product: Product): Promise<Product> {
     }
   }
 
-  return product
+  const out = await getAdminProductById(product.id)
+  return out ?? product
 }
 
 export async function deleteProduct(id: string): Promise<void> {
   const supabase = getSupabaseAdmin()
   const db = supabase as any
-  const { error } = await db.from('products').update({ active: false }).eq('id', id)
+  const { error } = await db
+    .from('products')
+    .update({ active: false, listing_status: 'inactive', updated_at: new Date().toISOString() })
+    .eq('id', id)
   if (error) {
     throw new Error(`Failed to delete product: ${error.message}`)
   }
 }
 
+export async function duplicateProduct(sourceId: string): Promise<Product> {
+  const src = await getAdminProductById(sourceId)
+  if (!src) throw new Error('Product not found')
+  const newId = `prod_${Date.now()}`
+  const slugBase = `${src.slug}-copia`.slice(0, 80)
+  let slug = `${slugBase}-${Date.now().toString(36)}`
+  let n = 0
+  while (await isProductSlugTaken(slug)) {
+    n += 1
+    slug = `${slugBase}-${n}`
+  }
+  const clone: Product = {
+    ...src,
+    id: newId,
+    slug,
+    name: `${src.name} (copia)`,
+    active: false,
+    listingStatus: 'draft',
+    sku: null,
+    displayOrder: (src.displayOrder ?? 0) + 1,
+  }
+  return upsertProduct(clone)
+}
+
+const orderSelect =
+  'id,customer_email,customer_name,country,total_amount,currency,status,payment_status,payment_method,internal_notes,created_at,stripe_session_id'
+
 export async function getOrders(): Promise<Order[]> {
   const supabase = getSupabaseAdmin()
   const { data: orderRows, error: ordersError } = await supabase
     .from('orders')
-    .select('id,customer_email,country,total_amount,currency,status,created_at,stripe_session_id')
+    .select(orderSelect)
     .order('created_at', { ascending: false })
 
   if (ordersError) {
@@ -295,17 +424,36 @@ export async function getOrders(): Promise<Order[]> {
   return rows.map((order) => mapOrder(order, (itemRows ?? []) as OrderItemRow[]))
 }
 
+export async function getOrderById(id: string): Promise<Order | null> {
+  const supabase = getSupabaseAdmin()
+  const { data: orderRow, error } = await supabase.from('orders').select(orderSelect).eq('id', id).maybeSingle()
+  if (error) throw new Error(`Failed to load order: ${error.message}`)
+  if (!orderRow) return null
+  const { data: itemRows, error: itemsError } = await supabase
+    .from('order_items')
+    .select('order_id,product_id,product_name,quantity,unit_amount,currency')
+    .eq('order_id', id)
+  if (itemsError) throw new Error(`Failed to load order items: ${itemsError.message}`)
+  return mapOrder(orderRow as OrderRow, (itemRows ?? []) as OrderItemRow[])
+}
+
 export async function appendOrder(order: Order): Promise<Order> {
   const supabase = getSupabaseAdmin()
   const db = supabase as any
 
+  const paymentStatus = order.paymentStatus ?? (order.status === 'paid' ? 'paid' : 'unpaid')
+
   const { error: orderError } = await db.from('orders').insert({
     id: order.id,
     customer_email: order.customerEmail,
+    customer_name: order.customerName ?? null,
     country: order.country,
     total_amount: order.totalAmount,
     currency: order.currency,
     status: order.status,
+    payment_status: paymentStatus,
+    payment_method: order.paymentMethod ?? null,
+    internal_notes: order.internalNotes ?? null,
     created_at: order.createdAt,
     stripe_session_id: order.stripeSessionId ?? null,
   })
@@ -329,6 +477,16 @@ export async function appendOrder(order: Order): Promise<Order> {
     }
   }
 
+  void insertAdminNotificationSafe({
+    type: paymentStatus === 'unpaid' ? 'order_pending_payment' : 'new_order',
+    severity: paymentStatus === 'unpaid' ? 'warning' : 'info',
+    title: paymentStatus === 'unpaid' ? 'Pedido pendiente de pago' : 'Nuevo pedido',
+    body: `${order.customerEmail} · ${order.currency} ${order.totalAmount.toFixed(2)}`,
+    link: `/admin/orders/${order.id}`,
+    entityType: 'order',
+    entityId: order.id,
+  })
+
   return order
 }
 
@@ -337,10 +495,14 @@ export async function updateOrder(id: string, updates: Partial<Order>): Promise<
   const db = supabase as any
   const patch: Record<string, unknown> = {}
 
-  if (updates.status) patch.status = updates.status
+  if (updates.status !== undefined) patch.status = updates.status
   if (updates.stripeSessionId !== undefined) patch.stripe_session_id = updates.stripeSessionId ?? null
   if (updates.totalAmount !== undefined) patch.total_amount = updates.totalAmount
   if (updates.currency !== undefined) patch.currency = updates.currency
+  if (updates.paymentStatus !== undefined) patch.payment_status = updates.paymentStatus
+  if (updates.paymentMethod !== undefined) patch.payment_method = updates.paymentMethod ?? null
+  if (updates.internalNotes !== undefined) patch.internal_notes = updates.internalNotes ?? null
+  if (updates.customerName !== undefined) patch.customer_name = updates.customerName ?? null
 
   if (Object.keys(patch).length > 0) {
     const { error: updateError } = await db.from('orders').update(patch).eq('id', id)
@@ -349,34 +511,14 @@ export async function updateOrder(id: string, updates: Partial<Order>): Promise<
     }
   }
 
-  const { data: orderRow, error: orderError } = await supabase
-    .from('orders')
-    .select('id,customer_email,country,total_amount,currency,status,created_at,stripe_session_id')
-    .eq('id', id)
-    .maybeSingle()
-
-  if (orderError) {
-    throw new Error(`Failed to read updated order: ${orderError.message}`)
-  }
-  if (!orderRow) return null
-
-  const { data: itemRows, error: itemsError } = await supabase
-    .from('order_items')
-    .select('order_id,product_id,product_name,quantity,unit_amount,currency')
-    .eq('order_id', id)
-
-  if (itemsError) {
-    throw new Error(`Failed to read updated order items: ${itemsError.message}`)
-  }
-
-  return mapOrder(orderRow as OrderRow, (itemRows ?? []) as OrderItemRow[])
+  return getOrderById(id)
 }
 
 export async function findOrderBySession(sessionId: string): Promise<Order | null> {
   const supabase = getSupabaseAdmin()
   const { data: orderRow, error: orderError } = await supabase
     .from('orders')
-    .select('id,customer_email,country,total_amount,currency,status,created_at,stripe_session_id')
+    .select(orderSelect)
     .eq('stripe_session_id', sessionId)
     .maybeSingle()
 
@@ -396,4 +538,273 @@ export async function findOrderBySession(sessionId: string): Promise<Order | nul
   }
 
   return mapOrder(foundOrder, (itemRows ?? []) as OrderItemRow[])
+}
+
+function mapNotificationRow(row: {
+  id: string
+  type: string
+  severity: string
+  title: string
+  body: string | null
+  link: string | null
+  entity_type: string | null
+  entity_id: string | null
+  read_at: string | null
+  created_at: string
+}): AdminNotification {
+  return {
+    id: row.id,
+    type: row.type as AdminNotificationType,
+    severity: row.severity as AdminNotification['severity'],
+    title: row.title,
+    body: row.body,
+    link: row.link,
+    entityType: row.entity_type,
+    entityId: row.entity_id,
+    readAt: row.read_at,
+    createdAt: row.created_at,
+  }
+}
+
+export async function insertAdminNotification(input: {
+  type: AdminNotificationType
+  severity: AdminNotification['severity']
+  title: string
+  body?: string | null
+  link?: string | null
+  entityType?: string | null
+  entityId?: string | null
+}): Promise<void> {
+  const supabase = getSupabaseAdmin()
+  const db = supabase as any
+  const { error } = await db.from('admin_notifications').insert({
+    type: input.type,
+    severity: input.severity,
+    title: input.title,
+    body: input.body ?? null,
+    link: input.link ?? null,
+    entity_type: input.entityType ?? null,
+    entity_id: input.entityId ?? null,
+  })
+  if (error) throw new Error(`Failed to insert notification: ${error.message}`)
+}
+
+async function insertAdminNotificationSafe(input: Parameters<typeof insertAdminNotification>[0]) {
+  try {
+    await insertAdminNotification(input)
+  } catch {
+    /* tabla ausente o RLS */
+  }
+}
+
+export async function listAdminNotifications(limit = 50): Promise<AdminNotification[]> {
+  const supabase = getSupabaseAdmin()
+  const { data, error } = await supabase
+    .from('admin_notifications')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(limit)
+  if (error) return []
+  return (data ?? []).map((r) => mapNotificationRow(r as any))
+}
+
+export async function countUnreadAdminNotifications(): Promise<number> {
+  const supabase = getSupabaseAdmin()
+  const { count, error } = await supabase
+    .from('admin_notifications')
+    .select('id', { count: 'exact', head: true })
+    .is('read_at', null)
+  if (error) return 0
+  return count ?? 0
+}
+
+export async function markAdminNotificationRead(id: string): Promise<void> {
+  const supabase = getSupabaseAdmin()
+  const db = supabase as any
+  const { error } = await db.from('admin_notifications').update({ read_at: new Date().toISOString() }).eq('id', id)
+  if (error) throw new Error(error.message)
+}
+
+export async function markAllAdminNotificationsRead(): Promise<void> {
+  const supabase = getSupabaseAdmin()
+  const db = supabase as any
+  const { error } = await db
+    .from('admin_notifications')
+    .update({ read_at: new Date().toISOString() })
+    .is('read_at', null)
+  if (error) throw new Error(error.message)
+}
+
+function mapStoreSettingsRow(row: {
+  store_name: string
+  default_currency_display: string
+  low_stock_threshold: number
+  support_contact_text: string
+  checkout_helper_text: string
+  store_enabled: boolean
+  updated_at: string
+}): StoreSettings {
+  return {
+    storeName: row.store_name,
+    defaultCurrencyDisplay: row.default_currency_display,
+    lowStockThreshold: row.low_stock_threshold,
+    supportContactText: row.support_contact_text,
+    checkoutHelperText: row.checkout_helper_text,
+    storeEnabled: row.store_enabled,
+    updatedAt: row.updated_at,
+  }
+}
+
+export async function getStoreSettings(): Promise<StoreSettings> {
+  const supabase = getSupabaseAdmin()
+  const { data, error } = await supabase.from('store_settings').select('*').eq('id', 1).maybeSingle()
+  if (error || !data) {
+    return {
+      storeName: 'RRBOXING',
+      defaultCurrencyDisplay: 'PEN',
+      lowStockThreshold: 5,
+      supportContactText: '',
+      checkoutHelperText: '',
+      storeEnabled: true,
+      updatedAt: new Date().toISOString(),
+    }
+  }
+  return mapStoreSettingsRow(data as any)
+}
+
+export async function updateStoreSettings(patch: Partial<StoreSettings>): Promise<StoreSettings> {
+  const supabase = getSupabaseAdmin()
+  const db = supabase as any
+  const current = await getStoreSettings()
+  const merged: StoreSettings = {
+    storeName: patch.storeName ?? current.storeName,
+    defaultCurrencyDisplay: patch.defaultCurrencyDisplay ?? current.defaultCurrencyDisplay,
+    lowStockThreshold: patch.lowStockThreshold ?? current.lowStockThreshold,
+    supportContactText: patch.supportContactText ?? current.supportContactText,
+    checkoutHelperText: patch.checkoutHelperText ?? current.checkoutHelperText,
+    storeEnabled: patch.storeEnabled ?? current.storeEnabled,
+    updatedAt: new Date().toISOString(),
+  }
+
+  const { error } = await db.from('store_settings').upsert({
+    id: 1,
+    store_name: merged.storeName,
+    default_currency_display: merged.defaultCurrencyDisplay,
+    low_stock_threshold: merged.lowStockThreshold,
+    support_contact_text: merged.supportContactText,
+    checkout_helper_text: merged.checkoutHelperText,
+    store_enabled: merged.storeEnabled,
+    updated_at: merged.updatedAt,
+  })
+  if (error) throw new Error(`Failed to update store settings: ${error.message}`)
+  return getStoreSettings()
+}
+
+export type DashboardKpis = {
+  activeProducts: number
+  totalOrders: number
+  paidOrders: number
+  pendingOrders: number
+  ordersToday: number
+  revenueTotal: number
+  revenueMonth: number
+  averageTicket: number
+  lowStockProducts: number
+  productsWithoutImages: number
+}
+
+export type DashboardSnapshot = {
+  kpis: DashboardKpis
+  ordersByStatus: Partial<Record<OrderStatus, number>>
+  lowStockCountByBand: { critical: number; warning: number }
+  recentOrders: Order[]
+  recentProducts: Product[]
+  notifications: AdminNotification[]
+  unreadNotifications: number
+  settings: StoreSettings
+}
+
+function startOfUtcDay(d: Date): Date {
+  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()))
+}
+
+function isPaidOrder(o: Order): boolean {
+  return o.paymentStatus === 'paid' || ['paid', 'processing', 'shipped', 'delivered'].includes(o.status)
+}
+
+export async function getDashboardSnapshot(): Promise<DashboardSnapshot> {
+  const [products, orders, notifications, unread, settings] = await Promise.all([
+    getAdminProducts(),
+    getOrders(),
+    listAdminNotifications(30),
+    countUnreadAdminNotifications(),
+    getStoreSettings(),
+  ])
+
+  const threshold = settings.lowStockThreshold
+  const activeProducts = products.filter((p) => p.active && p.listingStatus === 'active').length
+  const paidOrders = orders.filter(isPaidOrder).length
+  const pendingOrders = orders.filter((o) => o.status === 'pending' && o.paymentStatus === 'unpaid').length
+  const now = new Date()
+  const sod = startOfUtcDay(now)
+  const ordersToday = orders.filter((o) => new Date(o.createdAt) >= sod).length
+
+  const revenueTotal = orders.filter(isPaidOrder).reduce((s, o) => s + o.totalAmount, 0)
+  const month = now.getUTCMonth()
+  const year = now.getUTCFullYear()
+  const revenueMonth = orders
+    .filter((o) => {
+      const t = new Date(o.createdAt)
+      return isPaidOrder(o) && t.getUTCMonth() === month && t.getUTCFullYear() === year
+    })
+    .reduce((s, o) => s + o.totalAmount, 0)
+
+  const averageTicket = paidOrders > 0 ? revenueTotal / paidOrders : 0
+
+  const lowStockProducts = products.filter((p) => p.stock > 0 && p.stock < threshold).length
+  const productsWithoutImages = products.filter((p) => p.imageUrls.length === 0).length
+
+  const ordersByStatus: Partial<Record<OrderStatus, number>> = {}
+  for (const o of orders) {
+    ordersByStatus[o.status] = (ordersByStatus[o.status] ?? 0) + 1
+  }
+
+  let critical = 0
+  let warning = 0
+  for (const p of products) {
+    if (p.stock <= 0) continue
+    if (p.stock < Math.max(1, Math.floor(threshold / 2))) critical += 1
+    else if (p.stock < threshold) warning += 1
+  }
+
+  const recentOrders = orders.slice(0, 8)
+  const recentProducts = [...products]
+    .sort((a, b) => {
+      const ta = new Date(a.updatedAt ?? a.createdAt ?? 0).getTime()
+      const tb = new Date(b.updatedAt ?? b.createdAt ?? 0).getTime()
+      return tb - ta
+    })
+    .slice(0, 8)
+
+  return {
+    kpis: {
+      activeProducts,
+      totalOrders: orders.length,
+      paidOrders,
+      pendingOrders,
+      ordersToday,
+      revenueTotal,
+      revenueMonth,
+      averageTicket,
+      lowStockProducts,
+      productsWithoutImages,
+    },
+    ordersByStatus,
+    lowStockCountByBand: { critical, warning },
+    recentOrders,
+    recentProducts,
+    notifications,
+    unreadNotifications: unread,
+    settings,
+  }
 }

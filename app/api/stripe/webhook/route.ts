@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { getStripeClient } from '@/shared/lib/stripe'
-import { findOrderBySession, updateOrder } from '@/shared/lib/data-store'
+import { findOrderBySession, insertAdminNotification, updateOrder } from '@/shared/lib/data-store'
 
 export async function POST(req: Request) {
   const signature = req.headers.get('stripe-signature')
@@ -27,13 +27,28 @@ export async function POST(req: Request) {
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session
     const order = await findOrderBySession(session.id)
-    if (order) await updateOrder(order.id, { status: 'paid' })
+    if (order) {
+      await updateOrder(order.id, { status: 'paid', paymentStatus: 'paid', paymentMethod: 'stripe' })
+      try {
+        await insertAdminNotification({
+          type: 'order_paid',
+          severity: 'info',
+          title: 'Pedido pagado',
+          body: `${order.customerEmail} · ${order.currency} ${order.totalAmount.toFixed(2)}`,
+          link: `/admin/orders/${order.id}`,
+          entityType: 'order',
+          entityId: order.id,
+        })
+      } catch {
+        /* sin tabla de notificaciones */
+      }
+    }
   }
 
   if (event.type === 'checkout.session.expired') {
     const session = event.data.object as Stripe.Checkout.Session
     const order = await findOrderBySession(session.id)
-    if (order) await updateOrder(order.id, { status: 'cancelled' })
+    if (order) await updateOrder(order.id, { status: 'cancelled', paymentStatus: 'unpaid' })
   }
 
   return NextResponse.json({ received: true })
