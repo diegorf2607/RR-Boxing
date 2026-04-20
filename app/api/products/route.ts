@@ -10,7 +10,7 @@ const createProductSchema = z.object({
   description: z.string().min(10),
   category: z.string().min(2).default('Accesorios'),
   stock: z.coerce.number().min(0).default(0),
-  imageUrl: z.string().url(),
+  imageUrls: z.array(z.string().min(1)).min(1),
 })
 
 export async function GET() {
@@ -32,7 +32,7 @@ export async function POST(req: Request) {
     description: payload.description,
     category: payload.category,
     featured: false,
-    imageUrls: [payload.imageUrl],
+    imageUrls: payload.imageUrls,
     prices: [
       { country: 'PE', currency: 'PEN', amount: 99 },
       { country: 'MX', currency: 'MXN', amount: 499 },
