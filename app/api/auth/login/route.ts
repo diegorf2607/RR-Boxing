@@ -10,35 +10,75 @@ const schema = z.object({
 })
 
 export async function POST(req: Request) {
-  const body = schema.parse(await req.json())
-  const supabasePublic = getSupabasePublic()
-  const { data, error } = await supabasePublic.auth.signInWithPassword({
-    email: body.email,
-    password: body.password,
-  })
+  try {
+    const body = schema.parse(await req.json())
+    const debugAuth = process.env.AUTH_DEBUG === '1'
+    const supabasePublic = getSupabasePublic()
+    const { data, error } = await supabasePublic.auth.signInWithPassword({
+      email: body.email,
+      password: body.password,
+    })
 
-  if (error || !data.user) {
-    return NextResponse.json({ error: 'Credenciales invalidas' }, { status: 401 })
+    if (error || !data.user) {
+      return NextResponse.json(
+        {
+          error: 'Credenciales invalidas',
+          ...(debugAuth
+            ? {
+                debug: {
+                  supabaseMessage: error?.message ?? 'No user returned',
+                  supabaseCode: (error as { code?: string } | null)?.code ?? null,
+                  projectHost: process.env.NEXT_PUBLIC_SUPABASE_URL ?? null,
+                },
+              }
+            : {}),
+        },
+        { status: 401 }
+      )
+    }
+
+    const supabaseAdmin = getSupabaseAdmin()
+    const { data: appUserRaw, error: appUserError } = await supabaseAdmin
+      .from('app_users')
+      .select('role')
+      .eq('id', data.user.id)
+      .maybeSingle()
+
+    if (appUserError) {
+      return NextResponse.json(
+        {
+          error: 'No se pudo validar rol de usuario',
+          ...(debugAuth
+            ? {
+                debug: {
+                  supabaseMessage: appUserError.message,
+                  projectHost: process.env.NEXT_PUBLIC_SUPABASE_URL ?? null,
+                },
+              }
+            : {}),
+        },
+        { status: 500 }
+      )
+    }
+
+    const appUser = appUserRaw as { role?: 'admin' | 'customer' } | null
+    const role = appUser?.role === 'admin' ? 'admin' : 'customer'
+    await createSession({
+      sub: data.user.id,
+      email: data.user.email ?? body.email,
+      role,
+    })
+
+    return NextResponse.json({ ok: true, role })
+  } catch (error) {
+    const debugAuth = process.env.AUTH_DEBUG === '1'
+    const message = error instanceof Error ? error.message : 'Error inesperado'
+    return NextResponse.json(
+      {
+        error: 'Error al iniciar sesion',
+        ...(debugAuth ? { debug: { message, projectHost: process.env.NEXT_PUBLIC_SUPABASE_URL ?? null } } : {}),
+      },
+      { status: 500 }
+    )
   }
-
-  const supabaseAdmin = getSupabaseAdmin()
-  const { data: appUserRaw, error: appUserError } = await supabaseAdmin
-    .from('app_users')
-    .select('role')
-    .eq('id', data.user.id)
-    .maybeSingle()
-
-  if (appUserError) {
-    return NextResponse.json({ error: 'No se pudo validar rol de usuario' }, { status: 500 })
-  }
-
-  const appUser = appUserRaw as { role?: 'admin' | 'customer' } | null
-  const role = appUser?.role === 'admin' ? 'admin' : 'customer'
-  await createSession({
-    sub: data.user.id,
-    email: data.user.email ?? body.email,
-    role,
-  })
-
-  return NextResponse.json({ ok: true, role })
 }
