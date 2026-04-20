@@ -25,8 +25,9 @@
     "category": "Guantes",
     "featured": true,
     "imageUrls": [
-      "https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?q=80&w=1200&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1612874742237-6526221588e3?q=80&w=1200&auto=format&fit=crop"
+      "/products/Guantes%20WSD.jpg",
+      "/products/Guantes%20WSD%202.jpg",
+      "/products/Guantes%20WSD%20CLIENTE%203.jpeg"
     ],
     "prices": [
       { "country": "PE", "currency": "PEN", "amount": 124.99 },
@@ -61,7 +62,8 @@
     "category": "Accesorios",
     "featured": false,
     "imageUrls": [
-      "https://images.unsplash.com/photo-1605296867304-46d5465a13f1?q=80&w=1200&auto=format&fit=crop"
+      "/products/Vendas%20Uppercut.jpg",
+      "/products/Vendas%20Uppercut%20Cliente%202.jpeg"
     ],
     "prices": [
       { "country": "PE", "currency": "PEN", "amount": 19.99 },
@@ -90,9 +92,7 @@
     ],
     "category": "Cardio",
     "featured": false,
-    "imageUrls": [
-      "https://images.unsplash.com/photo-1434596922112-19c563067271?q=80&w=1200&auto=format&fit=crop"
-    ],
+    "imageUrls": ["/products/Soga%20de%20Boxeo.jpg"],
     "prices": [
       { "country": "PE", "currency": "PEN", "amount": 24.99 },
       { "country": "MX", "currency": "MXN", "amount": 139 },
