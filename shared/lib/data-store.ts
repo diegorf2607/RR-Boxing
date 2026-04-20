@@ -1,5 +1,7 @@
+import { randomUUID } from 'crypto'
 import type { Order, Product, ProductImage, ListingStatus, PaymentStatus, OrderStatus } from '@/shared/types/commerce'
 import type { AdminNotification, AdminNotificationType, StoreSettings } from '@/shared/types/admin'
+import type { DigitalGift, DigitalGiftType, OrderGiftSendEvent } from '@/shared/types/digital-gifts'
 import { getSupabaseAdmin } from '@/shared/lib/supabase-admin'
 import type { CountryCode, CurrencyCode } from '@/shared/types/commerce'
 
@@ -808,3 +810,203 @@ export async function getDashboardSnapshot(): Promise<DashboardSnapshot> {
     settings,
   }
 }
+
+/* ---------- Regalos digitales ---------- */
+
+type DigitalGiftRow = {
+  id: string
+  name: string
+  gift_type: string
+  description: string
+  content_url: string
+  active: boolean
+  created_at: string
+  updated_at: string
+}
+
+function mapDigitalGiftRow(row: DigitalGiftRow): DigitalGift {
+  return {
+    id: row.id,
+    name: row.name,
+    giftType: row.gift_type as DigitalGiftType,
+    description: row.description ?? '',
+    contentUrl: row.content_url,
+    active: row.active,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }
+}
+
+export async function listDigitalGifts(includeInactive = false): Promise<DigitalGift[]> {
+  const supabase = getSupabaseAdmin()
+  let q = supabase.from('digital_gifts').select('*').order('name', { ascending: true })
+  if (!includeInactive) {
+    q = q.eq('active', true)
+  }
+  const { data, error } = await q
+  if (error) throw new Error(`digital_gifts: ${error.message}`)
+  return (data ?? []).map((r) => mapDigitalGiftRow(r as DigitalGiftRow))
+}
+
+export async function getDigitalGiftById(id: string): Promise<DigitalGift | null> {
+  const supabase = getSupabaseAdmin()
+  const { data, error } = await supabase.from('digital_gifts').select('*').eq('id', id).maybeSingle()
+  if (error) throw new Error(`digital_gifts: ${error.message}`)
+  if (!data) return null
+  return mapDigitalGiftRow(data as DigitalGiftRow)
+}
+
+export async function upsertDigitalGift(input: {
+  id?: string
+  name: string
+  giftType: DigitalGiftType
+  description: string
+  contentUrl: string
+  active?: boolean
+}): Promise<DigitalGift> {
+  const supabase = getSupabaseAdmin()
+  const db = supabase as any
+  const id = input.id ?? randomUUID()
+  const now = new Date().toISOString()
+  const { error } = await db.from('digital_gifts').upsert({
+    id,
+    name: input.name,
+    gift_type: input.giftType,
+    description: input.description ?? '',
+    content_url: input.contentUrl,
+    active: input.active ?? true,
+    updated_at: now,
+  })
+  if (error) throw new Error(`digital_gifts upsert: ${error.message}`)
+  const out = await getDigitalGiftById(id)
+  if (!out) throw new Error('digital_gifts read after upsert failed')
+  return out
+}
+
+export async function setDigitalGiftActive(id: string, active: boolean): Promise<void> {
+  const supabase = getSupabaseAdmin()
+  const db = supabase as any
+  const { error } = await db
+    .from('digital_gifts')
+    .update({ active, updated_at: new Date().toISOString() })
+    .eq('id', id)
+  if (error) throw new Error(`digital_gifts: ${error.message}`)
+}
+
+export async function setOrderDigitalGifts(orderId: string, giftIds: string[]): Promise<void> {
+  const supabase = getSupabaseAdmin()
+  const db = supabase as any
+  const { error: delErr } = await db.from('order_digital_gifts').delete().eq('order_id', orderId)
+  if (delErr) throw new Error(`order_digital_gifts: ${delErr.message}`)
+  if (giftIds.length === 0) return
+  const rows = giftIds.map((digital_gift_id, sort_order) => ({ order_id: orderId, digital_gift_id, sort_order }))
+  const { error: insErr } = await db.from('order_digital_gifts').insert(rows)
+  if (insErr) throw new Error(`order_digital_gifts: ${insErr.message}`)
+}
+
+export async function getOrderDigitalGiftsForOrder(orderId: string): Promise<DigitalGift[]> {
+  const supabase = getSupabaseAdmin()
+  const { data: links, error: lerr } = await supabase
+    .from('order_digital_gifts')
+    .select('digital_gift_id,sort_order')
+    .eq('order_id', orderId)
+    .order('sort_order', { ascending: true })
+  if (lerr) throw new Error(`order_digital_gifts: ${lerr.message}`)
+  const ids = (links ?? []).map((l: { digital_gift_id: string }) => l.digital_gift_id)
+  if (ids.length === 0) return []
+  const { data: gifts, error: gerr } = await supabase.from('digital_gifts').select('*').in('id', ids)
+  if (gerr) throw new Error(`digital_gifts: ${gerr.message}`)
+  const byId = new Map((gifts ?? []).map((r: DigitalGiftRow) => [r.id, mapDigitalGiftRow(r)]))
+  return ids.map((id) => byId.get(id)).filter(Boolean) as DigitalGift[]
+}
+
+function mapSendEventRow(row: {
+  id: string
+  order_id: string
+  created_at: string
+  recipient_email: string
+  is_resend: boolean
+  channel: string
+  success: boolean
+  provider_message_id: string | null
+  error_text: string | null
+  body_preview: string | null
+  admin_note: string | null
+}): OrderGiftSendEvent {
+  return {
+    id: row.id,
+    orderId: row.order_id,
+    createdAt: row.created_at,
+    recipientEmail: row.recipient_email,
+    isResend: row.is_resend,
+    channel: row.channel as OrderGiftSendEvent['channel'],
+    success: row.success,
+    providerMessageId: row.provider_message_id,
+    errorText: row.error_text,
+    bodyPreview: row.body_preview,
+    adminNote: row.admin_note,
+  }
+}
+
+export async function listOrderGiftSendEvents(orderId: string): Promise<OrderGiftSendEvent[]> {
+  const supabase = getSupabaseAdmin()
+  const { data, error } = await supabase
+    .from('order_digital_gift_send_events')
+    .select('*')
+    .eq('order_id', orderId)
+    .order('created_at', { ascending: false })
+  if (error) throw new Error(`order_digital_gift_send_events: ${error.message}`)
+  return (data ?? []).map((r) => mapSendEventRow(r as any))
+}
+
+export async function insertOrderGiftSendEvent(input: {
+  orderId: string
+  recipientEmail: string
+  isResend: boolean
+  channel: OrderGiftSendEvent['channel']
+  success: boolean
+  providerMessageId?: string | null
+  errorText?: string | null
+  bodyPreview?: string | null
+  adminNote?: string | null
+}): Promise<void> {
+  const supabase = getSupabaseAdmin()
+  const db = supabase as any
+  const { error } = await db.from('order_digital_gift_send_events').insert({
+    order_id: input.orderId,
+    recipient_email: input.recipientEmail,
+    is_resend: input.isResend,
+    channel: input.channel,
+    success: input.success,
+    provider_message_id: input.providerMessageId ?? null,
+    error_text: input.errorText ?? null,
+    body_preview: input.bodyPreview ?? null,
+    admin_note: input.adminNote ?? null,
+  })
+  if (error) throw new Error(`order_digital_gift_send_events: ${error.message}`)
+}
+
+export function buildDigitalGiftsEmailDraft(params: {
+  orderId: string
+  customerName?: string | null
+  gifts: DigitalGift[]
+}): { subject: string; text: string } {
+  const lines = params.gifts.map((g) => {
+    const tipo = g.giftType === 'pdf' ? 'PDF' : g.giftType === 'video' ? 'Video' : 'Enlace'
+    return `- ${g.name} (${tipo}): ${g.contentUrl}`
+  })
+  const subject = `Tus regalos digitales — pedido ${params.orderId}`
+  const greet = params.customerName ? `Hola ${params.customerName},` : 'Hola,'
+  const text = `${greet}
+
+Gracias por tu compra. Aquí tienes los enlaces a tus regalos digitales prometidos:
+
+${lines.join('\n')}
+
+Si tienes problemas para abrir algún archivo, responde a este correo o escríbenos desde la web.
+
+Saludos,
+RR Boxing`
+  return { subject, text }
+}
+

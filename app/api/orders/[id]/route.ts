@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getSession } from '@/shared/lib/auth'
-import { getOrderById, updateOrder } from '@/shared/lib/data-store'
+import { getOrderById, getOrderDigitalGiftsForOrder, listOrderGiftSendEvents, updateOrder } from '@/shared/lib/data-store'
 import type { OrderStatus, PaymentStatus } from '@/shared/types/commerce'
 
 const schema = z.object({
@@ -17,7 +17,11 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
   }
   const order = await getOrderById(params.id)
   if (!order) return NextResponse.json({ error: 'Not found' }, { status: 404 })
-  return NextResponse.json({ order })
+  const [digitalGifts, giftSendEvents] = await Promise.all([
+    getOrderDigitalGiftsForOrder(params.id),
+    listOrderGiftSendEvents(params.id),
+  ])
+  return NextResponse.json({ order, digitalGifts, giftSendEvents })
 }
 
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {

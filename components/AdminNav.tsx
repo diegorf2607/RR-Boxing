@@ -9,6 +9,7 @@ const links = [
   { href: '/admin', label: 'Dashboard' },
   { href: '/admin/products', label: 'Productos' },
   { href: '/admin/orders', label: 'Pedidos' },
+  { href: '/admin/digital-gifts', label: 'Regalos digitales' },
   { href: '/admin/settings', label: 'Configuración' },
 ]
 
