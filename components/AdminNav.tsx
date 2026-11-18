@@ -10,6 +10,7 @@ const links = [
   { href: '/admin/products', label: 'Productos' },
   { href: '/admin/orders', label: 'Pedidos' },
   { href: '/admin/digital-gifts', label: 'Regalos digitales' },
+  { href: '/admin/clase', label: 'Clase virtual' },
   { href: '/admin/settings', label: 'Configuración' },
 ]
 

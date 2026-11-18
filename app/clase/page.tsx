@@ -1,12 +1,12 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
+import { CLASE } from '@/shared/lib/clase-virtual'
+import FormularioClase from './FormularioClase'
 
-const PAGO_URL = 'https://mpago.la/2cHSMib'
-const WHATSAPP_NUMERO = '51986964194'
 const WHATSAPP_TEXTO =
   'Hola, ya pagué la clase virtual del sábado 28 de noviembre. Te mando mi comprobante.'
-const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(WHATSAPP_TEXTO)}`
+const WHATSAPP_URL = `https://wa.me/${CLASE.whatsappNumero}?text=${encodeURIComponent(WHATSAPP_TEXTO)}`
 
 export const metadata: Metadata = {
   title: 'Clase virtual · sábado 28 de noviembre',
@@ -55,23 +55,13 @@ export default function ClaseVirtualPage() {
           ))}
         </dl>
 
-        <a
-          href={PAGO_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-8 block rounded-lg bg-accent px-6 py-4 text-center text-lg font-bold text-dark transition-colors hover:bg-accent-dark"
-        >
-          Pagar S/ 30
-        </a>
-        <p className="mt-3 text-sm leading-relaxed text-neutral">
-          Pagas con Mercado Pago. Si estás fuera del Perú, pagas con tu tarjeta y tu banco hace el cambio.
-        </p>
+        <FormularioClase />
 
         <div className="mt-8 border-t border-dark-300 pt-8">
           <p className="text-base leading-relaxed">
             Después de pagar, manda tu comprobante al WhatsApp{' '}
-            <span className="whitespace-nowrap font-semibold">986 964 194</span> y te enviamos el link de la
-            clase.
+            <span className="whitespace-nowrap font-semibold">{CLASE.whatsappLegible}</span> y te enviamos el link
+            de la clase.
           </p>
           <a
             href={WHATSAPP_URL}

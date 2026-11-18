@@ -9,6 +9,7 @@ export type AdminNotificationType =
   | 'product_out_of_stock'
   | 'product_incomplete'
   | 'order_manual_review'
+  | 'clase_inscripcion'
 
 export interface AdminNotification {
   id: string
