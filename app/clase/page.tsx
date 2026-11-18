@@ -57,9 +57,9 @@ export default function ClaseVirtualPage() {
 
         <FormularioClase />
 
-        <div className="mt-8 border-t border-dark-300 pt-8">
-          <p className="text-base leading-relaxed">
-            Después de pagar, manda tu comprobante al WhatsApp{' '}
+        <div className="mt-8 rounded-2xl border border-red-500 bg-red-500/10 p-5">
+          <p className="text-base leading-relaxed text-white">
+            <span className="font-bold text-red-400">Después de pagar,</span> manda tu comprobante al WhatsApp{' '}
             <span className="whitespace-nowrap font-semibold">{CLASE.whatsappLegible}</span> y te enviamos el link
             de la clase.
           </p>
@@ -67,7 +67,7 @@ export default function ClaseVirtualPage() {
             href={WHATSAPP_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-5 block rounded-lg border border-accent px-6 py-3.5 text-center font-bold text-accent transition-colors hover:bg-accent hover:text-dark"
+            className="mt-5 block rounded-lg bg-red-600 px-6 py-3.5 text-center font-bold text-white transition-colors hover:bg-red-700"
           >
             Mandar mi comprobante
           </a>
