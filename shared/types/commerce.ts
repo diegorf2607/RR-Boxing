@@ -104,6 +104,7 @@ export interface Order {
   paymentMethod?: string | null
   internalNotes?: string | null
   createdAt: string
+  /** Columna stripe_session_id de la base: solo la traen los pedidos del formulario de pago anterior. Stripe ya no se usa. */
   stripeSessionId?: string
 }
 

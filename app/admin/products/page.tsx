@@ -1,5 +1,4 @@
 import { redirect } from 'next/navigation'
-import MainNav from '@/components/MainNav'
 import AdminNav from '@/components/AdminNav'
 import { getSession } from '@/shared/lib/auth'
 import ProductsAdminClient from '@/features/admin/ProductsAdminClient'
@@ -10,11 +9,10 @@ export default async function AdminProductsPage() {
 
   return (
     <main className="min-h-screen bg-dark">
-      <MainNav />
-      <section className="container mx-auto grid gap-6 px-4 py-10 md:grid-cols-[240px_1fr]">
+      <section className="container mx-auto grid grid-cols-1 gap-4 px-4 pb-10 pt-1 md:grid-cols-[240px_1fr] md:gap-6 md:py-10">
         <AdminNav />
         <div>
-          <h1 className="mb-6 text-4xl font-bold">Productos</h1>
+          <h1 className="mb-6 font-heading text-4xl leading-none text-white md:text-5xl">Productos</h1>
           <ProductsAdminClient />
         </div>
       </section>

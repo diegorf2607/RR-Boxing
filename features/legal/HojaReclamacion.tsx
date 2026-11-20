@@ -29,7 +29,7 @@ import {
 } from '@/shared/lib/reclamo'
 
 const CAMPO =
-  'mt-2 block w-full rounded-lg border bg-dark px-4 py-3 text-base text-white placeholder:text-neutral-dark focus:border-accent focus:outline-none'
+  'mt-2 block w-full rounded-lg border bg-dark px-4 py-3 text-base text-white placeholder:text-neutral focus:border-accent focus:outline-none'
 const borde = (mal?: string) => (mal ? 'border-red-500' : 'border-dark-300')
 
 /** Los errores que se muestran junto a un campo; los demás (trampa, hoja) van al aviso general */
@@ -616,7 +616,7 @@ export default function HojaReclamacion({ proveedor }: { proveedor: Proveedor })
               inputMode="email"
               autoComplete="email"
               maxLength={LIMITES.correo}
-              placeholder="tucorreo@gmail.com"
+              placeholder="Ej.: tucorreo@gmail.com"
               aria-invalid={errores.correo || contactoError ? true : undefined}
               aria-describedby={describe(
                 errores.correo && 'lr-correo-error',
@@ -638,7 +638,7 @@ export default function HojaReclamacion({ proveedor }: { proveedor: Proveedor })
               inputMode="tel"
               autoComplete="tel"
               maxLength={LIMITES.telefono}
-              placeholder="987 654 321"
+              placeholder="Ej.: 987 654 321"
               className={`${CAMPO} ${borde()}`}
             />
           </label>
@@ -704,7 +704,7 @@ export default function HojaReclamacion({ proveedor }: { proveedor: Proveedor })
               inputMode="decimal"
               autoComplete="off"
               maxLength={LIMITES.monto}
-              placeholder="0.00"
+              placeholder="Ej.: 50.00"
               aria-describedby={describe(avisos.monto && 'lr-monto-aviso')}
               className={`${CAMPO} ${borde()}`}
             />

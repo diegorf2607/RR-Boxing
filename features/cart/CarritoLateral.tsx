@@ -9,9 +9,10 @@ import type { CartItem } from '@/shared/types/commerce'
 import { useCountry } from '@/features/country/CountryProvider'
 import { formatCurrency, getCountryConfig } from '@/shared/lib/country'
 import { COMBO_MIN_UNITS } from '@/shared/lib/combo-promo'
-import { armarLineas, resumirCarrito } from '@/features/cart/lineas'
+import { armarLineas, resumirCarrito, topeLinea } from '@/features/cart/lineas'
 import { useCatalogo } from '@/features/cart/useCatalogo'
 import SelectorCantidad from '@/features/cart/SelectorCantidad'
+import { enlacePedidoLineas } from '@/features/store/pedidoWhatsappProducto'
 
 const ENFOCABLES =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
@@ -22,7 +23,9 @@ const TRANSICION = 200
 /**
  * Carrito lateral: se abre al agregar un producto y con el ícono del carrito del menú. A la derecha en escritorio y
  * desde abajo en el celular. Es un diálogo: atrapa el foco, Escape lo cierra y al cerrarse el foco vuelve a donde
- * estaba. Lleva a /checkout («Continuar con mi pedido»), donde se piden los datos del pedido.
+ * estaba. El teclado se escucha en todo el documento, para que Escape y Tab sigan funcionando aunque el foco se haya
+ * caído al <body>. Lleva a /checkout («Continuar con mi pedido»), donde se piden los datos del pedido, y también deja
+ * pedir directo por WhatsApp con el pedido ya escrito.
  */
 export default function CarritoLateral({
   abierto,
@@ -40,6 +43,7 @@ export default function CarritoLateral({
   const pathname = usePathname()
   const titulo = useId()
   const panel = useRef<HTMLDivElement>(null)
+  const tituloRef = useRef<HTMLHeadingElement>(null)
   const antes = useRef<HTMLElement | null>(null)
   // montado: está en la página; visible: ya entró (para la transición)
   const [montado, setMontado] = useState(false)
@@ -84,7 +88,7 @@ export default function CarritoLateral({
   }, [pathname, onCerrar])
 
   const alTeclear = useCallback(
-    (e: React.KeyboardEvent<HTMLDivElement>) => {
+    (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.stopPropagation()
         onCerrar()
@@ -102,16 +106,33 @@ export default function CarritoLateral({
       const primero = enfocables[0]
       const ultimo = enfocables[enfocables.length - 1]
       const activo = document.activeElement
-      if (e.shiftKey && (activo === primero || activo === panel.current)) {
+      // El foco se fue fuera del panel (por ejemplo, al <body>): vuelve al primero, o al último si va hacia atrás
+      if (!activo || !panel.current.contains(activo)) {
+        e.preventDefault()
+        const destino = e.shiftKey ? ultimo : primero
+        destino.focus()
+        return
+      }
+      // Hacia atrás desde el primero, desde el panel o desde el título (que van antes del primero): al último
+      const antesDelPrimero = activo === primero || Boolean(activo.compareDocumentPosition(primero) & Node.DOCUMENT_POSITION_FOLLOWING)
+      const despuesDelUltimo = activo === ultimo || Boolean(activo.compareDocumentPosition(ultimo) & Node.DOCUMENT_POSITION_PRECEDING)
+      if (e.shiftKey && antesDelPrimero) {
         e.preventDefault()
         ultimo.focus()
-      } else if (!e.shiftKey && activo === ultimo) {
+      } else if (!e.shiftKey && despuesDelUltimo) {
         e.preventDefault()
         primero.focus()
       }
     },
     [onCerrar]
   )
+
+  // Mientras el panel está en la página, el teclado se escucha en todo el documento
+  useEffect(() => {
+    if (!montado) return
+    document.addEventListener('keydown', alTeclear)
+    return () => document.removeEventListener('keydown', alTeclear)
+  }, [montado, alTeclear])
 
   if (!montado) return null
 
@@ -126,7 +147,7 @@ export default function CarritoLateral({
   const puedeSeguir = !esperando && resumen.disponibles.length > 0
 
   return (
-    <div className="fixed inset-0 z-[80]" onKeyDown={alTeclear}>
+    <div className="fixed inset-0 z-[80]">
       <div
         aria-hidden
         onClick={onCerrar}
@@ -145,7 +166,8 @@ export default function CarritoLateral({
         }`}
       >
         <div className="flex items-center justify-between gap-4 border-b border-dark-300 px-5 py-4">
-          <h2 id={titulo} className="font-heading text-3xl leading-none tracking-wide">
+          {/* tabIndex -1: recibe el foco cuando se quita una línea (el botón del tacho desaparece) */}
+          <h2 id={titulo} ref={tituloRef} tabIndex={-1} className="font-heading text-3xl leading-none tracking-wide outline-none">
             Tu carrito
             {resumen.unidades > 0 ? (
               <span className="ml-3 font-sans text-sm font-normal tracking-normal text-neutral">
@@ -156,7 +178,7 @@ export default function CarritoLateral({
           <button
             type="button"
             onClick={onCerrar}
-            className="-mr-2 rounded-lg p-2 text-neutral-light transition hover:bg-dark-100 hover:text-white"
+            className="-my-1 -mr-3 rounded-lg p-3 text-neutral-light transition hover:bg-dark-100 hover:text-white"
             aria-label="Cerrar el carrito"
           >
             <X className="h-5 w-5" aria-hidden />
@@ -193,7 +215,7 @@ export default function CarritoLateral({
             <ul>
               {lineas.map((linea) => {
                 const nombre = linea.product.name.trim()
-                const max = Math.max(1, linea.product.stock)
+                const max = topeLinea(linea.product.stock)
                 return (
                   <li key={linea.clave} className="flex gap-4 border-b border-dark-300 px-5 py-4">
                     <Link
@@ -207,7 +229,7 @@ export default function CarritoLateral({
                           alt={nombre}
                           fill
                           sizes="64px"
-                          className="object-cover"
+                          className="object-contain"
                         />
                       ) : null}
                     </Link>
@@ -224,8 +246,12 @@ export default function CarritoLateral({
                         </div>
                         <button
                           type="button"
-                          onClick={() => onQuitar(linea.productId, linea.variante)}
-                          className="-mr-2 shrink-0 rounded-lg p-2 text-neutral transition hover:bg-dark-100 hover:text-white"
+                          onClick={() => {
+                            onQuitar(linea.productId, linea.variante)
+                            // El botón desaparece con la línea: el foco pasa al título para no caerse al <body>
+                            requestAnimationFrame(() => tituloRef.current?.focus())
+                          }}
+                          className="-mr-3 -mt-2 flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-neutral transition hover:bg-dark-100 hover:text-white"
                           aria-label={`Quitar ${nombre}${linea.variante?.color ? ` (${linea.variante.color})` : ''} del carrito`}
                         >
                           <Trash2 className="h-4 w-4" aria-hidden />
@@ -281,27 +307,29 @@ export default function CarritoLateral({
           ) : null}
 
           {puedeSeguir ? (
-            <Link
-              href="/checkout"
-              onClick={onCerrar}
-              className="mt-4 flex w-full items-center justify-center rounded-xl bg-accent px-6 py-3.5 text-base font-bold text-dark transition hover:bg-accent-dark"
-            >
+            <Link href="/checkout" onClick={onCerrar} className="btn-primary mt-4">
               Continuar con mi pedido
             </Link>
           ) : null}
-          {vacio ? (
-            <Link
-              href="/"
-              onClick={onCerrar}
-              className="flex w-full items-center justify-center rounded-xl bg-accent px-6 py-3.5 text-base font-bold text-dark transition hover:bg-accent-dark"
+          {puedeSeguir ? (
+            <a
+              href={enlacePedidoLineas(resumen.disponibles, country)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-secondary mt-2"
             >
+              Pedir directo por WhatsApp
+            </a>
+          ) : null}
+          {vacio ? (
+            <Link href="/" onClick={onCerrar} className="btn-primary">
               Ir a la tienda
             </Link>
           ) : (
             <button
               type="button"
               onClick={onCerrar}
-              className={`${puedeSeguir ? 'mt-2' : ''} flex w-full items-center justify-center rounded-xl border border-dark-300 px-6 py-3 text-base font-medium text-white transition hover:border-accent hover:text-accent`}
+              className={`${puedeSeguir ? 'mt-1' : ''} flex min-h-[44px] w-full items-center justify-center text-sm text-neutral-light underline underline-offset-2 transition hover:text-accent`}
             >
               Seguir comprando
             </button>

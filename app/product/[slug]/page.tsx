@@ -12,6 +12,9 @@ import ProductPrice from '@/features/store/ProductPrice'
 import ProductTrustBlocks from '@/features/store/ProductTrustBlocks'
 import { ID_FIN_FICHA } from '@/features/store/packs'
 import { productoPublico } from '@/shared/lib/producto-publico'
+import { pagoEnLineaActivo } from '@/shared/config/pagos'
+import { textoTarifas } from '@/shared/config/envios'
+import { LISTA_ENVIOS } from '@/shared/lib/cart-checkout'
 import type { Product } from '@/shared/types/commerce'
 
 const SITIO = 'https://www.rrboxing.com'
@@ -23,6 +26,16 @@ const productoPorSlug = cache((slug: string) => getProductBySlug(slug))
 const precioPeru = (product: Product) => product.prices.find((p) => p.country === 'PE' && p.currency === 'PEN')
 
 const soles = (monto: number) => `S/ ${monto.toFixed(2)}`
+
+/** Lo que no va en el resumen bajo el nombre: los colores se eligen abajo, y la marca y la foto no lo describen. */
+const FUERA_DEL_RESUMEN = ['colores disponibles', 'marca', 'color de las fotos']
+
+/** «Cuero PU · 12 oz», «4.5 metros»: la medida y el material junto al nombre, que es lo primero que se pregunta. */
+const resumenDe = (product: Product) =>
+  (product.attributes ?? [])
+    .filter((a) => !FUERA_DEL_RESUMEN.includes(a.label.trim().toLowerCase()) && a.value.trim())
+    .map((a) => a.value.trim())
+    .join(' · ')
 
 /** Ruta relativa → dirección completa (los buscadores y WhatsApp la necesitan entera). */
 const absoluta = (url: string) => (/^https?:\/\//.test(url) ? url : `${SITIO}${url.startsWith('/') ? '' : '/'}${url}`)
@@ -101,6 +114,9 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
   const publico = productoPublico(product)
   const otros = (await getProducts()).filter((item) => item.id !== product.id && item.active).map(productoPublico)
   const related = otros.slice(0, 3)
+  // Si hay pago en línea (MERCADOPAGO_ACCESS_TOKEN) lo sabe solo el servidor: va como prop a las filas y preguntas
+  const pagoEnLinea = pagoEnLineaActivo()
+  const resumen = resumenDe(product)
 
   return (
     <main className="min-h-screen bg-dark">
@@ -111,25 +127,35 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
       />
       <MainNav />
       {/* Escritorio: fotos y detalle a la izquierda, compra a la derecha. Celular: fotos, nombre, compra y detalle. */}
-      <section className="container mx-auto grid items-start gap-6 px-4 py-6 md:grid-cols-2 md:grid-rows-[auto_1fr] md:gap-x-10 md:gap-y-8 md:py-10">
+      <section className="container mx-auto grid max-w-6xl items-start gap-6 px-4 py-6 md:grid-cols-2 md:grid-rows-[auto_1fr] md:gap-x-10 md:gap-y-8 md:py-10">
         <div className="md:col-start-1 md:row-start-1">
           <GaleriaProducto imagenes={product.imageUrls} nombre={product.name.trim()} />
         </div>
 
         <div className="md:col-start-2 md:row-span-2 md:row-start-1">
-          <h1 className="mb-1 text-3xl font-bold leading-tight md:text-4xl">{product.name}</h1>
-          <CajaCompra product={publico} candidatos={otros} />
-          <ProductTrustBlocks />
-          <PreguntasProducto nombre={product.name} participaDelCombo={product.comboEligible !== false} />
+          <h1 className="text-3xl font-bold leading-tight md:text-4xl">{product.name}</h1>
+          {resumen ? <p className="mt-1 text-sm text-neutral-light">{resumen}</p> : null}
+          <div className="mt-2">
+            <CajaCompra product={publico} candidatos={otros} />
+          </div>
+          <ProductTrustBlocks pagoEnLinea={pagoEnLinea} tarifas={textoTarifas(LISTA_ENVIOS)} />
+          <PreguntasProducto
+            nombre={product.name}
+            participaDelCombo={product.comboEligible !== false}
+            pagoEnLinea={pagoEnLinea}
+          />
         </div>
 
         <div className="space-y-6 md:col-start-1 md:row-start-2">
           {product.attributes && product.attributes.length > 0 ? (
-            <dl className="grid gap-2 text-sm sm:grid-cols-2">
+            <dl className="rounded-2xl border border-dark-300 bg-dark-100">
               {product.attributes.map((attr) => (
-                <div key={attr.label} className="rounded-lg border border-dark-300 bg-dark-100/80 px-3 py-2">
-                  <dt className="text-xs text-neutral">{attr.label}</dt>
-                  <dd className="mt-0.5 font-medium text-white">{attr.value}</dd>
+                <div
+                  key={attr.label}
+                  className="flex items-baseline justify-between gap-4 border-t border-dark-300 px-5 py-3 first:border-t-0"
+                >
+                  <dt className="text-sm text-neutral">{attr.label}</dt>
+                  <dd className="text-right text-base font-medium text-white">{attr.value}</dd>
                 </div>
               ))}
             </dl>
@@ -153,8 +179,8 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
         </div>
       </section>
       {related.length > 0 ? (
-        <section className="container mx-auto px-4 pb-16">
-          <h2 className="mb-4 text-2xl font-bold">Productos relacionados</h2>
+        <section className="container mx-auto max-w-6xl px-4 pb-16">
+          <h2 className="mb-4 text-lg font-semibold text-white">Productos relacionados</h2>
           <div className="grid gap-3 md:grid-cols-3 md:gap-4">
             {related.map((item) => (
               <Link
@@ -162,8 +188,8 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
                 href={`/product/${item.slug}`}
                 className="flex items-center gap-4 rounded-2xl border border-dark-300 bg-dark-100 p-3 transition-colors hover:border-accent/60"
               >
-                <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-dark-300">
-                  <Image src={item.imageUrls[0]} alt={item.name} fill sizes="64px" className="object-cover" />
+                <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-dark-300 bg-white">
+                  <Image src={item.imageUrls[0]} alt={item.name} fill sizes="64px" className="object-contain" />
                 </div>
                 <div className="min-w-0">
                   <p className="font-semibold text-white">{item.name}</p>

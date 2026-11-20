@@ -4,6 +4,7 @@ import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import type { CartItem, Product } from '@/shared/types/commerce'
 import { useCart } from '@/features/cart/CartProvider'
 import { precargarCatalogo } from '@/features/cart/useCatalogo'
+import { topeLinea } from '@/features/cart/lineas'
 import { useCountry } from '@/features/country/CountryProvider'
 import { formatCurrency, getCountryConfig } from '@/shared/lib/country'
 import { COMBO_MIN_UNITS, participaDelCombo } from '@/shared/lib/combo-promo'
@@ -11,23 +12,25 @@ import ProductPrice from '@/features/store/ProductPrice'
 import SelectorCantidad from '@/features/cart/SelectorCantidad'
 import { getStockStatus } from '@/features/store/stockUrgency'
 import { getPriceForCountry } from '@/features/store/pricing'
-import { coloresDisponibles, nombreConVariante } from '@/features/store/colores'
+import { colorDeLasFotos, coloresDisponibles, nombreConVariante } from '@/features/store/colores'
 import { ID_FIN_FICHA, opcionesPack, precioPack } from '@/features/store/packs'
 import { enlaceConsultaAgotado, enlacePedidoLineas } from '@/features/store/pedidoWhatsappProducto'
+import { enlaceWhatsapp } from '@/shared/lib/whatsapp'
 
-/** Lo que tapa la barra del menú arriba (px): si la caja ya pasó por debajo, salió de la pantalla. */
+/** Lo que tapa la barra del menú arriba (px): si el botón ya pasó por debajo, salió de la pantalla. */
 const ALTO_MENU = 64
 
 /**
  * Caja de compra de la ficha: precio, color (si el producto viene en varios), solo o en combo, cantidad y los dos
- * botones. Al agregar se abre el carrito lateral. En el celular, cuando la caja sale de la pantalla, aparece abajo una
- * barra con el nombre, el precio y «Agregar»; se esconde al llegar al final de la ficha para no tapar el pie.
+ * botones. Al agregar se abre el carrito lateral. En el celular, mientras «Agregar al carrito» no está a la vista (más
+ * abajo, en la primera pantalla, o ya pasado), abajo hay una barra con el nombre, el precio y «Agregar»; se esconde al
+ * llegar al final de la ficha para no tapar el pie. Con ?pack=<slugs> (los combos del inicio) llega con ese pack elegido.
  */
 export default function CajaCompra({ product, candidatos }: { product: Product; candidatos: Product[] }) {
   const { addItems, abrirPanel } = useCart()
   const { country } = useCountry()
   const base = useId()
-  const caja = useRef<HTMLDivElement>(null)
+  const boton = useRef<HTMLButtonElement>(null)
 
   const opciones = useMemo(() => opcionesPack(product, candidatos), [product, candidatos])
   const [opcionId, setOpcionId] = useState(() => opciones[0]?.id ?? 'solo')
@@ -36,11 +39,22 @@ export default function CajaCompra({ product, candidatos }: { product: Product; 
   const [avisarColor, setAvisarColor] = useState(false)
   const [barra, setBarra] = useState(false)
 
+  // Desde «Elegir este combo» del inicio: ?pack=vendas-boxeo-45m,cuerda-salto-boxeo elige el pack con esos productos
+  useEffect(() => {
+    const pedido = new URLSearchParams(window.location.search).get('pack')
+    if (!pedido) return
+    const clave = (slugs: string[]) => [...slugs].sort().join(',')
+    const buscado = clave(pedido.split(',').map((s) => s.trim()).filter(Boolean))
+    const elegida = opciones.find((o) => o.productos.length > 1 && clave(o.productos.slice(1).map((p) => p.slug)) === buscado)
+    if (elegida) setOpcionId(elegida.id)
+  }, [opciones])
+
   const estado = getStockStatus(product.stock)
   const agotado = estado.kind === 'agotado'
   const opcion = opciones.find((o) => o.id === opcionId)
   const productos = opcion?.productos ?? [product]
-  const tope = (lista: Product[]) => Math.max(1, Math.min(...lista.map((p) => p.stock)))
+  // El stock más bajo del pedido, sin pasar el tope por línea que acepta el servidor
+  const tope = (lista: Product[]) => topeLinea(Math.min(...lista.map((p) => p.stock)))
   const unidades = Math.min(cantidad, tope(productos))
 
   const locale = getCountryConfig(country).locale
@@ -87,18 +101,20 @@ export default function CajaCompra({ product, candidatos }: { product: Product; 
     precargarCatalogo()
   }, [])
 
-  // Barra del celular: visible cuando la caja ya pasó hacia arriba y todavía no llega el final de la ficha
+  // Barra del celular: visible mientras el botón «Agregar al carrito» no está en la pantalla (todavía más abajo, o ya
+  // pasado hacia arriba) y no llega el final de la ficha. Así se puede comprar desde la primera pantalla.
   useEffect(() => {
     if (agotado) return
     let cuadro = 0
     const medir = () => {
       cuadro = 0
-      const elemento = caja.current
+      const elemento = boton.current
       if (!elemento) return
-      const pasada = elemento.getBoundingClientRect().bottom < ALTO_MENU
+      const r = elemento.getBoundingClientRect()
+      const fuera = r.top > window.innerHeight || r.bottom < ALTO_MENU
       const fin = document.getElementById(ID_FIN_FICHA)
       const alFinal = fin ? fin.getBoundingClientRect().top < window.innerHeight : false
-      setBarra(pasada && !alFinal)
+      setBarra(fuera && !alFinal)
     }
     const alMover = () => {
       if (!cuadro) cuadro = requestAnimationFrame(medir)
@@ -112,6 +128,29 @@ export default function CajaCompra({ product, candidatos }: { product: Product; 
       if (cuadro) cancelAnimationFrame(cuadro)
     }
   }, [agotado])
+
+  /** Si las fotos muestran un solo color, se dice cuál y se ofrece pedir una foto del otro por WhatsApp. */
+  const notaFotos = (p: Product, lista: string[]) => {
+    const deLasFotos = colorDeLasFotos(p)
+    if (!deLasFotos) return null
+    const otros = lista.filter((c) => c.toLocaleLowerCase('es-PE') !== deLasFotos).map((c) => c.toLocaleLowerCase('es-PE'))
+    if (otros.length === 0) return null
+    const pedirFoto = enlaceWhatsapp(`Hola, RR Boxing. Quiero ver una foto de «${p.name.trim()}» en color ${otros.join(' o ')}.`)
+    return (
+      <p className="mt-2 text-sm text-neutral">
+        Las fotos son del color {deLasFotos}.{' '}
+        <a
+          href={pedirFoto}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-neutral-light underline underline-offset-2 hover:text-accent"
+        >
+          Pídenos una foto del {otros.join(' o del ')} por WhatsApp
+        </a>
+        .
+      </p>
+    )
+  }
 
   /** Botones de color de un producto: obligatorio elegir uno antes de agregar. */
   const selectorColor = ({ product: p, lista }: { product: Product; lista: string[] }) => {
@@ -158,17 +197,28 @@ export default function CajaCompra({ product, candidatos }: { product: Product; 
             Elige un color para continuar.
           </p>
         ) : null}
+        {notaFotos(p, lista)}
       </fieldset>
     )
   }
 
   const nombre = product.name.trim()
   const esCombo = productos.length > 1 || unidades > 1
+  const enPack = productos.length > 1
+  // La barra del celular dice cuántas unidades (o combos) suma su total, y el color elegido
+  const nombreBarra = nombreConVariante(nombre, colores[product.id] ? { color: colores[product.id] } : undefined)
+  const detalleBarra = enPack
+    ? unidades > 1
+      ? `${unidades} combos ${opcion?.titulo.toLocaleLowerCase('es-PE') ?? ''}`.trim()
+      : opcion?.titulo ?? ''
+    : unidades > 1
+      ? `${unidades} unidades`
+      : ''
   const avisoCombo = !agotado && participaDelCombo(product) && opciones.length === 0
 
   return (
     <>
-      <div ref={caja} className="max-w-lg">
+      <div className="max-w-lg">
         <ProductPrice product={product} />
         <p className={`mt-3 text-sm ${agotado ? 'text-neutral' : 'text-neutral-light'}`}>{estado.label}</p>
         <p className="mt-4 text-neutral-light">{product.description}</p>
@@ -185,7 +235,7 @@ export default function CajaCompra({ product, candidatos }: { product: Product; 
                 return (
                   <label
                     key={o.id}
-                    className={`flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 transition has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-accent ${
+                    className={`flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 transition has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-accent ${
                       activa ? 'border-accent bg-dark-100' : 'border-dark-300 hover:border-neutral-dark'
                     }`}
                   >
@@ -243,12 +293,7 @@ export default function CajaCompra({ product, candidatos }: { product: Product; 
         ) : null}
 
         <div className="mt-6 grid gap-3">
-          <button
-            type="button"
-            disabled={agotado}
-            onClick={agregar}
-            className="w-full rounded-lg bg-accent px-6 py-4 text-base font-bold text-dark transition-colors hover:bg-accent-dark disabled:cursor-not-allowed disabled:opacity-40"
-          >
+          <button ref={boton} type="button" disabled={agotado} onClick={agregar} className="btn-primary">
             {agotado ? 'Agotado' : 'Agregar al carrito'}
           </button>
           <a
@@ -261,7 +306,7 @@ export default function CajaCompra({ product, candidatos }: { product: Product; 
                 pedirColor()
               }
             }}
-            className="block w-full rounded-lg border border-accent px-6 py-4 text-center text-base font-bold text-accent transition-colors hover:bg-accent/10"
+            className="btn-secondary"
           >
             {agotado ? 'Preguntar por WhatsApp' : 'Pedir por WhatsApp'}
           </a>
@@ -283,18 +328,16 @@ export default function CajaCompra({ product, candidatos }: { product: Product; 
         >
           <div className="flex items-center gap-3">
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-white">{nombre}</p>
+              <p className="truncate text-sm font-medium text-white">{nombreBarra}</p>
               <p className="truncate text-sm">
                 <span className="font-bold tabular-nums text-accent">{dinero(total.total)}</span>
-                {opcion && opcion.productos.length > 1 ? (
-                  <span className="text-neutral"> · {opcion.titulo}</span>
-                ) : null}
+                {detalleBarra ? <span className="text-neutral"> · {detalleBarra}</span> : null}
               </p>
             </div>
             <button
               type="button"
               onClick={agregar}
-              className="shrink-0 rounded-lg bg-accent px-6 py-3 text-base font-bold text-dark transition-colors hover:bg-accent-dark"
+              className="btn-primary w-auto shrink-0"
             >
               Agregar
             </button>

@@ -2,6 +2,18 @@ import type { CartItem, CountryCode, CurrencyCode, Product } from '@/shared/type
 import { getPriceForCountry } from '@/features/store/pricing'
 import { resumenCombo, type ResumenCombo } from '@/shared/lib/combo-promo'
 
+/**
+ * Unidades que acepta cada línea del pedido (producto y color). Es el mismo tope en el carrito, en la ficha y en
+ * POST /api/pedido (`lineaPedidoSchema` de shared/lib/cart-checkout.ts): nadie arma en el navegador un carrito que
+ * el servidor rechace.
+ */
+export const MAX_UNIDADES_LINEA = 99
+
+/** Hasta cuántas unidades se pueden elegir con ese stock: el stock, sin pasar el tope por línea (y al menos 1). */
+export function topeLinea(stock: number): number {
+  return Math.max(1, Math.min(MAX_UNIDADES_LINEA, stock))
+}
+
 /** Clave de una línea del carrito: el producto y su color. «Negro» y «Blanco» son dos líneas. */
 export function claveLinea(productId: string, variante?: CartItem['variante']): string {
   return `${productId}|${variante?.color?.trim().toLowerCase() ?? ''}`

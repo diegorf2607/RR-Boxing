@@ -8,6 +8,14 @@ import type { Empresa } from '@/shared/lib/empresa'
 import { CAMBIO_DIAS, GARANTIA_DIAS, RUTAS, VERSION, VIGENTE_DESDE } from './politicas'
 import { enlace, falta, filas, nota, parrafo, porConfirmar, type DocumentoLegal, type Pieza, type Seccion, type Texto } from './tipos'
 import { canales } from './vendedor'
+import { enlaceWhatsapp } from '@/shared/lib/whatsapp'
+
+/**
+ * El botón de arriba de /reembolso y /garantia: abre WhatsApp con lo que Richard necesita para resolver (el número de
+ * pedido RR-…, el producto y qué pasó), en vez de un «hola» que obliga a preguntar todo.
+ */
+const pedirPorWhatsapp = (saludo: string) =>
+  enlaceWhatsapp(['Hola, RR Boxing. ' + saludo, 'N.º de pedido: RR-', 'Producto:', 'Qué pasó:', 'Te mando fotos.'].join('\n'))
 
 // El plazo para pedir un cambio por otro motivo lo decide Diego (CAMBIO_DIAS en politicas.ts). Mientras no esté,
 // ningún texto promete un plazo: se ve con la persona por WhatsApp y en /reembolso sale «por confirmar».
@@ -138,7 +146,7 @@ export function cambios(e: Empresa): DocumentoLegal {
       id: 'como-pedirlo',
       titulo: 'Cómo pedirlo',
       bloques: [
-        parrafo('Escríbenos ', ...contacto, ' con tu nombre, lo que pediste y qué pasó.'),
+        parrafo('Escríbenos ', ...contacto, ' con tu nombre, tu número de pedido (RR-…, si lo tienes), lo que pediste y qué pasó.'),
         parrafo('Te respondemos y coordinamos contigo el cambio o la devolución. Si prefieres, deja tu reclamo en el ', libro, '.'),
       ],
     },
@@ -158,6 +166,10 @@ export function cambios(e: Empresa): DocumentoLegal {
     version: VERSION.cambios,
     vigenteDesde: VIGENTE_DESDE,
     secciones,
+    accion: {
+      texto: 'Pedir un cambio o devolución por WhatsApp',
+      href: pedirPorWhatsapp('Quiero pedir un cambio o devolución.'),
+    },
   }
 }
 
@@ -173,7 +185,7 @@ export function garantia(e: Empresa): DocumentoLegal {
       id: 'como-pedirla',
       titulo: 'Cómo pedirla',
       bloques: [
-        parrafo('Escríbenos ', ...canales(e), ' con tu nombre, lo que pediste y qué pasó.'),
+        parrafo('Escríbenos ', ...canales(e), ' con tu nombre, tu número de pedido (RR-…, si lo tienes), lo que pediste y qué pasó.'),
         parrafo(CAMBIOS.pruebas),
         parrafo(CAMBIOS.envioLlegaMal),
       ],
@@ -198,5 +210,9 @@ export function garantia(e: Empresa): DocumentoLegal {
     version: VERSION.cambios,
     vigenteDesde: VIGENTE_DESDE,
     secciones,
+    accion: {
+      texto: 'Pedir la garantía por WhatsApp',
+      href: pedirPorWhatsapp('Quiero usar la garantía de un producto.'),
+    },
   }
 }

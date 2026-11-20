@@ -25,13 +25,13 @@ export default function ClaseDestacada() {
   if (!vigente) return null
 
   return (
-    <section aria-labelledby="clase-destacada-titulo" className="border-b border-dark-300 bg-dark py-12 text-white md:py-16">
-      <div className="container mx-auto grid max-w-5xl gap-8 px-4 md:grid-cols-2 md:items-center md:gap-12">
+    <section aria-labelledby="clase-destacada-titulo" className="border-t border-dark-300 bg-dark py-12 text-white md:py-16">
+      <div className="container mx-auto grid max-w-6xl gap-8 px-4 md:grid-cols-2 md:items-center md:gap-12">
         <div>
-          <h2 id="clase-destacada-titulo" className="font-heading text-5xl leading-none text-white sm:text-6xl">
-            Clase virtual <span className="block text-accent">RR Boxing</span>
+          <h2 id="clase-destacada-titulo" className="section-title">
+            Clase virtual <span className="text-accent">gratis</span>
           </h2>
-          <p className="mt-4 max-w-sm text-base leading-relaxed text-neutral-light">
+          <p className="section-subtitle max-w-sm">
             Es gratis: te inscribes y te mandamos el link de la clase por WhatsApp.
           </p>
         </div>
@@ -53,11 +53,8 @@ export default function ClaseDestacada() {
               </div>
             ))}
           </dl>
-          <Link
-            href="/clase"
-            className="mt-5 block rounded-lg bg-red-600 px-6 py-3.5 text-center font-bold text-white transition-colors hover:bg-red-700"
-          >
-            Inscribirme
+          <Link href="/clase" className="btn-primary mt-5">
+            Inscribirme gratis
           </Link>
         </div>
       </div>

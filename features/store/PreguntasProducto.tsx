@@ -11,8 +11,17 @@ const enlace = 'text-accent underline underline-offset-2 hover:text-white'
 /**
  * Las preguntas frecuentes de la tienda (components/StoreFAQSection.tsx) que sirven en la ficha, con el mismo texto.
  * El envío y el pago ya van en las filas de arriba. Acordeón con <details>: funciona sin JavaScript y con teclado.
+ * `pagoEnLinea` lo decide la página en el servidor con pagoEnLineaActivo() (shared/config/pagos.ts).
  */
-export default function PreguntasProducto({ nombre, participaDelCombo }: { nombre: string; participaDelCombo: boolean }) {
+export default function PreguntasProducto({
+  nombre,
+  participaDelCombo,
+  pagoEnLinea,
+}: {
+  nombre: string
+  participaDelCombo: boolean
+  pagoEnLinea: boolean
+}) {
   const whatsapp = enlaceWhatsapp(`Hola, RR Boxing. Tengo una consulta sobre ${nombre.trim()}.`)
 
   const preguntas: { id: string; pregunta: string; respuesta: ReactNode }[] = [
@@ -33,7 +42,14 @@ export default function PreguntasProducto({ nombre, participaDelCombo }: { nombr
     {
       id: 'stock',
       pregunta: '¿Cómo sé si hay stock?',
-      respuesta: <>Antes de cobrarte te confirmamos por WhatsApp que el producto está disponible.</>,
+      respuesta: pagoEnLinea ? (
+        <>
+          La ficha dice si hay stock, pero lo actualizamos a mano. Si algo se agotara después de que pagaste, te
+          avisamos por WhatsApp y te devolvemos lo que pagaste.
+        </>
+      ) : (
+        <>Antes de cobrarte te confirmamos por WhatsApp que el producto está disponible.</>
+      ),
     },
     {
       id: 'cambios',

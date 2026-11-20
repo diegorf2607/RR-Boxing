@@ -67,12 +67,22 @@ function guardarUltimo(r: Resultado | null) {
 const soles = (n: number) => formatCurrency(n, 'PEN', 'es-PE')
 const envioMonto = (e: OpcionEnvio) => (e.monto > 0 ? soles(e.monto) : 'Gratis')
 
+// El texto de ejemplo va en neutral (7,8:1 sobre el fondo) y empieza con «Ej.:» para que no parezca ya escrito
 const campo =
-  'mt-2 block w-full rounded-lg border border-dark-300 bg-dark px-4 py-3 text-base text-white placeholder:text-neutral-dark focus:border-accent focus:outline-none aria-[invalid=true]:border-red-500'
+  'mt-2 block w-full rounded-lg border border-dark-300 bg-dark px-4 py-3 text-base text-white placeholder:text-neutral focus:border-accent focus:outline-none aria-[invalid=true]:border-red-500'
 const etiqueta = 'mt-4 block text-sm text-neutral-light first:mt-0'
 const fila = 'flex items-baseline justify-between gap-4 px-5 py-4'
 
 type Campos = 'nombre' | 'correo' | 'whatsapp' | 'dni' | 'distrito' | 'direccion' | 'referencia'
+/** Los errores de estos campos salen junto al campo; los demás (stock, conexión…) van encima del botón */
+const CAMPOS: readonly string[] = ['nombre', 'correo', 'whatsapp', 'dni', 'distrito', 'direccion', 'referencia']
+
+/** El color guardado en el carrito, si sigue siendo uno de los colores del producto (con su escritura). */
+function colorValido(l: LineaCarrito): string | null {
+  const guardado = l.variante?.color?.trim().toLowerCase()
+  if (!guardado) return null
+  return coloresDisponibles(l.product).find((c) => c.toLowerCase() === guardado) ?? null
+}
 
 export default function CheckoutClient({ envios, pagoEnLinea }: { envios: OpcionEnvio[]; pagoEnLinea: boolean }) {
   const { items, clearCart } = useCart()
@@ -84,7 +94,8 @@ export default function CheckoutClient({ envios, pagoEnLinea }: { envios: Opcion
   const [envio, setEnvio] = useState<CheckoutShippingMethod>('standard')
   const [pago, setPago] = useState<FormaPago>(pagoEnLinea ? 'mercadopago' : 'whatsapp')
   const [enviando, setEnviando] = useState(false)
-  const [error, setError] = useState<{ mensaje: string; campo?: string } | null>(null)
+  /** clave: la línea del carrito a la que le falta el color (para mostrar el error junto a su selector) */
+  const [error, setError] = useState<{ mensaje: string; campo?: string; clave?: string } | null>(null)
   const formulario = useRef<HTMLFormElement>(null)
 
   // Si recargó después de confirmar, vuelve a ver su pedido
@@ -100,10 +111,13 @@ export default function CheckoutClient({ envios, pagoEnLinea }: { envios: Opcion
   const opcionEnvio = envios.find((e) => e.metodo === envio) ?? envios[0]
   const totalConEnvio = roundMoney(resumen.combo.total + (opcionEnvio?.monto ?? 0))
 
-  /** El color de una línea: el del carrito o el que eligió aquí. null si el producto no tiene colores. */
+  /**
+   * El color de una línea: el del carrito si sigue entre los colores del producto, o el que eligió aquí ('' si
+   * todavía no eligió). null si el producto no tiene colores.
+   */
   const colorDe = (l: LineaCarrito): string | null => {
     if (coloresDisponibles(l.product).length === 0) return null
-    return l.variante?.color ?? colores[l.clave] ?? ''
+    return colorValido(l) ?? colores[l.clave] ?? ''
   }
 
   // Después de confirmar (o si recarga con el carrito ya vacío): el número y el botón de WhatsApp
@@ -117,7 +131,7 @@ export default function CheckoutClient({ envios, pagoEnLinea }: { envios: Opcion
     setError(null)
     const sinColor = resumen.disponibles.find((l) => colorDe(l) === '')
     if (sinColor) {
-      setError({ mensaje: `Elige el color de ${sinColor.product.name.trim()}.`, campo: 'color' })
+      setError({ mensaje: `Elige el color de ${sinColor.product.name.trim()}.`, campo: 'color', clave: sinColor.clave })
       document.getElementById(`color-${sinColor.clave}`)?.focus()
       return
     }
@@ -179,11 +193,28 @@ export default function CheckoutClient({ envios, pagoEnLinea }: { envios: Opcion
   }
 
   const invalido = (nombre: Campos) => (error?.campo === nombre ? true : undefined)
+  /** Junto al campo: el mensaje del error, enlazado con aria-describedby (como en el Libro de Reclamaciones) */
+  const errorDe = (nombre: Campos) =>
+    error?.campo === nombre ? (
+      <span id={`error-${nombre}`} className="mt-1.5 block text-sm text-red-400">
+        {error.mensaje}
+      </span>
+    ) : null
+  const describe = (nombre: Campos) => (error?.campo === nombre ? `error-${nombre}` : undefined)
+  // El error de color va junto al selector de su línea; si no hay selector a la vista, va encima del botón
+  const claveErrorColor =
+    error?.campo === 'color' ? error.clave ?? resumen.disponibles.find((l) => colorDe(l) === '')?.clave : undefined
+  const errorGeneral = error && !(error.campo && CAMPOS.includes(error.campo)) && !claveErrorColor ? error : null
+  /** Al corregir el campo con error, el mensaje ya no aplica */
+  const alEscribir = (evento: React.FormEvent<HTMLFormElement>) => {
+    const nombre = (evento.target as HTMLInputElement).name
+    if (error?.campo && nombre === error.campo) setError(null)
+  }
 
   return (
     <div className="px-4 py-10 text-white sm:py-14">
       <div className="mx-auto w-full max-w-lg">
-        <h1 className="font-heading text-5xl leading-none text-white sm:text-6xl">Tu pedido</h1>
+        <h1 className="page-title">Tu pedido</h1>
         <p className="mt-3 text-base leading-relaxed text-neutral-light">
           {pagoEnLinea
             ? 'Revisa tus productos y déjanos tus datos para enviarte tu pedido.'
@@ -199,10 +230,7 @@ export default function CheckoutClient({ envios, pagoEnLinea }: { envios: Opcion
                 ? 'Lo que tienes en el carrito está agotado por ahora, así que no hay nada que pedir.'
                 : 'Tu carrito está vacío.'}
             </p>
-            <Link
-              href="/"
-              className="mt-5 block rounded-lg bg-accent px-6 py-3.5 text-center font-bold text-dark transition-colors hover:bg-accent-dark"
-            >
+            <Link href="/" className="btn-primary mt-5">
               Ir a la tienda
             </Link>
           </div>
@@ -216,39 +244,57 @@ export default function CheckoutClient({ envios, pagoEnLinea }: { envios: Opcion
                 {resumen.disponibles.map((l, i) => {
                   const opciones = coloresDisponibles(l.product)
                   const color = colorDe(l)
+                  // Si el color guardado ya no es uno de los del producto, no se muestra y se vuelve a pedir
+                  const guardado = colorValido(l)
+                  const errorAqui = claveErrorColor === l.clave
                   return (
-                    <div key={l.clave} className={`px-5 py-4 ${i > 0 ? 'border-t border-dark-300' : ''}`}>
-                      <div className="flex items-baseline justify-between gap-4">
-                        <dt className="min-w-0 text-base">
-                          {l.product.name.trim()}
-                          <span className="block text-sm text-neutral">
-                            {l.quantity} × {soles(l.price.amount)}
-                            {l.variante?.color ? ` · ${l.variante.color}` : ''}
-                          </span>
-                        </dt>
-                        <dd className="shrink-0 text-right text-base font-medium tabular-nums">{soles(l.lineTotal)}</dd>
-                      </div>
-                      {opciones.length > 0 && !l.variante?.color && (
-                        <label className="mt-3 flex items-center justify-between gap-4 text-sm text-neutral-light">
-                          Color
-                          <select
-                            id={`color-${l.clave}`}
-                            value={color ?? ''}
-                            required
-                            aria-invalid={error?.campo === 'color' && !color ? true : undefined}
-                            onChange={(e) => setColores((c) => ({ ...c, [l.clave]: e.target.value }))}
-                            className="rounded-lg border border-dark-300 bg-dark px-3 py-2 text-base text-white focus:border-accent focus:outline-none aria-[invalid=true]:border-red-500"
-                          >
-                            <option value="" disabled>
-                              Elige
-                            </option>
-                            {opciones.map((o) => (
-                              <option key={o} value={o}>
-                                {o}
+                    // En un <dl>, cada grupo es un <div> con <dt> y <dd> como hijos directos: el color va en otro <dd>
+                    <div
+                      key={l.clave}
+                      className={`grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-4 px-5 py-4 ${
+                        i > 0 ? 'border-t border-dark-300' : ''
+                      }`}
+                    >
+                      <dt className="min-w-0 text-base">
+                        {l.product.name.trim()}
+                        <span className="block text-sm text-neutral">
+                          {l.quantity} × {soles(l.price.amount)}
+                          {guardado ? ` · ${guardado}` : ''}
+                        </span>
+                      </dt>
+                      <dd className="text-right text-base font-medium tabular-nums">{soles(l.lineTotal)}</dd>
+                      {opciones.length > 0 && !guardado && (
+                        <dd className="col-span-2">
+                          <label className="mt-3 flex items-center justify-between gap-4 text-sm text-neutral-light">
+                            Color
+                            <select
+                              id={`color-${l.clave}`}
+                              value={color ?? ''}
+                              required
+                              aria-invalid={error?.campo === 'color' && !color ? true : undefined}
+                              aria-describedby={errorAqui ? 'error-color' : undefined}
+                              onChange={(e) => {
+                                setColores((c) => ({ ...c, [l.clave]: e.target.value }))
+                                if (errorAqui) setError(null)
+                              }}
+                              className="rounded-lg border border-dark-300 bg-dark px-3 py-2 text-base text-white focus:border-accent focus:outline-none aria-[invalid=true]:border-red-500"
+                            >
+                              <option value="" disabled>
+                                Elige
                               </option>
-                            ))}
-                          </select>
-                        </label>
+                              {opciones.map((o) => (
+                                <option key={o} value={o}>
+                                  {o}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                          {errorAqui && error ? (
+                            <span id="error-color" className="mt-1.5 block text-right text-sm text-red-400">
+                              {error.mensaje}
+                            </span>
+                          ) : null}
+                        </dd>
                       )}
                     </div>
                   )
@@ -286,14 +332,24 @@ export default function CheckoutClient({ envios, pagoEnLinea }: { envios: Opcion
               </Link>
             </section>
 
-            <form ref={formulario} onSubmit={confirmar} className="mt-10">
+            <form ref={formulario} onSubmit={confirmar} onInput={alEscribir} className="mt-10">
               <fieldset>
                 <legend className="font-heading text-3xl leading-none text-white">Tus datos</legend>
                 <div className="mt-5">
                   <label className={etiqueta}>
                     Nombre y apellido
-                    <input name="nombre" required minLength={2} maxLength={80} autoComplete="name" aria-invalid={invalido('nombre')} className={campo} />
+                    <input
+                      name="nombre"
+                      required
+                      minLength={2}
+                      maxLength={80}
+                      autoComplete="name"
+                      aria-invalid={invalido('nombre')}
+                      aria-describedby={describe('nombre')}
+                      className={campo}
+                    />
                   </label>
+                  {errorDe('nombre')}
                   <label className={etiqueta}>
                     Correo
                     <input
@@ -303,11 +359,13 @@ export default function CheckoutClient({ envios, pagoEnLinea }: { envios: Opcion
                       required
                       maxLength={120}
                       autoComplete="email"
-                      placeholder="tucorreo@gmail.com"
+                      placeholder="Ej.: tucorreo@gmail.com"
                       aria-invalid={invalido('correo')}
+                      aria-describedby={describe('correo')}
                       className={campo}
                     />
                   </label>
+                  {errorDe('correo')}
                   <label className={etiqueta}>
                     WhatsApp
                     <input
@@ -318,11 +376,13 @@ export default function CheckoutClient({ envios, pagoEnLinea }: { envios: Opcion
                       minLength={6}
                       maxLength={30}
                       autoComplete="tel"
-                      placeholder="987 654 321"
+                      placeholder="Ej.: 987 654 321"
                       aria-invalid={invalido('whatsapp')}
+                      aria-describedby={describe('whatsapp')}
                       className={campo}
                     />
                   </label>
+                  {errorDe('whatsapp')}
                   <label className={etiqueta}>
                     DNI (opcional)
                     <input
@@ -331,10 +391,12 @@ export default function CheckoutClient({ envios, pagoEnLinea }: { envios: Opcion
                       maxLength={20}
                       autoComplete="off"
                       aria-invalid={invalido('dni')}
+                      aria-describedby={describe('dni')}
                       className={campo}
                     />
                     <span className="mt-1.5 block text-xs text-neutral">O tu carné de extranjería.</span>
                   </label>
+                  {errorDe('dni')}
                 </div>
               </fieldset>
 
@@ -349,12 +411,14 @@ export default function CheckoutClient({ envios, pagoEnLinea }: { envios: Opcion
                       minLength={2}
                       maxLength={80}
                       autoComplete="address-level2"
-                      placeholder="Surco"
+                      placeholder="Ej.: Surco"
                       aria-invalid={invalido('distrito')}
+                      aria-describedby={describe('distrito')}
                       className={campo}
                     />
                     <span className="mt-1.5 block text-xs text-neutral">Si no estás en Lima, pon también tu ciudad.</span>
                   </label>
+                  {errorDe('distrito')}
                   <label className={etiqueta}>
                     Dirección
                     <input
@@ -363,22 +427,26 @@ export default function CheckoutClient({ envios, pagoEnLinea }: { envios: Opcion
                       minLength={5}
                       maxLength={200}
                       autoComplete="street-address"
-                      placeholder="Av. Primavera 123, dpto. 401"
+                      placeholder="Ej.: Av. Primavera 123, dpto. 401"
                       aria-invalid={invalido('direccion')}
+                      aria-describedby={describe('direccion')}
                       className={campo}
                     />
                   </label>
+                  {errorDe('direccion')}
                   <label className={etiqueta}>
                     Referencia (opcional)
                     <input
                       name="referencia"
                       maxLength={200}
                       autoComplete="off"
-                      placeholder="Frente al parque"
+                      placeholder="Ej.: Frente al parque"
                       aria-invalid={invalido('referencia')}
+                      aria-describedby={describe('referencia')}
                       className={campo}
                     />
                   </label>
+                  {errorDe('referencia')}
                 </div>
               </fieldset>
 
@@ -406,7 +474,11 @@ export default function CheckoutClient({ envios, pagoEnLinea }: { envios: Opcion
                     </label>
                   ))}
                 </div>
-                <p className="mt-2 text-sm text-neutral">Son costos de referencia: te confirmamos el envío por WhatsApp según tu distrito.</p>
+                <p className="mt-2 text-sm text-neutral">
+                  {pagoEnLinea && pago === 'mercadopago'
+                    ? 'Es la tarifa que pagas. Si tu distrito tuviera otro costo, te avisamos antes de enviar y no se cobra nada que no aceptes.'
+                    : 'Si tu distrito tuviera otro costo, te avisamos por WhatsApp antes de cobrarte.'}
+                </p>
               </fieldset>
 
               {pagoEnLinea && (
@@ -458,19 +530,20 @@ export default function CheckoutClient({ envios, pagoEnLinea }: { envios: Opcion
 
               <input name="sitio" tabIndex={-1} autoComplete="off" aria-hidden="true" className="hidden" />
 
+              {/* Los errores sin campo (stock, conexión…) van aquí, a la vista del botón; los de un campo, junto a él */}
+              {errorGeneral && (
+                <p role="alert" className="mt-6 text-sm text-red-400">
+                  {errorGeneral.mensaje}
+                </p>
+              )}
+
               <button
                 type="submit"
                 disabled={enviando}
-                className="mt-6 block w-full rounded-lg bg-accent px-6 py-4 text-center text-lg font-bold text-dark transition-colors hover:bg-accent-dark disabled:opacity-60"
+                className={`btn-primary ${errorGeneral ? 'mt-3' : 'mt-6'}`}
               >
                 {enviando ? 'Un momento…' : pagoEnLinea && pago === 'mercadopago' ? 'Confirmar y pagar' : 'Confirmar pedido'}
               </button>
-
-              {error && (
-                <p role="alert" className="mt-3 text-sm text-red-400">
-                  {error.mensaje}
-                </p>
-              )}
 
               <AvisoDatos
                 para="preparar y enviar tu pedido, y escribirte sobre él por WhatsApp o por correo"
@@ -503,10 +576,17 @@ export default function CheckoutClient({ envios, pagoEnLinea }: { envios: Opcion
 /** Después de confirmar: el número del pedido y el botón para mandarlo por WhatsApp. */
 function PedidoRecibido({ resultado }: { resultado: Resultado }) {
   const r = resultado.resumen
+  const titulo = useRef<HTMLHeadingElement>(null)
+  // «Confirmar pedido» desaparece al confirmar: el foco pasa al título para que se oiga «Pedido recibido»
+  useEffect(() => {
+    titulo.current?.focus({ preventScroll: true })
+  }, [])
   return (
     <div className="px-4 py-10 text-white sm:py-14">
       <div className="mx-auto w-full max-w-lg">
-        <h1 className="font-heading text-5xl leading-none text-white sm:text-6xl">Pedido recibido</h1>
+        <h1 ref={titulo} tabIndex={-1} className="page-title outline-none">
+          Pedido recibido
+        </h1>
 
         <dl className="mt-8 rounded-2xl border border-dark-300 bg-dark-100">
           <div className={fila}>
@@ -533,7 +613,8 @@ function PedidoRecibido({ resultado }: { resultado: Resultado }) {
               <div className={`${fila} border-t border-dark-300`}>
                 <dt className="text-sm text-neutral">
                   Envío {r.envio.nombre.toLowerCase()}
-                  <span className="block text-xs">de referencia</span>
+                  {/* «Gratis de referencia» se contradice: el aviso va solo cuando el envío tiene costo */}
+                  {r.envio.monto > 0 ? <span className="block text-xs">de referencia</span> : null}
                 </dt>
                 <dd className="text-base tabular-nums">{envioMonto(r.envio)}</dd>
               </div>
@@ -557,7 +638,7 @@ function PedidoRecibido({ resultado }: { resultado: Resultado }) {
           href={resultado.whatsapp}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-5 block rounded-lg bg-accent px-6 py-4 text-center text-lg font-bold text-dark transition-colors hover:bg-accent-dark"
+          className="btn-primary mt-5"
         >
           Enviar pedido por WhatsApp
         </a>

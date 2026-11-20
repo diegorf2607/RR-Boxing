@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import type { Product } from '@/shared/types/commerce'
 import { useCountry } from '@/features/country/CountryProvider'
 import { getCountryConfig, formatCurrency } from '@/shared/lib/country'
@@ -15,6 +16,8 @@ import {
 /**
  * Ideas de packs. Los precios salen de /api/products (los mismos del catálogo y del carrito)
  * y el 10% se calcula con shared/lib/combo-promo.ts, igual que en el servidor.
+ * «Elegir este combo» abre la ficha del primer producto con el pack ya marcado (?pack=<los otros, por slug>):
+ * features/store/CajaCompra.tsx lo lee y elige esa opción, si la ficha la ofrece.
  */
 const COMBOS: { id: string; title: string; items: string; slugs: string[] }[] = [
   {
@@ -38,6 +41,12 @@ const COMBOS: { id: string; title: string; items: string; slugs: string[] }[] = 
 ]
 
 type Estado = 'cargando' | 'listo' | 'error'
+
+/** La ficha del primer producto, con los demás como pack: /product/guantes-boxeo-woesad?pack=vendas-boxeo-45m */
+const enlaceCombo = (slugs: string[]) => {
+  const [principal, ...resto] = slugs
+  return `/product/${principal}?pack=${encodeURIComponent(resto.join(','))}`
+}
 
 export default function StoreComboSection() {
   const { country } = useCountry()
@@ -69,20 +78,17 @@ export default function StoreComboSection() {
   return (
     <section
       id="combos"
-      className="scroll-mt-24 border-y border-dark-300 bg-gradient-to-b from-dark-100/80 to-dark py-12 md:py-16"
+      className="scroll-mt-24 border-t border-dark-300 bg-dark py-12 md:py-16"
       aria-labelledby="combos-heading"
     >
-      <div className="container mx-auto px-4">
-        <div className="mx-auto mb-10 max-w-2xl text-center">
-          <h2 id="combos-heading" className="font-heading text-3xl font-bold tracking-wide text-white md:text-4xl">
+      <div className="container mx-auto max-w-6xl px-4">
+        <div className="mb-8">
+          <h2 id="combos-heading" className="section-title">
             Arma tu pedido
           </h2>
-          <p className="mt-4 text-base font-semibold text-white md:text-lg">
-            Llevando {COMBO_MIN_UNITS} o más unidades tienes 10% de descuento.
-          </p>
-          <p className="mt-3 text-sm leading-relaxed text-neutral-light">
-            Pueden ser del mismo producto. El descuento se calcula solo en el carrito y va escrito en tu pedido por
-            WhatsApp. Aquí tienes algunas ideas.
+          <p className="section-subtitle">
+            Llevando {COMBO_MIN_UNITS} o más unidades tienes 10% de descuento, aunque sean del mismo producto. El
+            descuento se calcula solo en el carrito y va escrito en tu pedido. Aquí tienes algunas ideas.
           </p>
         </div>
 
@@ -112,7 +118,7 @@ export default function StoreComboSection() {
               <article key={c.id} className="flex flex-col rounded-2xl border border-dark-300 bg-dark-100">
                 <div className="px-5 pb-4 pt-5">
                   <p className="text-sm text-neutral">{c.title}</p>
-                  <h3 className="mt-1 font-heading text-xl font-bold text-white">{c.items}</h3>
+                  <h3 className="mt-1 text-lg font-semibold text-white">{c.items}</h3>
                 </div>
                 {estado === 'error' ? (
                   <p className="border-t border-dark-300 px-5 py-4 text-sm text-neutral-light">
@@ -138,12 +144,9 @@ export default function StoreComboSection() {
                   </dl>
                 )}
                 <div className="mt-auto border-t border-dark-300 px-5 py-4">
-                  <a
-                    href="#catalogo"
-                    className="inline-flex w-full items-center justify-center rounded-xl border border-accent bg-transparent py-3 text-sm font-bold text-accent transition hover:bg-accent/10"
-                  >
-                    Ver productos
-                  </a>
+                  <Link href={enlaceCombo(c.slugs)} className="btn-secondary">
+                    Elegir este combo
+                  </Link>
                 </div>
               </article>
             )

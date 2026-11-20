@@ -40,7 +40,7 @@ export default function PieLegal() {
 
   return (
     <div className="border-t border-dark-300 bg-dark pb-24 pt-5 text-xs leading-relaxed text-neutral md:pb-8">
-      <div className="container mx-auto space-y-2 px-4">
+      <div className="container mx-auto max-w-6xl space-y-2 px-4">
         <p className="flex flex-wrap items-center gap-x-4 gap-y-1">
           <Link
             href={RUTAS.libro}

@@ -1,9 +1,11 @@
 // Política de privacidad de RR Boxing. Cubre los diez puntos que pide el reglamento de la Ley N.º 29733
-// (D.S. N.º 016-2024-JUS, art. 6.1) con lo que de verdad hace la web hoy: el pedido va por WhatsApp (la web no lo
-// guarda), la inscripción a la clase y las hojas del Libro se guardan en Supabase (tabla admin_notifications), la web
-// la aloja Vercel, los correos salen por Resend, la clase se cobra con Mercado Pago, /consulta muestra videos de
-// YouTube y el carrito y el país quedan en el navegador (localStorage). Stripe sale solo por los datos que recibió el
-// formulario de pago que la web tuvo antes. Ningún proveedor que no esté en el código.
+// (D.S. N.º 016-2024-JUS, art. 6.1) con lo que de verdad hace la web hoy: el pedido de /checkout se guarda en
+// Supabase (orders y admin_notifications type pedido_datos, app/api/pedido/route.ts), igual que las ventas que se
+// registran en /admin/ventas, la inscripción a la clase (gratis) y las hojas del Libro; Mercado Pago cobra los pedidos
+// cuando está MERCADOPAGO_ACCESS_TOKEN; la web la aloja Vercel (y, con NEXT_PUBLIC_ANALITICA=1, Vercel Web Analytics
+// cuenta visitas sin cookies); los correos salen por Resend; /consulta muestra videos de YouTube; el carrito, el país y
+// el origen de la visita quedan en el navegador (localStorage, shared/lib/origen.ts). Stripe sale solo por los datos
+// que recibió el formulario de pago que la web tuvo antes. Ningún proveedor que no esté en el código.
 // Modelo: Longev (lib/legal/privacidad.ts). Si cambia un proveedor o lo que recibe, cambia aquí y sube
 // VERSION.privacidad en politicas.ts.
 import type { Empresa } from '@/shared/lib/empresa'
@@ -51,7 +53,7 @@ export const DESTINATARIOS: readonly Destinatario[] = [
   {
     nombre: 'Supabase Pte. Ltd.',
     corto: 'Supabase',
-    hace: 'Guarda la base de datos de la web: las inscripciones a la clase virtual, las hojas del Libro de Reclamaciones, las cuentas del panel de administración y los pedidos que se hicieron antes con el formulario de pago de la web.',
+    hace: 'Guarda la base de datos de la web: los pedidos que registras en la web y las ventas que anotamos en el panel, las inscripciones a la clase virtual, las hojas del Libro de Reclamaciones, las cuentas del panel de administración y los pedidos que se hicieron con el formulario de pago que la web tuvo antes.',
     // La región del proyecto está en el panel de Supabase (Project Settings → General → Region). Cuando se
     // confirme, va aquí (EEUU u otro país) y se revisan el aviso de components/AvisoDatos.tsx y el del Libro
     // (features/legal/HojaReclamacion.tsx).
@@ -62,7 +64,7 @@ export const DESTINATARIOS: readonly Destinatario[] = [
   {
     nombre: 'Vercel Inc.',
     corto: 'Vercel',
-    hace: 'Aloja la web: recibe tu dirección IP y lo que envías en los formularios.',
+    hace: 'Aloja la web: recibe tu dirección IP y lo que envías en los formularios. Su medición de visitas (Web Analytics), si la tenemos prendida, cuenta las páginas que se ven y de dónde llegan las visitas, sin cookies.',
     pais: EEUU,
     domicilio: '440 N Barranca Avenue #4133, Covina, California 91723, Estados Unidos',
     politica: 'https://vercel.com/legal/privacy-policy',
@@ -70,7 +72,7 @@ export const DESTINATARIOS: readonly Destinatario[] = [
   {
     nombre: 'Resend',
     corto: 'Resend',
-    hace: 'Envía los correos de la web, como la copia de tu hoja de reclamación: recibe tu correo y lo que dice el mensaje.',
+    hace: 'Envía los correos de la web: la confirmación de tu pedido, el aviso de cada pedido a la tienda (con los datos del pedido) y la copia de tu hoja de reclamación. Recibe las direcciones de correo y lo que dice cada mensaje.',
     pais: EEUU,
     domicilio: [falta('Razón social y domicilio')],
     politica: 'https://resend.com/legal/privacy-policy',
@@ -78,7 +80,7 @@ export const DESTINATARIOS: readonly Destinatario[] = [
   {
     nombre: 'Mercado Pago',
     corto: 'Mercado Pago',
-    hace: 'Cobra la clase virtual en su propia página: recibe los datos de tu tarjeta o de tu medio de pago, tu nombre, tu correo y el monto. Nosotros no vemos los datos de tu tarjeta.',
+    hace: 'Si pagas tu pedido en línea, te cobra en su propia página: recibe tu nombre, tu correo, el número y el detalle de tu pedido, el monto y los datos de tu tarjeta o de tu medio de pago, y nos avisa si el pago se hizo. Nosotros no vemos los datos de tu tarjeta. Antes también cobró la clase virtual, que ahora es gratis.',
     pais: porConfirmar,
     domicilio: [falta('Razón social y domicilio')],
     politica: null,
@@ -152,16 +154,16 @@ export function privacidad(e: Empresa): DocumentoLegal {
       bloques: [
         parrafo('Usamos solo los datos que necesitamos para cada cosa, y solo para eso:'),
         tratamiento(
-          'Tu pedido por WhatsApp',
-          'Lo que nos escribes: tu nombre, tu correo, tu número de WhatsApp, tu distrito y tu dirección de envío, los productos y los montos. La web arma el mensaje con tu carrito, pero no lo guarda: lo envías tú desde WhatsApp.',
-          'Confirmar tu pedido, cobrarte, enviarlo y atender cambios, devoluciones y reclamos.',
+          'Tu pedido',
+          'Los que dejas al registrar tu pedido en la web: tu nombre, tu correo, tu WhatsApp, tu DNI si lo das, tu distrito, tu dirección y su referencia, el envío y la forma de pago que eliges, los productos con su color y los montos. Va también de dónde llegaste a la web la primera vez (por ejemplo, desde Instagram), si tu navegador lo guardó. Si pagas con Mercado Pago, nos avisa si el pago se hizo. Si pides directo por WhatsApp, lo que nos escribes ahí; y si cerramos la venta por WhatsApp, la anotamos en el panel con tu nombre, tu WhatsApp, tu correo si nos lo diste, los productos y la forma de pago.',
+          'Confirmar tu pedido, cobrarte, enviarlo y atender cambios, devoluciones y reclamos. De dónde llegaste lo usamos solo para contar qué redes nos traen pedidos.',
           'Cumplir la compra que haces con nosotros.',
           porConfirmar,
         ),
         tratamiento(
           'Inscripción a la clase virtual',
-          'Tu nombre, tu correo y tu WhatsApp. Si pagas, Mercado Pago nos informa el pago (el monto y el nombre o el correo de quien pagó) y por WhatsApp nos mandas tu comprobante.',
-          'Mandarte el link de la clase, avisarte si algo cambia y confirmar tu pago.',
+          'Tu nombre, tu correo y tu WhatsApp, y de dónde llegaste a la web la primera vez, si tu navegador lo guardó. La clase es gratis: no te pedimos ningún pago.',
+          'Mandarte el link de la clase y avisarte si algo cambia. De dónde llegaste lo usamos solo para contar qué redes nos traen inscripciones.',
           'Cumplir la inscripción que haces con nosotros.',
           porConfirmar,
         ),
@@ -173,7 +175,7 @@ export function privacidad(e: Empresa): DocumentoLegal {
           'Al menos 2 años desde que lo presentas, como pide la ley.',
         ),
         tratamiento(
-          'Pedidos hechos antes en la web',
+          'Pedidos del formulario de pago anterior',
           'Antes, la tienda tenía un formulario de pago en la web, que ya no se usa. Si lo llenaste, guardamos lo que escribiste: tu nombre, tu correo, tu teléfono, tu dirección y los productos.',
           'Ya no los usamos para nada. Si quieres que los borremos ahora, escríbenos.',
           'Lo que pedías al llenar el formulario: tu compra.',
@@ -188,8 +190,8 @@ export function privacidad(e: Empresa): DocumentoLegal {
         ),
         tratamiento(
           'Registros técnicos',
-          'Tu dirección IP y datos técnicos de cada visita, que registra Vercel, el servicio que aloja la web.',
-          'Que la web funcione, sea segura y podamos corregir errores.',
+          'Tu dirección IP y datos técnicos de cada visita, que registra Vercel, el servicio que aloja la web. Al registrar un pedido guardamos también una huella cifrada de tu conexión (no tu IP), solo para limitar cuántos pedidos llegan desde una misma conexión.',
+          'Que la web funcione, sea segura, evitar abusos y poder corregir errores.',
           'Es necesario para darte el servicio.',
           porConfirmar,
         ),
@@ -205,7 +207,7 @@ export function privacidad(e: Empresa): DocumentoLegal {
         filas([
           {
             nombre: 'Tu pedido',
-            valor: 'Tu nombre, tu correo, tu WhatsApp y tu dirección de envío. Sin ellos no podemos confirmar, cobrar ni enviar tu pedido.',
+            valor: 'Tu nombre, tu correo, tu WhatsApp, tu distrito y tu dirección de envío. Sin ellos no podemos confirmar, cobrar ni enviar tu pedido. Tu DNI y la referencia de tu dirección son opcionales.',
           },
           {
             nombre: 'Clase virtual',
@@ -251,10 +253,16 @@ export function privacidad(e: Empresa): DocumentoLegal {
           'Tu carrito y el país que eliges se guardan solo en tu navegador (en su almacenamiento local, localStorage), para que no se pierdan al cambiar de página. No se guardan en nuestros servidores. Puedes borrarlos desde la configuración de tu navegador.',
         ),
         parrafo(
-          'No usamos cookies de publicidad ni de seguimiento, ni píxeles de Meta, TikTok o Google. La única cookie nuestra es la de la sesión del panel de administración, y solo la tienen quienes administran la tienda.',
+          'También se guarda ahí de dónde llegaste la primera vez (por ejemplo, desde un enlace de Instagram o de TikTok). Solo sale de tu navegador si registras un pedido o te inscribes a una clase: va con tus datos, para contar qué redes nos traen pedidos.',
+        ),
+        parrafo(
+          'Cuando confirmas un pedido, su número y su resumen quedan en esa pestaña del navegador (sessionStorage), para que no los pierdas si recargas la página. Se borran al cerrarla.',
+        ),
+        parrafo(
+          'No usamos cookies de publicidad ni de seguimiento, ni píxeles de Meta, TikTok o Google. La única cookie nuestra es la de la sesión del panel de administración, y solo la tienen quienes administran la tienda. Para contar visitas podemos usar Vercel Web Analytics, que no usa cookies ni guarda nada en tu navegador.',
         ),
         parrafo('Los videos de YouTube pueden guardar cookies de YouTube cuando se cargan (mira ', enlace('Con quién compartimos tus datos', '#destinatarios'), ').'),
-        parrafo('Si algún día sumamos herramientas de medición o de publicidad, te pediremos permiso antes y actualizaremos esta política.'),
+        parrafo('Si algún día sumamos herramientas de publicidad o de seguimiento con cookies, te pediremos permiso antes y actualizaremos esta política.'),
       ],
     },
     {

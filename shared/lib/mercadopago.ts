@@ -8,7 +8,7 @@
 //   2. En Vercel → Settings → Environment Variables:
 //        MERCADOPAGO_ACCESS_TOKEN    el Access Token de producción (con esto solo, /checkout ya ofrece pagar).
 //        MERCADOPAGO_WEBHOOK_SECRET  opcional: la «clave secreta» de Webhooks de esa aplicación. Si está, se revisa la
-//                                    firma de cada aviso; igual, el pago siempre se confirma consultándolo a la API.
+//                                    firma de cada aviso que la traiga; igual, el pago siempre se confirma consultándolo a la API.
 //        NEXT_PUBLIC_APP_URL         https://www.rrboxing.com (para las direcciones de vuelta y de avisos).
 //   3. En la aplicación de Mercado Pago → Webhooks: https://www.rrboxing.com/api/mercadopago/webhook, evento «Pagos».
 //      (Cada preferencia manda también notification_url, así que llega aunque no lo configures ahí.)
@@ -152,7 +152,13 @@ export function decidirPago(
 ): DecisionPago {
   if (!pedido) return { accion: 'nada', motivo: 'sin_pedido' }
   if (pago.pedidoId !== pedido.id) return { accion: 'nada', motivo: 'otro_pedido' }
-  if (pedido.paymentStatus === 'paid') return { accion: 'ya_pagado' }
+  if (pedido.paymentStatus === 'paid') {
+    // Un pago ya aplicado que después se devuelve, se reclama o se cancela: Richard tiene que saberlo antes de enviar
+    if (['refunded', 'charged_back', 'cancelled', 'in_mediation'].includes(pago.estado)) {
+      return { accion: 'revisar', motivo: `el pago quedó «${pago.estado}» en Mercado Pago` }
+    }
+    return { accion: 'ya_pagado' }
+  }
   if (pago.estado !== 'approved') return { accion: 'nada', motivo: pago.estado }
   if (pago.moneda !== 'PEN' || pedido.currency !== 'PEN') return { accion: 'revisar', motivo: `moneda ${pago.moneda || '?'}` }
   if (!Number.isFinite(pago.monto) || Math.round(pago.monto * 100) !== Math.round(pedido.totalAmount * 100)) {

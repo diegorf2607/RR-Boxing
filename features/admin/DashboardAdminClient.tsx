@@ -6,17 +6,31 @@ import type { DashboardSnapshot } from '@/shared/lib/data-store'
 import type { Order, Product } from '@/shared/types/commerce'
 import type { AdminNotification } from '@/shared/types/admin'
 import {
+  DIAS_HABILES_PRONTO,
   textoMontos,
   type ClavePeriodo,
   type FilaOrigen,
   type HojaAbierta,
+  type Monto,
   type TableroMedicion,
 } from '@/shared/lib/resumen-diario'
+import { queFalta } from '@/features/admin/por-atender'
 
-function fmtMoney(n: number, cur?: string) {
-  const c = cur ?? ''
-  return `${c ? `${c} ` : ''}${n.toFixed(2)}`
+// El panel (/admin). En el celular va primero lo que hay que hacer hoy: los pedidos por atender y las hojas del Libro
+// que vencen pronto. Después, las ventas, las cifras por origen y, al final, lo demás (avisos, stock, productos).
+
+/** Las cifras de ventas que arma app/admin/page.tsx (con el mes de Lima) */
+export type VentasPanel = {
+  pagados: number
+  cobradoMes: Monto[]
+  cobradoTotal: Monto[]
+  ticketPromedio: number
 }
+
+/** «S/ 39.98»; los pedidos viejos en otra moneda, con su código */
+const dinero = (n: number, moneda = 'PEN') => (moneda === 'PEN' ? `S/ ${n.toFixed(2)}` : `${moneda} ${n.toFixed(2)}`)
+/** «20/11/26, 4:54 p. m.», sin que «p. m.» se parta en dos líneas */
+const fechaCorta = (iso: string) => new Date(iso).toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' }).replace(/\s([ap])\.\s?m\./g, '\u00a0$1.\u00a0m.')
 
 function orderStatusLabel(s: Order['status']) {
   const m: Record<Order['status'], string> = {
@@ -40,10 +54,11 @@ function payLabel(p: Order['paymentStatus']) {
   return m[p] ?? p
 }
 
-function notifSeverityClass(s: AdminNotification['severity']) {
-  if (s === 'critical') return 'border-red-500/50 bg-red-500/10 text-red-100'
-  if (s === 'warning') return 'border-amber-500/40 bg-amber-500/10 text-amber-50'
-  return 'border-dark-300 bg-dark/50 text-neutral-light'
+/** El título del aviso: rojo si es crítico, amarillo si hay que revisarlo */
+function notifTitleClass(s: AdminNotification['severity']) {
+  if (s === 'critical') return 'text-red-400'
+  if (s === 'warning') return 'text-accent'
+  return 'text-white'
 }
 
 /** Los datos de cada pedido (type pedido_datos) viven en la misma tabla, pero no son avisos */
@@ -60,7 +75,7 @@ function plazoHoja(h: HojaAbierta): { texto: string; tono: string } {
   }
 }
 
-/** Cuántas hojas en plazo se listan en el panel; las demás, en /admin/reclamos */
+/** Cuántas hojas que vencen pronto se listan en el panel; las demás, en /admin/reclamos */
 const MAX_HOJAS = 8
 
 /** «2 pedidos · 1 pagado · S/ 124.99 · 3 en la clase», sin lo que está en cero */
@@ -193,6 +208,10 @@ function TableroOrigen({ medicion }: { medicion: TableroMedicion | null }) {
 function HojasAbiertas({ medicion }: { medicion: TableroMedicion | null }) {
   if (!medicion) return null
   const { enPlazo, vencidas } = medicion.hojas
+  if (enPlazo.length === 0 && vencidas === 0) return null
+  // Arriba solo las que vencen en los próximos días hábiles (como el resumen de cada mañana); las demás, en el Libro
+  const pronto = enPlazo.filter((h) => h.dias <= DIAS_HABILES_PRONTO).slice(0, MAX_HOJAS)
+  const conMasPlazo = enPlazo.length - pronto.length
   return (
     <section className="rounded-2xl border border-dark-300 bg-dark-100" aria-labelledby="titulo-libro">
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 px-5 py-4">
@@ -203,10 +222,12 @@ function HojasAbiertas({ medicion }: { medicion: TableroMedicion | null }) {
           Ver todas las hojas
         </Link>
       </div>
-      {enPlazo.length === 0 && (
-        <p className="border-t border-dark-300 px-5 py-3 text-sm text-neutral">Ninguna hoja tiene el plazo corriendo.</p>
+      {pronto.length === 0 && enPlazo.length > 0 && (
+        <p className="border-t border-dark-300 px-5 py-3 text-sm text-neutral">
+          Ninguna hoja vence en los próximos {DIAS_HABILES_PRONTO} días hábiles.
+        </p>
       )}
-      {enPlazo.slice(0, MAX_HOJAS).map((h) => {
+      {pronto.map((h) => {
         const p = plazoHoja(h)
         return (
           <Link
@@ -225,12 +246,12 @@ function HojasAbiertas({ medicion }: { medicion: TableroMedicion | null }) {
           </Link>
         )
       })}
-      {enPlazo.length > MAX_HOJAS && (
+      {conMasPlazo > 0 && (
         <Link
           href="/admin/reclamos"
           className="block border-t border-dark-300 px-5 py-3 text-sm text-neutral-light hover:bg-dark-200/40 hover:text-white"
         >
-          {enPlazo.length - MAX_HOJAS === 1 ? 'Otra hoja' : `Otras ${enPlazo.length - MAX_HOJAS} hojas`} con más plazo
+          {conMasPlazo === 1 ? 'Otra hoja en plazo' : `Otras ${conMasPlazo} hojas en plazo`}
         </Link>
       )}
       {vencidas > 0 && (
@@ -243,19 +264,95 @@ function HojasAbiertas({ medicion }: { medicion: TableroMedicion | null }) {
   )
 }
 
+/** Los pedidos que falta cobrar o enviar, con lo que falta en cada uno */
+function PorAtender({ atender }: { atender: { total: number; pedidos: Order[] } }) {
+  const otros = atender.total - atender.pedidos.length
+  return (
+    <section className="rounded-2xl border border-dark-300 bg-dark-100" aria-labelledby="titulo-atender">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 px-5 py-4">
+        <h2 id="titulo-atender" className="text-lg font-semibold text-white">
+          Por atender <span className="tabular-nums text-accent">{atender.total}</span>
+        </h2>
+        <Link href="/admin/orders" className="text-sm text-accent hover:underline">
+          Ver los pedidos
+        </Link>
+      </div>
+      {atender.pedidos.length === 0 && (
+        <p className="border-t border-dark-300 px-5 py-3 text-sm text-neutral">No tienes pedidos por cobrar ni por enviar.</p>
+      )}
+      {atender.pedidos.map((o) => (
+        <Link
+          key={o.id}
+          href={`/admin/orders/${o.id}`}
+          className="flex items-baseline justify-between gap-4 border-t border-dark-300 px-5 py-3 hover:bg-dark-200/40"
+        >
+          <span className="min-w-0">
+            <span className="block whitespace-nowrap font-mono text-sm text-accent">{o.id}</span>
+            <span className="block truncate text-base text-white">{o.customerName || o.customerEmail}</span>
+            <span className="block text-sm text-neutral">
+              {queFalta(o)} · {fechaCorta(o.createdAt)}
+            </span>
+          </span>
+          <span className="shrink-0 text-base font-semibold tabular-nums text-white">{dinero(o.totalAmount, o.currency)}</span>
+        </Link>
+      ))}
+      {otros > 0 && (
+        <Link
+          href="/admin/orders"
+          className="block border-t border-dark-300 px-5 py-3 text-sm text-neutral-light hover:bg-dark-200/40 hover:text-white"
+        >
+          {otros === 1 ? 'Otro pedido por atender' : `Otros ${otros} pedidos por atender`}
+        </Link>
+      )}
+    </section>
+  )
+}
+
+/** Cuatro cifras de ventas, de dos en dos en el celular */
+function Ventas({ ventas }: { ventas: VentasPanel }) {
+  const cifras: [string, string][] = [
+    ['Pedidos pagados', String(ventas.pagados)],
+    ['Cobrado este mes', textoMontos(ventas.cobradoMes)],
+    ['Cobrado en total', textoMontos(ventas.cobradoTotal)],
+    ['Ticket promedio', dinero(ventas.ticketPromedio)],
+  ]
+  return (
+    <section aria-labelledby="titulo-ventas">
+      <h2 id="titulo-ventas" className="mb-2 text-lg font-semibold text-white">
+        Ventas
+      </h2>
+      <dl className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+        {cifras.map(([t, v]) => (
+          <div key={t} className="min-w-0 rounded-2xl border border-dark-300 bg-dark-100 px-4 py-3">
+            <dt className="text-sm text-neutral">{t}</dt>
+            <dd className="mt-1 break-words text-xl font-semibold tabular-nums text-white">{v}</dd>
+          </div>
+        ))}
+      </dl>
+      <p className="mt-2 text-xs text-neutral">
+        Pedidos pagados o en camino, de la web y los registrados a mano, sin reembolsos. El mes es el de Lima.
+      </p>
+    </section>
+  )
+}
+
 export default function DashboardAdminClient({
   snapshot,
   medicion,
+  atender,
+  ventas,
 }: {
   snapshot: DashboardSnapshot
   medicion: TableroMedicion | null
+  atender: { total: number; pedidos: Order[] }
+  ventas: VentasPanel
 }) {
   const [notifications, setNotifications] = useState(() => sinDatosDePedido(snapshot.notifications))
   const [unread, setUnread] = useState(snapshot.unreadNotifications)
 
   const refreshNotifs = useCallback(async () => {
-    const res = await fetch('/api/admin/notifications', { cache: 'no-store' })
-    if (!res.ok) return
+    const res = await fetch('/api/admin/notifications', { cache: 'no-store' }).catch(() => null)
+    if (!res?.ok) return
     const data = await res.json()
     setNotifications(sinDatosDePedido(data.notifications ?? []))
     setUnread(data.unread ?? 0)
@@ -271,7 +368,7 @@ export default function DashboardAdminClient({
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id }),
-    })
+    }).catch(() => null)
     void refreshNotifs()
   }
 
@@ -280,199 +377,170 @@ export default function DashboardAdminClient({
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ markAllRead: true }),
-    })
+    }).catch(() => null)
     void refreshNotifs()
   }
 
   const { kpis, ordersByStatus, lowStockCountByBand, recentOrders, recentProducts, settings } = snapshot
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-4xl font-bold text-white">Panel</h1>
-          <p className="mt-1 text-sm text-neutral-light">
-            Resumen operativo · umbral stock bajo: <span className="text-accent">{settings.lowStockThreshold}</span>
-            {!settings.storeEnabled && (
-              <span className="ml-2 rounded bg-red-500/20 px-2 py-0.5 text-xs text-red-200">Tienda deshabilitada</span>
-            )}
+    <div className="space-y-6 md:space-y-8">
+      <div>
+        <h1 className="font-heading text-4xl leading-none text-white md:text-5xl">Panel</h1>
+        {!settings.storeEnabled && (
+          <p className="mt-2 text-sm text-red-400">
+            La tienda está deshabilitada en{' '}
+            <Link href="/admin/settings" className="underline underline-offset-2">
+              Configuración
+            </Link>
+            .
           </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Link
-            href="/admin/products"
-            className="rounded-xl border border-accent/40 bg-accent/10 px-4 py-2 text-sm font-semibold text-accent hover:bg-accent/20"
-          >
-            + Producto
-          </Link>
-          <Link
-            href="/admin/orders"
-            className="rounded-xl border border-dark-300 px-4 py-2 text-sm font-semibold text-white hover:border-accent/50"
-          >
-            Ver pedidos
-          </Link>
-          <Link
-            href="/admin/products"
-            className="rounded-xl border border-dark-300 px-4 py-2 text-sm font-semibold text-white hover:border-accent/50"
-          >
-            Revisar stock
-          </Link>
-        </div>
+        )}
       </div>
 
-      <TableroOrigen medicion={medicion} />
+      <PorAtender atender={atender} />
       <HojasAbiertas medicion={medicion} />
+      <Ventas ventas={ventas} />
+      <TableroOrigen medicion={medicion} />
 
-      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-        {(
-          [
-            ['Productos activos (tienda)', kpis.activeProducts],
-            ['Pedidos totales', kpis.totalOrders],
-            ['Pedidos pagados / cobrados', kpis.paidOrders],
-            ['Pendientes de pago', kpis.pendingOrders],
-            ['Pedidos hoy (UTC)', kpis.ordersToday],
-            ['Ingresos totales (pagados)', fmtMoney(kpis.revenueTotal)],
-            ['Ingresos mes (pagados)', fmtMoney(kpis.revenueMonth)],
-            ['Ticket promedio', fmtMoney(kpis.averageTicket)],
-            ['Stock bajo', kpis.lowStockProducts],
-            ['Sin imágenes', kpis.productsWithoutImages],
-          ] as const
-        ).map(([label, val]) => (
-          <article key={label} className="card border-dark-300/80">
-            <p className="text-xs font-medium uppercase tracking-wide text-neutral">{label}</p>
-            <p className="mt-2 text-2xl font-bold text-white">{val}</p>
-          </article>
-        ))}
-      </section>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <section className="card space-y-3">
-          <h2 className="text-lg font-semibold text-white">Pedidos por estado</h2>
-          <ul className="space-y-2 text-sm">
-            {(Object.entries(ordersByStatus) as [Order['status'], number][]).map(([st, n]) => (
-              <li key={st} className="flex justify-between border-b border-dark-300/40 py-1 text-neutral-light">
-                <span>{orderStatusLabel(st)}</span>
-                <span className="font-mono text-white">{n}</span>
-              </li>
-            ))}
-            {Object.keys(ordersByStatus).length === 0 && <p className="text-neutral">Sin pedidos aún.</p>}
-          </ul>
-        </section>
-
-        <section className="card space-y-3">
-          <h2 className="text-lg font-semibold text-white">Stock</h2>
-          <p className="text-sm text-neutral-light">
-            Productos con stock bajo (menos de {settings.lowStockThreshold} unidades):{' '}
-            <strong className="text-accent">{kpis.lowStockProducts}</strong>
-          </p>
-          <p className="text-xs text-neutral">
-            Crítico (&lt; mitad del umbral):{' '}
-            <span className="text-amber-200">{lowStockCountByBand.critical}</span> · En alerta:{' '}
-            <span className="text-amber-200/80">{lowStockCountByBand.warning}</span>
-          </p>
-        </section>
-      </div>
-
-      <section className="card space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-lg font-semibold text-white">
-            Notificaciones internas
-            {unread > 0 && (
-              <span className="ml-2 inline-flex min-w-[1.5rem] justify-center rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-dark">
-                {unread}
-              </span>
-            )}
-          </h2>
-          <button
-            type="button"
-            onClick={() => void markAllRead()}
-            className="text-xs font-semibold text-accent hover:underline"
-          >
-            Marcar todas leídas
+      {/* Los avisos van cerrados: casi todo lo que dicen ya está arriba */}
+      <details className="group rounded-2xl border border-dark-300 bg-dark-100">
+        <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-4 px-5 py-3">
+          <span className="whitespace-nowrap text-lg font-semibold text-white">Avisos internos</span>
+          <span className="whitespace-nowrap text-sm text-neutral">
+            {unread > 0 ? <span className="tabular-nums text-accent">{unread} sin leer</span> : 'todos leídos'}
+            <span aria-hidden className="ml-2 inline-block transition-transform group-open:rotate-180">
+              ▾
+            </span>
+          </span>
+        </summary>
+        <div className="flex justify-end border-t border-dark-300 px-5 py-2">
+          <button type="button" onClick={() => void markAllRead()} className="min-h-[44px] text-sm font-semibold text-accent hover:underline">
+            Marcar todos como leídos
           </button>
         </div>
-        <ul className="max-h-[320px] space-y-2 overflow-y-auto pr-1">
-          {notifications.length === 0 && <li className="text-sm text-neutral">Sin notificaciones.</li>}
+        <ul className="max-h-[420px] overflow-y-auto">
+          {notifications.length === 0 && <li className="border-t border-dark-300 px-5 py-3 text-sm text-neutral">Sin avisos.</li>}
           {notifications.map((n) => (
-            <li
-              key={n.id}
-              className={`flex flex-wrap items-start justify-between gap-2 rounded-xl border px-3 py-2 text-sm ${notifSeverityClass(n.severity)}`}
-            >
-              <div>
-                <p className="font-semibold text-white">{n.title}</p>
+            <li key={n.id} className="flex items-start justify-between gap-3 border-t border-dark-300 px-5 py-3 text-sm">
+              <div className="min-w-0">
+                <p className={`break-words font-semibold ${notifTitleClass(n.severity)}`}>{n.title}</p>
                 {n.type === 'libro_reclamacion' ? (
-                  <a href={n.link ?? '/admin/reclamos'} className="text-xs underline opacity-90">
+                  <a href={n.link ?? '/admin/reclamos'} className="text-sm text-neutral-light underline underline-offset-2">
                     Ver la hoja en el Libro de reclamaciones
                   </a>
                 ) : (
-                  n.body && <p className="text-xs opacity-90">{n.body}</p>
+                  n.body && <p className="break-words text-neutral-light">{n.body}</p>
                 )}
-                <p className="mt-1 text-[10px] uppercase tracking-wide text-neutral">
-                  {new Date(n.createdAt).toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' })}
+                <p className="mt-1 text-xs text-neutral">
+                  {fechaCorta(n.createdAt)}
+                  {n.link && n.type !== 'libro_reclamacion' && (
+                    <>
+                      {' · '}
+                      <Link href={n.link} className="text-accent hover:underline">
+                        Abrir
+                      </Link>
+                    </>
+                  )}
                 </p>
-                {n.link && (
-                  <Link href={n.link} className="mt-1 inline-block text-xs text-accent hover:underline">
-                    Abrir
-                  </Link>
-                )}
               </div>
               {!n.readAt && (
-                <button type="button" onClick={() => void markRead(n.id)} className="shrink-0 text-xs text-accent">
-                  Leída
+                <button type="button" onClick={() => void markRead(n.id)} className="min-h-[44px] shrink-0 text-sm text-accent">
+                  Leído
                 </button>
               )}
             </li>
           ))}
         </ul>
-      </section>
+      </details>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <section className="card space-y-3">
-          <h2 className="text-lg font-semibold text-white">Últimos pedidos</h2>
-          <ul className="space-y-2 text-sm">
-            {recentOrders.map((o) => (
-              <li key={o.id} className="flex flex-col gap-1 border-b border-dark-300/40 py-2 text-neutral-light">
-                <div className="flex flex-wrap justify-between gap-2">
-                  <Link href={`/admin/orders/${o.id}`} className="font-mono text-xs text-accent hover:underline">
-                    {o.id}
-                  </Link>
-                  <span className="text-xs text-white">
-                    {fmtMoney(o.totalAmount, o.currency)} · {orderStatusLabel(o.status)}
-                  </span>
-                </div>
-                <span className="text-xs">
-                  {o.customerName ? `${o.customerName} · ` : ''}
-                  {o.customerEmail} · {payLabel(o.paymentStatus)}
+        <section className="rounded-2xl border border-dark-300 bg-dark-100" aria-labelledby="titulo-ultimos">
+          <h2 id="titulo-ultimos" className="px-5 py-4 text-lg font-semibold text-white">
+            Últimos pedidos
+          </h2>
+          {recentOrders.length === 0 && <p className="border-t border-dark-300 px-5 py-3 text-sm text-neutral">Sin pedidos.</p>}
+          {recentOrders.map((o) => (
+            <Link
+              key={o.id}
+              href={`/admin/orders/${o.id}`}
+              className="flex items-baseline justify-between gap-4 border-t border-dark-300 px-5 py-3 text-sm hover:bg-dark-200/40"
+            >
+              <span className="min-w-0">
+                <span className="block whitespace-nowrap font-mono text-accent">{o.id}</span>
+                <span className="block truncate text-neutral-light">
+                  {o.customerName || o.customerEmail} · {payLabel(o.paymentStatus)}
                 </span>
-                <span className="text-[10px] text-neutral">
-                  {new Date(o.createdAt).toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' })}
-                </span>
-              </li>
-            ))}
-            {recentOrders.length === 0 && <li className="text-neutral">Sin pedidos.</li>}
-          </ul>
+              </span>
+              <span className="shrink-0 text-right">
+                <span className="block tabular-nums text-white">{dinero(o.totalAmount, o.currency)}</span>
+                <span className="block text-neutral">{orderStatusLabel(o.status)}</span>
+              </span>
+            </Link>
+          ))}
         </section>
 
-        <section className="card space-y-3">
-          <h2 className="text-lg font-semibold text-white">Productos recientes</h2>
-          <ul className="space-y-2 text-sm">
-            {recentProducts.map((p: Product) => (
-              <li key={p.id} className="flex justify-between gap-2 border-b border-dark-300/40 py-2 text-neutral-light">
-                <Link href={`/admin/products#edit-${p.id}`} className="text-accent hover:underline">
-                  {p.name}
-                </Link>
-                <span className="text-[10px] text-neutral">
-                  {p.updatedAt || p.createdAt
-                    ? new Date(p.updatedAt ?? p.createdAt ?? '').toLocaleString('es-PE', {
-                        dateStyle: 'short',
-                        timeStyle: 'short',
-                      })
-                    : '—'}
-                </span>
-              </li>
+        <section className="rounded-2xl border border-dark-300 bg-dark-100" aria-labelledby="titulo-estados">
+          <h2 id="titulo-estados" className="px-5 py-4 text-lg font-semibold text-white">
+            Pedidos por estado
+          </h2>
+          <dl>
+            {(Object.entries(ordersByStatus) as [Order['status'], number][]).map(([st, n]) => (
+              <div key={st} className="flex justify-between border-t border-dark-300 px-5 py-2.5 text-sm">
+                <dt className="text-neutral-light">{orderStatusLabel(st)}</dt>
+                <dd className="tabular-nums text-white">{n}</dd>
+              </div>
             ))}
-            {recentProducts.length === 0 && <li className="text-neutral">Sin productos.</li>}
-          </ul>
+          </dl>
+          {Object.keys(ordersByStatus).length === 0 && (
+            <p className="border-t border-dark-300 px-5 py-3 text-sm text-neutral">Sin pedidos aún.</p>
+          )}
+          <p className="border-t border-dark-300 px-5 py-3 text-sm text-neutral">{kpis.totalOrders} pedidos en total.</p>
+        </section>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <section className="rounded-2xl border border-dark-300 bg-dark-100" aria-labelledby="titulo-stock">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 px-5 py-4">
+            <h2 id="titulo-stock" className="text-lg font-semibold text-white">
+              Productos y stock
+            </h2>
+            <Link href="/admin/products" className="text-sm text-accent hover:underline">
+              Ver productos
+            </Link>
+          </div>
+          <dl>
+            {(
+              [
+                ['A la venta en la tienda', kpis.activeProducts],
+                [`Con stock bajo (menos de ${settings.lowStockThreshold})`, kpis.lowStockProducts],
+                ['Stock crítico (menos de la mitad)', lowStockCountByBand.critical],
+                ['Sin imágenes', kpis.productsWithoutImages],
+              ] as const
+            ).map(([t, v]) => (
+              <div key={t} className="flex justify-between gap-4 border-t border-dark-300 px-5 py-2.5 text-sm">
+                <dt className="text-neutral-light">{t}</dt>
+                <dd className="tabular-nums text-white">{v}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+
+        <section className="rounded-2xl border border-dark-300 bg-dark-100" aria-labelledby="titulo-recientes">
+          <h2 id="titulo-recientes" className="px-5 py-4 text-lg font-semibold text-white">
+            Productos editados hace poco
+          </h2>
+          {recentProducts.length === 0 && <p className="border-t border-dark-300 px-5 py-3 text-sm text-neutral">Sin productos.</p>}
+          {recentProducts.map((p: Product) => (
+            <div key={p.id} className="flex items-baseline justify-between gap-3 border-t border-dark-300 px-5 py-2.5 text-sm">
+              <Link href={`/admin/products#edit-${p.id}`} className="min-w-0 break-words text-accent hover:underline">
+                {p.name}
+              </Link>
+              <span className="shrink-0 text-xs text-neutral">
+                {p.updatedAt || p.createdAt ? fechaCorta(p.updatedAt ?? p.createdAt ?? '') : '—'}
+              </span>
+            </div>
+          ))}
         </section>
       </div>
     </div>

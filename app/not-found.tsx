@@ -21,7 +21,7 @@ export default function NoEncontrada() {
         </Link>
 
         <p className="mt-8 text-sm text-neutral">Error 404</p>
-        <h1 className="mt-2 font-heading text-5xl leading-none text-white sm:text-6xl">
+        <h1 className="page-title mt-2">
           No encontramos <span className="block text-accent">esta página</span>
         </h1>
         <p className="mt-5 text-base leading-relaxed text-neutral-light">
@@ -30,18 +30,10 @@ export default function NoEncontrada() {
         </p>
 
         <div className="mt-8 border-t border-dark-300">
-          <Link
-            href="/"
-            className="mt-6 block rounded-lg bg-accent px-6 py-3.5 text-center font-bold text-dark transition-colors hover:bg-accent-light"
-          >
+          <Link href="/" className="btn-primary mt-6">
             Ir a la tienda
           </Link>
-          <a
-            href={WHATSAPP_AYUDA}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-3 block rounded-lg border border-dark-300 px-6 py-3.5 text-center font-semibold text-white transition-colors hover:border-accent hover:text-accent"
-          >
+          <a href={WHATSAPP_AYUDA} target="_blank" rel="noopener noreferrer" className="btn-secondary mt-3">
             Escríbenos por WhatsApp
           </a>
         </div>

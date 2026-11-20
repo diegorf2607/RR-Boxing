@@ -13,6 +13,12 @@ export function pagoEnLineaActivo(): boolean {
 }
 
 /**
+ * Cómo se paga, cuando el pago en línea está prendido: la fila «Pago» de la ficha y la pregunta «¿Cómo pago?» del
+ * inicio dicen lo mismo. Sin pago en línea, cada una conserva su texto de WhatsApp.
+ */
+export const TEXTO_PAGO_EN_LINEA = 'Pagas en línea con Mercado Pago (Yape, tarjeta y más) o lo coordinamos por WhatsApp.'
+
+/**
  * Lo mismo, leído al cargar el módulo. En el servidor vale para páginas dinámicas; en el navegador siempre es false.
  * Para lo nuevo, usa pagoEnLineaActivo() en el servidor.
  */

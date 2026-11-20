@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import type { CartItem } from '@/shared/types/commerce'
-import { claveLinea } from '@/features/cart/lineas'
+import { MAX_UNIDADES_LINEA, claveLinea } from '@/features/cart/lineas'
 import { limpiarVariante } from '@/features/store/colores'
 import CarritoLateral from '@/features/cart/CarritoLateral'
 
@@ -33,7 +33,6 @@ interface CartContextValue {
 const CartContext = createContext<CartContextValue | undefined>(undefined)
 
 const CLAVE_GUARDADO = 'rrboxing_cart'
-const MAX_UNIDADES_LINEA = 999
 
 /** Suma `nuevas` a `lineas`: mismo producto y color, una sola línea. */
 function sumarLineas(lineas: CartItem[], nuevas: CartItem[]): CartItem[] {

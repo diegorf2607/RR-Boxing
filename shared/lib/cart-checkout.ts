@@ -7,6 +7,7 @@ import { getProducts } from '@/shared/lib/data-store'
 import { getPriceForCountry } from '@/features/store/pricing'
 import { coloresDisponibles, nombreConVariante } from '@/features/store/colores'
 import { participaDelCombo, resumenCombo, roundMoney } from '@/shared/lib/combo-promo'
+import { MAX_UNIDADES_LINEA } from '@/features/cart/lineas'
 
 export const checkoutShippingMethodSchema = z.enum(['standard', 'express', 'urgent'])
 export type CheckoutShippingMethod = z.infer<typeof checkoutShippingMethodSchema>
@@ -33,7 +34,8 @@ export const LISTA_ENVIOS: OpcionEnvio[] = [ENVIOS_PERU.standard, ENVIOS_PERU.ex
 /** Una línea del carrito como llega del navegador: solo el producto, la cantidad y el color. */
 export const lineaPedidoSchema = z.object({
   productId: z.string().trim().min(1).max(80),
-  quantity: z.number().int().min(1).max(99),
+  // El mismo tope que el carrito y la ficha (features/cart/lineas.ts)
+  quantity: z.number().int().min(1).max(MAX_UNIDADES_LINEA),
   color: z.string().trim().max(40).optional(),
 })
 export type LineaPedidoEntrada = z.infer<typeof lineaPedidoSchema>

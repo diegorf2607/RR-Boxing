@@ -1,6 +1,7 @@
 // POST /api/mercadopago/webhook: los avisos de pago de Mercado Pago (Webhooks). Modelo: Longev (app/api/mercadopago).
 // - Lo que no es un pago se acepta (200) y se ignora: Mercado Pago espera una respuesta rápida.
-// - Si está MERCADOPAGO_WEBHOOK_SECRET, revisa la firma (x-signature); si no coincide, 401.
+// - Si está MERCADOPAGO_WEBHOOK_SECRET y el aviso trae firma (x-signature), la revisa; si no coincide, 401. Un aviso
+//   sin firma (formato IPN o de la notification_url de la preferencia) se acepta: lo que decide es la consulta a la API.
 // - Nunca confía en el aviso: consulta el pago a la API con el token y lo aplica con confirmarPagoMercadoPago
 //   (aprobado + mismo pedido + soles + mismo monto → pagado; si no cuadra, aviso para revisarlo a mano).
 // - Sin MERCADOPAGO_ACCESS_TOKEN responde 503. Con un error responde 500 y Mercado Pago vuelve a avisar más tarde.
@@ -17,7 +18,8 @@ export async function POST(req: Request): Promise<Response> {
   if (tipo !== 'payment' || !/^\d{1,20}$/.test(dataId)) return new Response(null, { status: 200 })
 
   const secreto = process.env.MERCADOPAGO_WEBHOOK_SECRET?.trim()
-  if (secreto && !notificacionValida(req.headers.get('x-signature'), req.headers.get('x-request-id'), dataId, secreto)) {
+  const firma = req.headers.get('x-signature')
+  if (secreto && firma && !notificacionValida(firma, req.headers.get('x-request-id'), dataId, secreto)) {
     return new Response(null, { status: 401 })
   }
   if (!mercadoPagoListo()) return new Response(null, { status: 503 })

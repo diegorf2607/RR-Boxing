@@ -32,6 +32,7 @@ import { correoListo, enviarCorreo } from '@/shared/lib/correo'
 import { empresa } from '@/shared/lib/empresa'
 import { crearPreferencia, mercadoPagoListo } from '@/shared/lib/mercadopago'
 import { formatCurrency } from '@/shared/lib/country'
+import { MAX_UNIDADES_LINEA } from '@/features/cart/lineas'
 
 const MAX_BYTES = 16_000
 /** Pedidos por hora desde una misma conexión */
@@ -39,14 +40,19 @@ const MAX_POR_CONEXION = 8
 /** Si entre todos llegan más pedidos que esto en una hora, no salen más correos al cliente */
 const MAX_CORREOS_HORA = 30
 
+/** Una sola línea: sin saltos ni caracteres de control (no llegan al asunto ni al cuerpo de los correos). */
+const unaLinea = (s: string) => s.replace(/[\u0000-\u001F\u007F]+/g, ' ').replace(/\s{2,}/g, ' ').trim()
+/** Sin enlaces: así nadie usa el correo de confirmación de RR Boxing para mandar enlaces a terceros. */
+const sinEnlaces = (s: string) => !/(https?:\/\/|www\.)/i.test(s)
+
 const schema = z.object({
-  nombre: z.string().trim().min(2).max(80),
+  nombre: z.string().trim().min(2).max(80).transform(unaLinea).refine(sinEnlaces),
   correo: z.string().trim().toLowerCase().email().max(120),
   whatsapp: z.string().trim().min(6).max(30),
   dni: z.string().trim().max(20).optional(),
-  distrito: z.string().trim().min(2).max(80),
-  direccion: z.string().trim().min(5).max(200),
-  referencia: z.string().trim().max(200).optional(),
+  distrito: z.string().trim().min(2).max(80).transform(unaLinea).refine(sinEnlaces),
+  direccion: z.string().trim().min(5).max(200).transform(unaLinea).refine(sinEnlaces),
+  referencia: z.string().trim().max(200).transform(unaLinea).refine(sinEnlaces).optional(),
   envio: checkoutShippingMethodSchema,
   pago: z.enum(['whatsapp', 'mercadopago']).optional().default('whatsapp'),
   items: z.array(lineaPedidoSchema).min(1).max(30),
@@ -122,7 +128,12 @@ export async function POST(req: Request) {
 
   const parsed = schema.safeParse(crudo)
   if (!parsed.success) {
-    const campo = String(parsed.error.issues[0]?.path[0] ?? 'pedido')
+    const problema = parsed.error.issues[0]
+    const campo = String(problema?.path[0] ?? 'pedido')
+    // Más unidades de las que acepta una línea: se dice cuál es el tope (el carrito ya no deja pasarlo)
+    if (campo === 'items' && problema?.path[2] === 'quantity' && problema.code === 'too_big') {
+      return error(400, `Puedes pedir hasta ${MAX_UNIDADES_LINEA} unidades de cada producto. Baja la cantidad en tu carrito.`, campo)
+    }
     return error(400, MENSAJES[campo] ?? 'Revisa tus datos.', campo)
   }
   const b = parsed.data
@@ -131,8 +142,17 @@ export async function POST(req: Request) {
     return NextResponse.json({ numero: nuevoNumero(), formaPago: 'whatsapp', pagar: null, whatsapp: enlaceWhatsapp('Hola, RR Boxing.'), resumen: null })
   }
 
+  // normalizarWhatsapp deja pasar de 8 a 15 dígitos (en /clase se aceptan otros países). Para un pedido, Richard tiene
+  // que poder escribirle: un celular del Perú son 9 dígitos que empiezan con 9 (51 9xx xxx xxx); uno de otro país
+  // viene con su código (10 dígitos o más). Así «98765432», con un número de menos, ya no pasa.
   const whatsapp = normalizarWhatsapp(b.whatsapp)
-  if (!whatsapp) return error(400, MENSAJES.whatsapp, 'whatsapp')
+  if (!whatsapp || (whatsapp.startsWith('51') ? !/^519\d{8}$/.test(whatsapp) : whatsapp.length < 10)) {
+    return error(
+      400,
+      'Revisa tu WhatsApp: en Perú son 9 números y empiezan con 9. Si es de otro país, ponlo con su código.',
+      'whatsapp'
+    )
+  }
   const dni = limpiarDni(b.dni)
   if (dni === undefined) return error(400, MENSAJES.dni, 'dni')
 

@@ -4,8 +4,10 @@ import { useState } from 'react'
 import Image from 'next/image'
 import { Play } from 'lucide-react'
 import { enlaceWhatsapp } from '@/shared/lib/whatsapp'
+import { MENSAJE_CLASES_1A1 } from '@/shared/config/clases'
 
-const WHATSAPP_CLASES = enlaceWhatsapp('Hola, RR Boxing. Quiero información de las clases 1 a 1.')
+/** El mismo mensaje que el botón de arriba en /consulta */
+const WHATSAPP_CLASES = enlaceWhatsapp(MENSAJE_CLASES_1A1)
 
 /** IDs extraídos de los enlaces youtube.com/shorts/… */
 const testimonials = [
@@ -65,7 +67,7 @@ function TestimonialShortCard({ item }: { item: (typeof testimonials)[0] }) {
           href={item.href}
           target="_blank"
           rel="noopener noreferrer"
-          className="absolute bottom-2 right-2 rounded bg-dark/90 px-2 py-1 text-[10px] font-medium text-accent underline-offset-2 hover:text-white md:text-xs"
+          className="absolute bottom-2 right-2 inline-flex min-h-[44px] items-center rounded bg-dark/90 px-3 text-xs font-medium text-accent underline-offset-2 hover:text-white"
         >
           Abrir en YouTube
         </a>
@@ -76,33 +78,26 @@ function TestimonialShortCard({ item }: { item: (typeof testimonials)[0] }) {
 
 export default function Testimonials() {
   return (
-    <section id="testimonios" className="bg-dark-100 py-12 md:py-20">
-      <div className="container mx-auto px-4">
-        <h2 className="mb-4 text-center text-3xl font-bold italic md:text-4xl lg:text-5xl">
-          Lo que cuentan
-          <br />
-          <span className="not-italic text-accent">quienes entrenan con nosotros</span>
+    <section id="testimonios" className="border-t border-dark-300 bg-dark py-12 md:py-16">
+      <div className="container mx-auto max-w-6xl px-4">
+        <h2 className="section-title">
+          Lo que cuentan <span className="text-accent">quienes entrenan con nosotros</span>
         </h2>
         <p className="section-subtitle">Personas que entrenan con RR Boxing cuentan su experiencia en video.</p>
 
-        <div className="mx-auto flex max-w-5xl snap-x snap-mandatory gap-4 overflow-x-auto pb-4 scrollbar-hide md:grid md:grid-cols-3 md:gap-6 md:overflow-visible md:pb-0">
+        {/* En el celular se deslizan de costado: la tarjeta siguiente asoma a la derecha */}
+        <div className="mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 scrollbar-hide md:grid md:grid-cols-3 md:gap-6 md:overflow-visible md:pb-0">
           {testimonials.map((t) => (
             <TestimonialShortCard key={t.videoId} item={t} />
           ))}
         </div>
-        <p className="mt-2 text-center text-xs text-neutral md:hidden">← Desliza para ver más →</p>
 
-        <div className="mt-10 flex flex-col items-center justify-center gap-3 px-2 text-center">
-          <p className="max-w-md text-sm text-neutral-light">
+        <div className="mt-10 max-w-md">
+          <p className="text-base leading-relaxed text-neutral-light">
             ¿Quieres clases 1 a 1? Escríbenos por WhatsApp y te contamos cómo serían según tus objetivos y tu tiempo.
           </p>
-          <a
-            href={WHATSAPP_CLASES}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-red-600 via-red-500 to-orange-500 px-8 py-3.5 text-base font-bold text-white shadow-lg shadow-red-500/30 transition hover:scale-[1.02] hover:brightness-110"
-          >
-            Clases 1 a 1 por WhatsApp
+          <a href={WHATSAPP_CLASES} target="_blank" rel="noopener noreferrer" className="btn-primary mt-5">
+            Escribir por WhatsApp
           </a>
         </div>
       </div>

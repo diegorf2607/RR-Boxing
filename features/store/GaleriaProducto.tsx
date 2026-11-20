@@ -5,7 +5,8 @@ import { useEffect, useRef, useState } from 'react'
 
 /**
  * Fotos del producto (solo las suyas). En el celular se deslizan con el dedo y los puntos de abajo dicen cuál se ve;
- * en escritorio, las miniaturas cambian la foto grande.
+ * en escritorio, las miniaturas cambian la foto grande. Siempre enteras (contain) sobre blanco: las fotos de clientes
+ * son verticales y se cortaban en el cuadrado.
  */
 export default function GaleriaProducto({ imagenes, nombre }: { imagenes: string[]; nombre: string }) {
   const pista = useRef<HTMLDivElement>(null)
@@ -79,7 +80,7 @@ export default function GaleriaProducto({ imagenes, nombre }: { imagenes: string
                 fill
                 priority={i === 0}
                 sizes="(min-width: 768px) 50vw, 100vw"
-                className="object-contain md:object-cover"
+                className="object-contain"
               />
             </div>
           ))}
@@ -104,11 +105,11 @@ export default function GaleriaProducto({ imagenes, nombre }: { imagenes: string
                 onClick={() => ir(i)}
                 aria-label={`Ver la foto ${i + 1} de ${imagenes.length}`}
                 aria-pressed={i === activa}
-                className={`relative aspect-square overflow-hidden rounded-xl border transition ${
+                className={`relative aspect-square overflow-hidden rounded-lg border bg-white transition ${
                   i === activa ? 'border-accent' : 'border-dark-300 opacity-70 hover:opacity-100'
                 }`}
               >
-                <Image src={url} alt="" fill sizes="(min-width: 768px) 16vw, 20vw" className="object-cover" />
+                <Image src={url} alt="" fill sizes="(min-width: 768px) 16vw, 20vw" className="object-contain" />
               </button>
             ))}
           </div>

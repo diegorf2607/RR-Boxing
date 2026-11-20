@@ -1,5 +1,4 @@
 import { redirect } from 'next/navigation'
-import MainNav from '@/components/MainNav'
 import AdminNav from '@/components/AdminNav'
 import { getSession } from '@/shared/lib/auth'
 import { getSupabaseAdmin } from '@/shared/lib/supabase-admin'
@@ -104,11 +103,10 @@ export default async function AdminReclamosPage() {
 
   return (
     <main className="min-h-screen bg-dark">
-      <MainNav />
-      <section className="container mx-auto grid gap-6 px-4 py-10 md:grid-cols-[240px_1fr]">
+      <section className="container mx-auto grid grid-cols-1 gap-4 px-4 pb-10 pt-1 md:grid-cols-[240px_1fr] md:gap-6 md:py-10">
         <AdminNav />
         <div className="min-w-0">
-          <h1 className="mb-2 text-4xl font-bold">Libro de reclamaciones</h1>
+          <h1 className="mb-2 font-heading text-4xl leading-none text-white md:text-5xl">Libro de reclamaciones</h1>
           <p className="mb-6 max-w-2xl text-sm text-neutral-light">
             Las hojas que llegan por rrboxing.com/libro-de-reclamaciones. Cada una se responde por escrito, por el medio que
             eligió la persona, dentro de los 15 días hábiles (el plazo no se puede extender). Guárdalas al menos 2 años.

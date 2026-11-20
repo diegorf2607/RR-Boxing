@@ -115,11 +115,22 @@ export default function Documento({ doc }: { doc: DocumentoLegal }) {
   return (
     <article aria-labelledby="doc-titulo" className="text-neutral-light">
       <header className="max-w-3xl pb-8">
-        <h1 id="doc-titulo" className="font-heading text-5xl leading-none text-white sm:text-6xl">
+        <h1 id="doc-titulo" className="page-title">
           {doc.titulo}
         </h1>
         <p className="mt-4 text-lg leading-relaxed text-neutral-light">{doc.bajada}</p>
-        <p className="mt-3 text-sm text-neutral">{lineaDe(doc)}</p>
+        {doc.accion ? (
+          <a
+            href={doc.accion.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-primary mt-6 inline-flex w-auto items-center justify-center"
+          >
+            {doc.accion.texto}
+            <span className="sr-only"> (se abre en otra pestaña)</span>
+          </a>
+        ) : null}
+        <p className="mt-4 text-sm text-neutral">{lineaDe(doc)}</p>
       </header>
 
       <div className="grid gap-10 border-t border-dark-300 pt-8 lg:grid-cols-[minmax(0,15rem)_minmax(0,70ch)] lg:gap-16">
@@ -149,7 +160,7 @@ export default function Documento({ doc }: { doc: DocumentoLegal }) {
               aria-labelledby={`${seccion.id}-titulo`}
               className={`scroll-mt-24 ${i > 0 ? 'border-t border-dark-300 pt-8' : ''} pb-8`}
             >
-              <h2 id={`${seccion.id}-titulo`} className="mb-4 text-xl font-bold text-white">
+              <h2 id={`${seccion.id}-titulo`} className="mb-4 text-lg font-semibold text-white">
                 {seccion.titulo}
               </h2>
               <div className="space-y-4 text-base leading-relaxed">

@@ -3,7 +3,21 @@
 import { useEffect, useState } from 'react'
 import type { StoreSettings } from '@/shared/types/admin'
 
-export default function SettingsAdminClient() {
+/** Una variable de entorno: el valor nunca llega aquí, solo si está puesta (lo calcula app/admin/settings/page.tsx). */
+export interface VariableEntorno {
+  nombre: string
+  para: string
+  /** «invalida»: está puesta pero la tienda no la puede usar (por ejemplo, un RUC que no pasa el dígito verificador) */
+  estado: 'puesta' | 'falta' | 'invalida'
+}
+
+const ESTADO: Record<VariableEntorno['estado'], { texto: string; clase: string }> = {
+  puesta: { texto: 'Puesta', clase: 'text-emerald-400' },
+  falta: { texto: 'Falta', clase: 'text-neutral' },
+  invalida: { texto: 'No es válida', clase: 'text-amber-400' },
+}
+
+export default function SettingsAdminClient({ variables }: { variables: VariableEntorno[] }) {
   const [settings, setSettings] = useState<StoreSettings | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -49,15 +63,26 @@ export default function SettingsAdminClient() {
   return (
     <div className="space-y-8">
       <div className="card space-y-3">
-        <h2 className="text-lg font-semibold text-white">Variables de entorno (referencia)</h2>
+        <h2 className="text-lg font-semibold text-white">Variables de entorno</h2>
         <p className="text-sm text-neutral-light">
-          Los secretos (Stripe, Supabase service role, etc.) no se editan desde aquí; siguen en el entorno del hosting.
+          Las que usa la tienda. No se editan desde aquí: se cargan en Vercel (Settings → Environment Variables) y
+          después se vuelve a publicar. Aquí solo se ve si cada una está puesta, nunca su valor.
         </p>
-        <ul className="list-inside list-disc text-sm text-neutral-light">
-          <li>STRIPE_SECRET_KEY</li>
-          <li>STRIPE_WEBHOOK_SECRET</li>
-          <li>NEXT_PUBLIC_APP_URL</li>
-          <li>Variables NEXT_PUBLIC_SUPABASE_* y SUPABASE_SERVICE_ROLE_KEY</li>
+        <ul className="rounded-xl border border-dark-300">
+          {variables.map((v, i) => (
+            <li
+              key={v.nombre}
+              className={`flex flex-col gap-1 px-4 py-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6 ${
+                i > 0 ? 'border-t border-dark-300' : ''
+              }`}
+            >
+              <div className="min-w-0">
+                <p className="break-all font-mono text-sm text-white">{v.nombre}</p>
+                <p className="mt-0.5 text-sm text-neutral-light">{v.para}</p>
+              </div>
+              <p className={`shrink-0 text-sm ${ESTADO[v.estado].clase}`}>{ESTADO[v.estado].texto}</p>
+            </li>
+          ))}
         </ul>
       </div>
 

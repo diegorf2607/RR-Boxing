@@ -14,6 +14,13 @@ const schema = z.object({
   sitio: z.string().max(200).optional(),
 })
 
+/** El mensaje de cada campo que no pasa la revisión (el formulario le agrega el punto final) */
+const MENSAJES: Record<string, string> = {
+  nombre: 'Escribe tu nombre y apellido',
+  correo: 'Revisa tu correo',
+  whatsapp: 'Revisa tu número de WhatsApp',
+}
+
 export async function POST(request: Request) {
   if (!claseVigente()) {
     return NextResponse.json({ error: 'Las inscripciones de esta clase ya cerraron.' }, { status: 400 })
@@ -28,7 +35,13 @@ export async function POST(request: Request) {
 
   const parsed = schema.safeParse(body)
   if (!parsed.success) {
-    return NextResponse.json({ error: 'Revisa tu nombre, tu correo y tu WhatsApp' }, { status: 400 })
+    // Se dice qué campo está mal (campo), para que el formulario marque ese campo y ponga el mensaje a su lado
+    const campo = String(parsed.error.issues[0]?.path[0] ?? '')
+    const mensaje = MENSAJES[campo]
+    return NextResponse.json(
+      mensaje ? { error: mensaje, campo } : { error: 'Revisa tu nombre, tu correo y tu WhatsApp' },
+      { status: 400 }
+    )
   }
 
   const { nombre, correo, whatsapp, sitio } = parsed.data
@@ -37,7 +50,7 @@ export async function POST(request: Request) {
 
   const digitos = normalizarWhatsapp(whatsapp)
   if (!digitos) {
-    return NextResponse.json({ error: 'Ese número de WhatsApp no parece válido' }, { status: 400 })
+    return NextResponse.json({ error: 'Ese número de WhatsApp no parece válido', campo: 'whatsapp' }, { status: 400 })
   }
 
   try {

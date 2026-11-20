@@ -11,6 +11,8 @@ import { CartProvider } from '@/features/cart/CartProvider'
 const RUTAS_SIN_EXTRAS = ['/clase', '/admin', '/login']
 /** Páginas que ya tienen su propio botón de WhatsApp: el flotante taparía los botones en el celular. */
 const RUTAS_SIN_FLOTANTE = ['/product', '/cart', '/consulta', '/checkout', '/libro-de-reclamaciones']
+/** Donde se termina un pedido o se deja un reclamo, la barra roja de la clase no compite con la acción principal. */
+const RUTAS_SIN_AVISO = ['/cart', '/checkout', '/libro-de-reclamaciones']
 /** El panel no cuenta como visita: ahí no se guarda de dónde llegó la persona. */
 const RUTAS_DEL_PANEL = ['/admin', '/login']
 
@@ -26,7 +28,7 @@ export default function AppProviders({ children }: { children: React.ReactNode }
   return (
     <>
       {!enElPanel && <RegistrarOrigen />}
-      {!sinExtras && <AlertBanner />}
+      {!sinExtras && !coincide(RUTAS_SIN_AVISO, pathname) && <AlertBanner />}
       <CountryProvider>
         <CartProvider>
           {children}

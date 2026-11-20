@@ -6,10 +6,11 @@ const LOGO_VERTICAL_SRC = '/RR BOXING VERTICAL TRAZADO.png'
 
 export default function StoreAboutSection() {
   return (
-    <section className="border-t border-dark-300 bg-gradient-to-b from-dark-100/80 to-dark py-14 md:py-20">
-      <div className="container mx-auto px-4">
-        <div className="mx-auto grid max-w-6xl gap-10 md:grid-cols-2 md:items-center md:gap-14">
-          <div className="relative mx-auto flex aspect-[4/5] w-full max-w-sm items-center justify-center overflow-hidden rounded-2xl border border-dark-300 bg-dark-100 md:mx-0 md:max-w-md">
+    <section className="border-t border-dark-300 bg-dark py-12 md:py-16">
+      <div className="container mx-auto max-w-6xl px-4">
+        <div className="grid gap-10 md:grid-cols-2 md:items-center md:gap-14">
+          {/* En el celular el logo ocupaba una pantalla entera: ahí ya está en el menú, así que va solo en escritorio */}
+          <div className="relative hidden aspect-[4/5] w-full max-w-md items-center justify-center overflow-hidden rounded-2xl border border-dark-300 bg-dark-100 md:flex">
             <Image
               src={LOGO_VERTICAL_SRC}
               alt="Logo de RR Boxing"
@@ -21,8 +22,7 @@ export default function StoreAboutSection() {
           </div>
 
           <div>
-            <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-accent">Quiénes somos</p>
-            <h2 className="mb-4 text-3xl font-bold md:text-4xl">
+            <h2 className="section-title mb-4">
               RR Boxing: <span className="text-accent">tienda y clases</span>
             </h2>
             <p className="mb-4 text-neutral-light leading-relaxed">
@@ -34,14 +34,9 @@ export default function StoreAboutSection() {
               Las <strong className="text-white">clases personalizadas 1 a 1</strong> son con Richard, con un plan
               hecho para ti. Se piden por WhatsApp y ahí te contamos cómo son y cuánto cuestan.
             </p>
-            <div className="flex flex-wrap gap-3">
-              <Link
-                href="/consulta"
-                className="inline-flex rounded-xl bg-gradient-to-r from-red-600 via-red-500 to-orange-500 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-red-500/25"
-              >
-                Clases 1 a 1
-              </Link>
-            </div>
+            <Link href="/consulta" className="btn-secondary inline-flex w-auto items-center justify-center">
+              Clases 1 a 1
+            </Link>
           </div>
         </div>
       </div>

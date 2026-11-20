@@ -39,3 +39,20 @@ export function nombreConVariante(nombre: string, variante?: CartItem['variante'
   const limpio = nombre.trim()
   return variante?.color ? `${limpio} (${variante.color})` : limpio
 }
+
+/**
+ * Mientras no haya una foto de cada color, las fotos de estos productos muestran uno solo (por slug). Cuando Diego
+ * suba la foto del otro color, se saca de aquí; o se pone el atributo «Color de las fotos» en el panel, que manda.
+ */
+const COLOR_DE_LAS_FOTOS: Record<string, string> = {
+  'guantes-boxeo-woesad': 'blanco',
+}
+
+/** El color que muestran las fotos de un producto que viene en varios colores («blanco»), o null si no se sabe. */
+export function colorDeLasFotos(product: Pick<Product, 'slug' | 'attributes'>): string | null {
+  if (coloresDisponibles(product).length === 0) return null
+  const atributo = product.attributes
+    ?.find((attr) => attr.label.trim().toLowerCase() === 'color de las fotos')
+    ?.value.trim()
+  return (atributo || COLOR_DE_LAS_FOTOS[product.slug] || '').toLocaleLowerCase('es-PE') || null
+}
