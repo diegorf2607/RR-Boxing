@@ -2,7 +2,6 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
 import type { Product } from '@/shared/types/commerce'
 import { useCountry } from '@/features/country/CountryProvider'
 import { getCountryConfig, formatCurrency } from '@/shared/lib/country'
@@ -10,21 +9,17 @@ import { getPriceForCountry } from '@/features/store/pricing'
 import { useCart } from '@/features/cart/CartProvider'
 import { getStockStatus } from '@/features/store/stockUrgency'
 import { enlaceConsultaAgotado, enlacePedidoProducto } from '@/features/store/pedidoWhatsappProducto'
+import { coloresDisponibles } from '@/features/store/colores'
 
 export default function ProductCard({ product }: { product: Product }) {
   const { country } = useCountry()
-  const { addItem } = useCart()
-  const [added, setAdded] = useState(false)
+  const { addItem, abrirPanel } = useCart()
   const price = getPriceForCountry(product, country)
   const locale = getCountryConfig(country).locale
   const status = getStockStatus(product.stock)
   const out = status.kind === 'agotado'
-
-  useEffect(() => {
-    if (!added) return
-    const t = setTimeout(() => setAdded(false), 2500)
-    return () => clearTimeout(t)
-  }, [added])
+  // Si viene en varios colores, el color se elige en la ficha antes de agregar
+  const eligeColor = !out && coloresDisponibles(product).length > 0
 
   return (
     <article className="card flex h-full flex-col">
@@ -59,17 +54,26 @@ export default function ProductCard({ product }: { product: Product }) {
           {status.kind !== 'disponible' ? <p className="text-sm text-neutral">{status.label}</p> : null}
         </div>
         <div className="mt-3 grid grid-cols-[auto_1fr] gap-2">
-          <button
-            type="button"
-            disabled={out}
-            onClick={() => {
-              addItem(product.id)
-              setAdded(true)
-            }}
-            className="rounded-lg bg-accent px-4 py-2.5 text-sm font-bold text-dark transition-colors hover:bg-accent-dark disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            {out ? 'Agotado' : added ? 'Agregado' : 'Agregar'}
-          </button>
+          {eligeColor ? (
+            <Link
+              href={`/product/${product.slug}`}
+              className="rounded-lg bg-accent px-4 py-2.5 text-center text-sm font-bold text-dark transition-colors hover:bg-accent-dark"
+            >
+              Elegir color
+            </Link>
+          ) : (
+            <button
+              type="button"
+              disabled={out}
+              onClick={() => {
+                addItem(product.id)
+                abrirPanel()
+              }}
+              className="rounded-lg bg-accent px-4 py-2.5 text-sm font-bold text-dark transition-colors hover:bg-accent-dark disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {out ? 'Agotado' : 'Agregar'}
+            </button>
+          )}
           <a
             href={out ? enlaceConsultaAgotado(product) : enlacePedidoProducto(product, country, 1)}
             target="_blank"

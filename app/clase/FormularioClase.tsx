@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { CLASE } from '@/shared/lib/clase-virtual'
 import { RUTAS } from '@/shared/legal/politicas'
 import AvisoDatos from '@/components/AvisoDatos'
+import { leerOrigen } from '@/shared/lib/origen'
 
 type Estado = 'listo' | 'enviando' | 'error'
 
@@ -30,6 +31,7 @@ export default function FormularioClase() {
           correo: String(datos.get('correo') ?? ''),
           whatsapp: String(datos.get('whatsapp') ?? ''),
           sitio: String(datos.get('sitio') ?? ''),
+          origen: leerOrigen(),
         }),
       })
       if (respuesta.ok) {

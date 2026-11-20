@@ -9,6 +9,7 @@ const links = [
   { href: '/admin', label: 'Panel' },
   { href: '/admin/products', label: 'Productos' },
   { href: '/admin/orders', label: 'Pedidos' },
+  { href: '/admin/ventas', label: 'Registrar venta' },
   { href: '/admin/digital-gifts', label: 'Regalos digitales' },
   { href: '/admin/clase', label: 'Clase virtual' },
   { href: '/admin/reclamos', label: 'Libro de reclamaciones' },

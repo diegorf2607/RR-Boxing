@@ -3,17 +3,14 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowLeft, Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
 import { useCart } from '@/features/cart/CartProvider'
 import { useCountry } from '@/features/country/CountryProvider'
-import type { CurrencyCode, Product } from '@/shared/types/commerce'
 import { getCountryConfig, formatCurrency } from '@/shared/lib/country'
-import { getPriceForCountry } from '@/features/store/pricing'
-import { COMBO_MIN_UNITS, resumenCombo } from '@/shared/lib/combo-promo'
-import { enlaceWhatsapp, mensajePedidoWhatsapp } from '@/shared/lib/whatsapp'
-import { PAGO_EN_LINEA_ACTIVO } from '@/shared/config/pagos'
+import { COMBO_MIN_UNITS } from '@/shared/lib/combo-promo'
 import { getStockStatus } from '@/features/store/stockUrgency'
-import { enlaceConsultaAgotado, preguntaColor } from '@/features/store/pedidoWhatsappProducto'
+import { enlaceConsultaAgotado, enlacePedidoLineas } from '@/features/store/pedidoWhatsappProducto'
+import { armarLineas, resumirCarrito } from '@/features/cart/lineas'
+import { useCatalogo } from '@/features/cart/useCatalogo'
 
 function CartLineSkeleton() {
   return (
@@ -31,76 +28,23 @@ function CartLineSkeleton() {
 export default function CartClient() {
   const { items, removeItem, updateQuantity } = useCart()
   const { country } = useCountry()
-  const [products, setProducts] = useState<Product[]>([])
-  const [productsLoaded, setProductsLoaded] = useState(false)
+  const { productos, cargado: productsLoaded } = useCatalogo()
 
-  useEffect(() => {
-    fetch('/api/products')
-      .then((res) => res.json())
-      .then((data) => setProducts(data.products ?? []))
-      .finally(() => setProductsLoaded(true))
-  }, [])
-
-  const rows = useMemo(() => {
-    return items
-      .map((item) => {
-        const product = products.find((p) => p.id === item.productId)
-        if (!product) return null
-        const price = getPriceForCountry(product, country)
-        return {
-          ...item,
-          product,
-          price,
-          lineTotal: price.amount * item.quantity,
-        }
-      })
-      .filter(Boolean)
-  }, [items, products, country]) as Array<{
-    productId: string
-    quantity: number
-    product: Product
-    price: { amount: number; currency: CurrencyCode }
-    lineTotal: number
-  }>
+  // Cada línea es un producto con su color: dos colores del mismo producto son dos líneas.
+  const rows = armarLineas(items, productos, country)
 
   const config = getCountryConfig(country)
   const currency = rows[0]?.price.currency ?? config.currency
-  const itemCount = rows.reduce((acc, row) => acc + row.quantity, 0)
   // Lo agotado se queda en el carrito, pero no entra en el resumen, ni en el combo, ni en el pedido.
-  const disponibles = rows.filter((row) => row.product.stock > 0)
-  const todoAgotado = rows.length > 0 && disponibles.length === 0
-  // Mismo cálculo que el servidor (shared/lib/cart-checkout.ts): solo cuentan los productos del combo.
-  const combo = resumenCombo(
-    disponibles.map((row) => ({
-      unitAmount: row.price.amount,
-      quantity: row.quantity,
-      comboEligible: row.product.comboEligible,
-    }))
-  )
-  const subtotal = combo.subtotal
-  const comboDiscount = combo.descuento
-  const subtotalConCombo = combo.total
-  const hayProductosDelCombo = disponibles.some((row) => row.product.comboEligible !== false)
+  const resumen = resumirCarrito(rows)
+  const { disponibles, todoAgotado, hayProductosDelCombo, unidades: itemCount } = resumen
+  const subtotal = resumen.combo.subtotal
+  const comboDiscount = resumen.combo.descuento
+  const subtotalConCombo = resumen.combo.total
   const dinero = (amount: number) => formatCurrency(amount, currency, config.locale)
 
-  // Si un producto viene en varios colores, el mensaje deja la pregunta para que la persona elija.
-  const preguntas = disponibles
-    .map((row) => preguntaColor(row.product))
-    .filter((pregunta): pregunta is string => pregunta !== null)
-
-  const enlacePedido = enlaceWhatsapp(
-    mensajePedidoWhatsapp({
-      lineas: disponibles.map((row) => ({
-        nombre: row.product.name.trim(),
-        cantidad: row.quantity,
-        total: formatCurrency(row.lineTotal, row.price.currency, config.locale),
-      })),
-      subtotal: dinero(subtotal),
-      descuento: comboDiscount > 0 ? dinero(comboDiscount) : undefined,
-      total: dinero(subtotalConCombo),
-      ...(preguntas.length > 0 ? { preguntas } : {}),
-    })
-  )
+  // Cada línea va con su color; si a una le falta (un carrito guardado antes), el mensaje pregunta el color.
+  const enlacePedido = enlacePedidoLineas(disponibles, country)
 
   const waitingForCatalog = items.length > 0 && !productsLoaded
   const trulyEmpty = items.length === 0
@@ -139,7 +83,7 @@ export default function CartClient() {
             </div>
             <h2 className="font-heading text-2xl tracking-wide text-white md:text-3xl">Tu carrito está vacío</h2>
             <p className="mt-3 max-w-sm text-sm leading-relaxed text-neutral-light">
-              Agrega productos desde la tienda y aquí armas tu pedido para enviarlo por WhatsApp.
+              Agrega productos desde la tienda y aquí armas tu pedido.
             </p>
             <Link
               href="/"
@@ -172,7 +116,7 @@ export default function CartClient() {
                 const canInc = row.product.stock > 0 && row.quantity < row.product.stock
 
                 return (
-                  <li key={row.productId}>
+                  <li key={row.clave}>
                     <article className="rounded-2xl border border-dark-300 bg-dark-100 p-4 shadow-lg shadow-black/20 transition hover:border-accent/35 md:p-5">
                       <div className="flex gap-4">
                         <Link
@@ -201,12 +145,15 @@ export default function CartClient() {
                                   {row.product.name}
                                 </h2>
                               </Link>
+                              {row.variante?.color ? (
+                                <p className="mt-0.5 text-sm text-neutral-light">Color: {row.variante.color}</p>
+                              ) : null}
                             </div>
                             <button
                               type="button"
-                              onClick={() => removeItem(row.productId)}
+                              onClick={() => removeItem(row.productId, row.variante)}
                               className="shrink-0 rounded-lg border border-transparent p-2 text-neutral-light transition hover:border-red-500/40 hover:bg-red-500/10 hover:text-red-400"
-                              aria-label={`Quitar ${row.product.name} del carrito`}
+                              aria-label={`Quitar ${row.product.name.trim()}${row.variante?.color ? ` (${row.variante.color})` : ''} del carrito`}
                             >
                               <Trash2 className="h-4 w-4" />
                             </button>
@@ -239,7 +186,7 @@ export default function CartClient() {
                                 <button
                                   type="button"
                                   disabled={row.quantity <= 1}
-                                  onClick={() => updateQuantity(row.productId, row.quantity - 1)}
+                                  onClick={() => updateQuantity(row.productId, row.quantity - 1, row.variante)}
                                   className="flex h-9 w-9 items-center justify-center rounded-lg text-neutral-light transition hover:bg-dark-200 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
                                   aria-label="Menos una unidad"
                                 >
@@ -254,7 +201,8 @@ export default function CartClient() {
                                   onClick={() =>
                                     updateQuantity(
                                       row.productId,
-                                      Math.min(row.product.stock || 999, row.quantity + 1)
+                                      Math.min(row.product.stock || 999, row.quantity + 1),
+                                      row.variante
                                     )
                                   }
                                   className="flex h-9 w-9 items-center justify-center rounded-lg text-neutral-light transition hover:bg-dark-200 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
@@ -309,7 +257,7 @@ export default function CartClient() {
                       disabled
                       className="mt-6 flex w-full cursor-not-allowed items-center justify-center rounded-xl bg-accent py-3.5 text-center text-base font-bold text-dark opacity-40"
                     >
-                      Pedir por WhatsApp
+                      Continuar con mi pedido
                     </button>
                     <p className="mt-3 text-center text-sm leading-relaxed text-neutral-light">
                       Lo que tienes en el carrito está agotado por ahora, así que no hay nada que pedir. Agrega otros
@@ -318,27 +266,26 @@ export default function CartClient() {
                   </>
                 ) : (
                   <>
+                    <p className="mt-2 text-xs text-neutral">No incluye el envío.</p>
+                    <Link
+                      href="/checkout"
+                      className="mt-5 flex w-full items-center justify-center rounded-xl bg-accent py-3.5 text-center text-base font-bold text-dark transition hover:bg-accent-dark"
+                    >
+                      Continuar con mi pedido
+                    </Link>
                     <a
                       href={enlacePedido}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="mt-6 flex w-full items-center justify-center rounded-xl bg-accent py-3.5 text-center text-base font-bold text-dark transition hover:bg-accent-dark"
+                      className="mt-3 flex w-full items-center justify-center rounded-xl border border-accent py-3 text-center text-sm font-bold text-accent transition hover:bg-accent/10"
                     >
-                      Pedir por WhatsApp
+                      Pedir directo por WhatsApp
                     </a>
                     <p className="mt-3 text-center text-sm leading-relaxed text-neutral-light">
-                      Te confirmamos el envío y la forma de pago por WhatsApp.
+                      Por WhatsApp, el mensaje sale con tu pedido ya escrito.
                     </p>
                   </>
                 )}
-                {PAGO_EN_LINEA_ACTIVO ? (
-                  <Link
-                    href="/checkout"
-                    className="mt-4 flex w-full items-center justify-center rounded-xl border border-accent py-3 text-center text-sm font-bold text-accent transition hover:bg-accent/10"
-                  >
-                    Pagar en línea
-                  </Link>
-                ) : null}
                 <Link
                   href="/"
                   className="mt-3 block text-center text-sm font-medium text-neutral-light underline-offset-4 hover:text-accent hover:underline"

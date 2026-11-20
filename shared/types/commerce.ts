@@ -66,6 +66,11 @@ export interface Product {
 export interface CartItem {
   productId: string
   quantity: number
+  /**
+   * Lo que la persona eligió del producto, por ejemplo { color: 'Negro' }. Falta si el producto no tiene
+   * opciones. Dos colores del mismo producto son dos líneas distintas del carrito.
+   */
+  variante?: { color?: string }
 }
 
 export interface OrderItem {

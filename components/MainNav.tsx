@@ -8,7 +8,7 @@ import CountrySelect from '@/components/CountrySelect'
 import EnlaceClase from '@/components/EnlaceClase'
 
 export default function MainNav() {
-  const { count } = useCart()
+  const { count, abrirPanel } = useCart()
   const { country, setCountry } = useCountry()
 
   return (
@@ -48,9 +48,16 @@ export default function MainNav() {
             onChange={setCountry}
             className="min-w-0 max-w-[140px] rounded-lg border border-dark-300 bg-dark-100 px-2 py-1 text-xs text-white sm:max-w-[200px] sm:text-sm md:max-w-[200px] xl:max-w-xs"
           />
+          {/* Abre el carrito lateral; con Ctrl, Cmd o la rueda del ratón, abre /cart como un enlace normal */}
           <Link
             href="/cart"
             aria-label={count > 0 ? `Carrito (${count})` : 'Carrito'}
+            aria-haspopup="dialog"
+            onClick={(e) => {
+              if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
+              e.preventDefault()
+              abrirPanel()
+            }}
             className="relative shrink-0 rounded-lg border border-dark-300 p-2 hover:bg-dark-100"
           >
             <ShoppingCart className="h-4 w-4" />

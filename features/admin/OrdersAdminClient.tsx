@@ -6,6 +6,16 @@ import type { Order, OrderStatus } from '@/shared/types/commerce'
 
 const POLL_MS = 4000
 
+/** Lo que trae GET /api/pedido/datos por cada pedido hecho desde /checkout */
+type DatosListado = { formaPago: string; origen: string }
+
+/** «whatsapp» → «Por WhatsApp»; lo que no se conoce (pedidos viejos) queda tal cual. */
+function metodoLabel(m: string | null | undefined) {
+  if (m === 'whatsapp') return 'Por WhatsApp'
+  if (m === 'mercadopago') return 'Mercado Pago'
+  return m ?? ''
+}
+
 function orderStatusLabel(s: Order['status']) {
   const m: Record<Order['status'], string> = {
     pending: 'Pendiente',
@@ -41,6 +51,7 @@ function payBadgeClass(p: Order['paymentStatus']) {
 
 export default function OrdersAdminClient() {
   const [orders, setOrders] = useState<Order[]>([])
+  const [datos, setDatos] = useState<Record<string, DatosListado>>({})
   const [loading, setLoading] = useState(true)
   const knownIdsRef = useRef<Set<string>>(new Set())
   const [banner, setBanner] = useState<{ message: string; at: number } | null>(null)
@@ -48,9 +59,15 @@ export default function OrdersAdminClient() {
   const [filterStatus, setFilterStatus] = useState<'all' | Order['status']>('all')
 
   const reload = useCallback(async () => {
-    const res = await fetch('/api/orders', { cache: 'no-store' })
+    const [res, resDatos] = await Promise.all([
+      fetch('/api/orders', { cache: 'no-store' }),
+      fetch('/api/pedido/datos', { cache: 'no-store' }).catch(() => null),
+    ])
     const data = await res.json()
     const next: Order[] = data.orders ?? []
+    // Si los datos no llegan, el listado se ve igual, sin forma de pago ni origen
+    const extra = resDatos?.ok ? ((await resDatos.json().catch(() => ({}))) as { datos?: Record<string, DatosListado> }) : {}
+    if (extra.datos) setDatos(extra.datos)
 
     if (knownIdsRef.current.size > 0) {
       const newcomers = next.filter((o) => !knownIdsRef.current.has(o.id))
@@ -161,7 +178,7 @@ export default function OrdersAdminClient() {
           No hay pedidos que coincidan.
         </div>
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-dark-300 bg-dark-100/40">
+        <div className="overflow-x-auto rounded-2xl border border-dark-300 bg-dark-100/40">
           <table className="w-full min-w-[960px] text-left text-sm">
             <thead className="border-b border-dark-300 bg-dark/80 text-xs uppercase tracking-wide text-neutral">
               <tr>
@@ -171,6 +188,7 @@ export default function OrdersAdminClient() {
                 <th className="px-4 py-3 font-semibold">Ítems</th>
                 <th className="px-4 py-3 font-semibold">Total</th>
                 <th className="px-4 py-3 font-semibold">Pago</th>
+                <th className="px-4 py-3 font-semibold">Origen</th>
                 <th className="px-4 py-3 font-semibold">Estado</th>
                 <th className="px-4 py-3 font-semibold">Detalle</th>
               </tr>
@@ -178,7 +196,7 @@ export default function OrdersAdminClient() {
             <tbody>
               {filtered.map((order) => (
                 <tr key={order.id} className="border-b border-dark-300/60 last:border-0 hover:bg-dark/40">
-                  <td className="px-4 py-3 font-mono text-xs text-neutral-light">{order.id}</td>
+                  <td className="max-w-[110px] break-all px-4 py-3 font-mono text-xs text-neutral-light">{order.id}</td>
                   <td className="px-4 py-3 text-xs text-neutral-light">
                     {new Date(order.createdAt).toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' })}
                   </td>
@@ -194,9 +212,16 @@ export default function OrdersAdminClient() {
                   </td>
                   <td className={`px-4 py-3 text-xs font-semibold ${payBadgeClass(order.paymentStatus)}`}>
                     {payLabel(order.paymentStatus)}
-                    {order.paymentMethod && (
-                      <span className="mt-0.5 block font-normal text-neutral"> {order.paymentMethod}</span>
+                    {(datos[order.id]?.formaPago ?? order.paymentMethod) && (
+                      <span className="mt-0.5 block font-normal text-neutral">
+                        {metodoLabel(datos[order.id]?.formaPago ?? order.paymentMethod)}
+                      </span>
                     )}
+                  </td>
+                  <td className="max-w-[130px] px-4 py-3 text-xs text-neutral-light">
+                    <span className="block truncate" title={datos[order.id]?.origen}>
+                      {datos[order.id]?.origen ?? '—'}
+                    </span>
                   </td>
                   <td className="px-4 py-3">
                     <select

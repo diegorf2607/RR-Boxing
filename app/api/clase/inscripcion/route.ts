@@ -2,11 +2,14 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { insertAdminNotification } from '@/shared/lib/data-store'
 import { CLASE, PREFIJO_TITULO, claseVigente, normalizarWhatsapp, whatsappLegible } from '@/shared/lib/clase-virtual'
+import { limpiarOrigen, origenTexto } from '@/shared/lib/origen'
 
 const schema = z.object({
   nombre: z.string().trim().min(2).max(80),
   correo: z.string().trim().toLowerCase().email().max(120),
   whatsapp: z.string().trim().min(6).max(30),
+  // De dónde llegó la persona (shared/lib/origen.ts): se limpia aquí antes de guardarlo
+  origen: z.unknown().optional(),
   // Campo trampa: las personas no lo ven; si viene lleno, es un bot.
   sitio: z.string().max(200).optional(),
 })
@@ -29,6 +32,7 @@ export async function POST(request: Request) {
   }
 
   const { nombre, correo, whatsapp, sitio } = parsed.data
+  const origen = limpiarOrigen(parsed.data.origen)
   if (sitio) return NextResponse.json({ ok: true })
 
   const digitos = normalizarWhatsapp(whatsapp)
@@ -41,7 +45,7 @@ export async function POST(request: Request) {
       type: 'clase_inscripcion',
       severity: 'info',
       title: `${PREFIJO_TITULO}${nombre}`,
-      body: `WhatsApp ${whatsappLegible(digitos)} · ${correo} · fue a pagar S/ 30`,
+      body: `WhatsApp ${whatsappLegible(digitos)} · ${correo} · fue a pagar S/ 30 · origen: ${origenTexto(origen)}`,
       link: `https://wa.me/${digitos}`,
       entityType: 'clase',
       entityId: CLASE.id,

@@ -4,6 +4,32 @@ import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import type { Order, OrderStatus, PaymentStatus } from '@/shared/types/commerce'
 import type { DigitalGift, OrderGiftSendEvent } from '@/shared/types/digital-gifts'
+import type { FormaPago, PedidoDatos } from '@/shared/lib/pedido-datos'
+import { origenTexto } from '@/shared/lib/origen'
+import { whatsappLegible } from '@/shared/lib/clase-virtual'
+
+const FORMA_PAGO: Record<FormaPago, string> = {
+  whatsapp: 'Coordinar por WhatsApp',
+  mercadopago: 'Mercado Pago',
+}
+
+/** «whatsapp» → «Coordinar por WhatsApp»; lo que no se conoce queda tal cual. */
+function metodoLabel(m: string | null | undefined) {
+  if (!m) return '—'
+  return m in FORMA_PAGO ? FORMA_PAGO[m as FormaPago] : m
+}
+
+const soles = (n: number) => `S/ ${n.toFixed(2)}`
+
+/** Una fila de «Entrega y contacto» */
+function Dato({ etiqueta, children }: { etiqueta: string; children: React.ReactNode }) {
+  return (
+    <div className="grid gap-1 py-2.5 sm:grid-cols-[140px_1fr] sm:gap-4">
+      <dt className="text-xs text-neutral">{etiqueta}</dt>
+      <dd className="min-w-0 break-words text-sm text-white">{children}</dd>
+    </div>
+  )
+}
 
 function orderStatusLabel(s: OrderStatus) {
   const m: Record<OrderStatus, string> = {
@@ -39,7 +65,7 @@ function channelLabel(ch: OrderGiftSendEvent['channel']) {
 
 type EmailDraft = { subject: string; text: string; to: string }
 
-export default function OrderDetailClient({ orderId }: { orderId: string }) {
+export default function OrderDetailClient({ orderId, datos = null }: { orderId: string; datos?: PedidoDatos | null }) {
   const [order, setOrder] = useState<Order | null>(null)
   const [digitalGifts, setDigitalGifts] = useState<DigitalGift[]>([])
   const [giftSendEvents, setGiftSendEvents] = useState<OrderGiftSendEvent[]>([])
@@ -263,10 +289,56 @@ export default function OrderDetailClient({ orderId }: { orderId: string }) {
             </label>
           </div>
           <p className="text-xs text-neutral">
-            Método registrado: <span className="text-neutral-light">{order.paymentMethod || '—'}</span>
+            Forma de pago: <span className="text-neutral-light">{metodoLabel(datos?.formaPago ?? order.paymentMethod)}</span>
           </p>
         </article>
       </div>
+
+      {datos ? (
+        <article className="card space-y-2">
+          <h2 className="text-lg font-semibold text-white">Entrega y contacto</h2>
+          <dl className="divide-y divide-dark-300/60">
+            <Dato etiqueta="WhatsApp">
+              {datos.whatsapp ? (
+                <a href={`https://wa.me/${datos.whatsapp}`} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">
+                  {whatsappLegible(datos.whatsapp)}
+                </a>
+              ) : (
+                '—'
+              )}
+            </Dato>
+            <Dato etiqueta="DNI">{datos.dni ?? '—'}</Dato>
+            <Dato etiqueta="Distrito">{datos.distrito || '—'}</Dato>
+            <Dato etiqueta="Dirección">{datos.direccion || '—'}</Dato>
+            <Dato etiqueta="Referencia">{datos.referencia ?? '—'}</Dato>
+            <Dato etiqueta="Envío">
+              {datos.envio ? (
+                <>
+                  {datos.envio.nombre} · {datos.envio.plazo} · {datos.envio.monto > 0 ? soles(datos.envio.monto) : 'gratis'}{' '}
+                  <span className="text-neutral">(de referencia: confirmarlo por WhatsApp)</span>
+                </>
+              ) : (
+                '—'
+              )}
+            </Dato>
+            <Dato etiqueta="Color">
+              {datos.colores.length > 0
+                ? datos.colores.map((c) => `${c.producto}: ${c.color} (${c.cantidad})`).join(' · ')
+                : '—'}
+            </Dato>
+            <Dato etiqueta="Forma de pago">{metodoLabel(datos.formaPago)}</Dato>
+            {datos.canal === 'panel' ? <Dato etiqueta="Canal">Venta registrada en el panel</Dato> : null}
+            <Dato etiqueta="Origen">
+              {origenTexto(datos.origen)}
+              {datos.origen?.entrada ? <span className="text-neutral"> · entró por {datos.origen.entrada}</span> : null}
+            </Dato>
+          </dl>
+        </article>
+      ) : (
+        <p className="text-xs text-neutral">
+          Este pedido no tiene datos de entrega guardados en la web (es anterior a /checkout o no se pudieron guardar).
+        </p>
+      )}
 
       <article className="card space-y-3">
         <h2 className="text-lg font-semibold text-white">Productos</h2>
@@ -301,6 +373,16 @@ export default function OrderDetailClient({ orderId }: { orderId: string }) {
             <p>
               Subtotal ítems: {subtotal.toFixed(2)} {order.currency}
             </p>
+            {datos?.montos && datos.montos.descuentoCombo > 0 ? (
+              <p>
+                Combo 10%: −{datos.montos.descuentoCombo.toFixed(2)} {order.currency}
+              </p>
+            ) : null}
+            {datos?.montos ? (
+              <p>
+                Envío: {datos.montos.envio > 0 ? `${datos.montos.envio.toFixed(2)} ${order.currency}` : 'gratis'} (de referencia)
+              </p>
+            ) : null}
             <p className="text-lg font-bold text-accent">
               Total: {order.totalAmount.toFixed(2)} {order.currency}
             </p>

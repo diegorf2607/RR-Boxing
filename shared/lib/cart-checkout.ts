@@ -1,209 +1,161 @@
+// El pedido calculado en el servidor: precios, colores, combo y envío salen de la base y de aquí, nunca del
+// navegador. Lo usa POST /api/pedido. Solo para el servidor (lee el catálogo con la clave de servicio).
+// Envíos solo dentro del Perú, en soles: los costos son de referencia y se confirman por WhatsApp.
 import { z } from 'zod'
-import type { CountryCode, OrderItem } from '@/shared/types/commerce'
-import type Stripe from 'stripe'
+import type { OrderItem, Product } from '@/shared/types/commerce'
 import { getProducts } from '@/shared/lib/data-store'
 import { getPriceForCountry } from '@/features/store/pricing'
-import { COUNTRY_CONFIG, getCountryConfig } from '@/shared/lib/country'
-import { toStripeUnitAmount } from '@/shared/lib/stripe-money'
+import { coloresDisponibles, nombreConVariante } from '@/features/store/colores'
 import { participaDelCombo, resumenCombo, roundMoney } from '@/shared/lib/combo-promo'
 
-const CHECKOUT_COUNTRY_CODES = COUNTRY_CONFIG.map((c) => c.code) as [
-  CountryCode,
-  ...CountryCode[],
-]
-
 export const checkoutShippingMethodSchema = z.enum(['standard', 'express', 'urgent'])
-
-export const checkoutCartBodySchema = z.object({
-  email: z.string().email(),
-  name: z.string().min(2),
-  address: z.string().min(5),
-  country: z.enum(CHECKOUT_COUNTRY_CODES),
-  /** Perú: standard 0, express 9.90, urgent 14.90 (PEN). Otros países: se ignora y usa tarifa del país. */
-  shippingMethod: checkoutShippingMethodSchema.optional().default('standard'),
-  phone: z.string().max(40).optional(),
-  // El antiguo «pack de bienvenida» (includeGiftPack) ya no existe: si llega, zod lo descarta.
-  items: z.array(
-    z.object({
-      productId: z.string(),
-      quantity: z.number().int().min(1),
-    })
-  ),
-})
-
-export type CheckoutCartBody = z.infer<typeof checkoutCartBodySchema>
 export type CheckoutShippingMethod = z.infer<typeof checkoutShippingMethodSchema>
 
-export type PreparedCartCheckout = {
-  orderItems: OrderItem[]
-  productLines: Stripe.Checkout.SessionCreateParams.LineItem[]
-  shippingLine: Stripe.Checkout.SessionCreateParams.LineItem[]
-  currencyLower: string
-  country: CountryCode
-  totalAmount: number
-  currency: OrderItem['currency']
-  /** Subtotal de productos antes del descuento combo. */
-  productSubtotalGross: number
-  comboApplied: boolean
-  comboDiscountAmount: number
+export interface OpcionEnvio {
+  metodo: CheckoutShippingMethod
+  /** «Estándar» */
+  nombre: string
+  /** «2 a 3 días hábiles» */
+  plazo: string
+  /** Costo de referencia en soles */
+  monto: number
 }
 
-type LineaPreparada = { item: OrderItem; comboEligible: boolean }
+/** Las tarifas de referencia de envío dentro del Perú. /checkout las recibe del servidor y las muestra. */
+export const ENVIOS_PERU: Record<CheckoutShippingMethod, OpcionEnvio> = {
+  standard: { metodo: 'standard', nombre: 'Estándar', plazo: '2 a 3 días hábiles', monto: 0 },
+  express: { metodo: 'express', nombre: 'Express', plazo: '24 a 48 horas', monto: 9.9 },
+  urgent: { metodo: 'urgent', nombre: 'Urgente', plazo: 'Solo Lima Metropolitana', monto: 14.9 },
+}
+
+export const LISTA_ENVIOS: OpcionEnvio[] = [ENVIOS_PERU.standard, ENVIOS_PERU.express, ENVIOS_PERU.urgent]
+
+/** Una línea del carrito como llega del navegador: solo el producto, la cantidad y el color. */
+export const lineaPedidoSchema = z.object({
+  productId: z.string().trim().min(1).max(80),
+  quantity: z.number().int().min(1).max(99),
+  color: z.string().trim().max(40).optional(),
+})
+export type LineaPedidoEntrada = z.infer<typeof lineaPedidoSchema>
+
+export interface LineaCalculada {
+  productId: string
+  /** El nombre del producto, sin el color */
+  producto: string
+  /** El color elegido, o null si el producto no tiene colores para elegir */
+  color: string | null
+  /** «Guantes de boxeo (Negro)» */
+  nombre: string
+  cantidad: number
+  precioUnitario: number
+  /** Precio por cantidad, antes del combo */
+  total: number
+}
+
+export interface PedidoCalculado {
+  lineas: LineaCalculada[]
+  /** Para order_items: el precio de lista de cada línea (el descuento del combo va aparte, en los montos) */
+  items: OrderItem[]
+  subtotal: number
+  descuentoCombo: number
+  totalProductos: number
+  envio: OpcionEnvio
+  /** Productos con el combo, más el envío de referencia */
+  total: number
+  moneda: 'PEN'
+}
+
+export type ResultadoCalculo =
+  | { ok: true; pedido: PedidoCalculado }
+  | { ok: false; campo: 'items' | 'color'; error: string }
+
+/** «negro» → «Negro» si el producto viene en ese color; null si no es uno de sus colores. */
+function colorDelProducto(product: Pick<Product, 'attributes'>, pedido: string | undefined): string | null {
+  const buscado = pedido?.trim().toLowerCase()
+  if (!buscado) return null
+  return coloresDisponibles(product).find((c) => c.toLowerCase() === buscado) ?? null
+}
 
 /**
- * Reparte el descuento del combo solo entre los productos que participan, en proporción al
- * total de cada línea. La última línea que participa se queda con el redondeo, así la suma de las
- * líneas es exactamente el subtotal menos el descuento. Devuelve el total neto de cada línea.
+ * Calcula el pedido con los productos activos de la base: precio en soles, color (obligatorio si el producto viene
+ * en varios), stock, combo de 10% (`resumenCombo`, el mismo cálculo del carrito) y el envío elegido.
+ * Dos líneas del mismo producto y color se juntan.
  */
-function netoPorLinea(lineas: LineaPreparada[], subtotalCombo: number, descuento: number): number[] {
-  const brutos = lineas.map((l) => roundMoney(l.item.unitAmount * l.item.quantity))
-  if (descuento <= 0 || subtotalCombo <= 0) return brutos
-  const ultimaQueParticipa = lineas.map((l) => l.comboEligible).lastIndexOf(true)
-  let asignado = 0
-  return lineas.map((l, i) => {
-    if (!l.comboEligible) return brutos[i]
-    const descuentoLinea =
-      i === ultimaQueParticipa
-        ? roundMoney(descuento - asignado)
-        : roundMoney((brutos[i] / subtotalCombo) * descuento)
-    asignado = roundMoney(asignado + descuentoLinea)
-    return roundMoney(brutos[i] - descuentoLinea)
-  })
-}
+export async function calcularPedido(
+  entrada: LineaPedidoEntrada[],
+  metodoEnvio: CheckoutShippingMethod,
+  productos?: Product[]
+): Promise<ResultadoCalculo> {
+  const catalogo = productos ?? (await getProducts())
+  const lineas: (LineaCalculada & { comboEligible: boolean })[] = []
 
-/**
- * Líneas de Stripe para un producto cuyo total neto no siempre se divide exacto entre las unidades:
- * si sobra algún céntimo, unas unidades van un céntimo más caras, para que Stripe cobre el neto exacto.
- */
-function lineasStripe(item: OrderItem, neto: number): Stripe.Checkout.SessionCreateParams.LineItem[] {
-  const netoMenor = toStripeUnitAmount(neto, item.currency)
-  const base = Math.floor(netoMenor / item.quantity)
-  const sobra = netoMenor - base * item.quantity
-  const linea = (quantity: number, unit_amount: number): Stripe.Checkout.SessionCreateParams.LineItem => ({
-    quantity,
-    price_data: {
-      currency: item.currency.toLowerCase(),
-      product_data: { name: item.productName },
-      unit_amount,
-    },
-  })
-  if (sobra === 0) return [linea(item.quantity, base)]
-  return [linea(sobra, base + 1), linea(item.quantity - sobra, base)]
-}
+  for (const item of entrada) {
+    const product = catalogo.find((p) => p.id === item.productId && p.active)
+    if (!product) return { ok: false, campo: 'items', error: 'Uno de los productos ya no está en la tienda. Revisa tu carrito.' }
+    const nombreProducto = product.name.trim()
+    if (product.stock <= 0) return { ok: false, campo: 'items', error: `${nombreProducto} está agotado. Quítalo de tu carrito.` }
 
-export async function prepareCartCheckout(
-  body: CheckoutCartBody
-): Promise<{ ok: true; data: PreparedCartCheckout } | { ok: false; error: string }> {
-  const products = await getProducts()
-  const country = body.country
-  const countryConfig = getCountryConfig(country)
+    const conColores = coloresDisponibles(product).length > 0
+    const color = conColores ? colorDelProducto(product, item.color) : null
+    if (conColores && !color) return { ok: false, campo: 'color', error: `Elige el color de ${nombreProducto}.` }
 
-  const lineas: LineaPreparada[] = body.items.flatMap((cartItem) => {
-    const product = products.find((p) => p.id === cartItem.productId && p.active)
-    if (!product) return []
-    const price = getPriceForCountry(product, country)
-    return [
-      {
-        item: {
-          productId: product.id,
-          productName: product.name,
-          quantity: cartItem.quantity,
-          unitAmount: price.amount,
-          currency: price.currency,
-        },
-        comboEligible: participaDelCombo(product),
-      },
-    ]
-  })
-  const orderItems = lineas.map((l) => l.item)
-
-  if (orderItems.length === 0) {
-    return { ok: false, error: 'Tu carrito está vacío.' }
+    const existente = lineas.find((l) => l.productId === product.id && l.color === color)
+    if (existente) {
+      existente.cantidad += item.quantity
+      existente.total = roundMoney(existente.precioUnitario * existente.cantidad)
+      continue
+    }
+    const precio = getPriceForCountry(product, 'PE')
+    if (!precio || precio.currency !== 'PEN') {
+      return { ok: false, campo: 'items', error: `${nombreProducto} no tiene precio en soles. Escríbenos por WhatsApp.` }
+    }
+    lineas.push({
+      productId: product.id,
+      producto: nombreProducto,
+      color,
+      nombre: nombreConVariante(nombreProducto, color ? { color } : undefined),
+      cantidad: item.quantity,
+      precioUnitario: precio.amount,
+      total: roundMoney(precio.amount * item.quantity),
+      comboEligible: participaDelCombo(product),
+    })
   }
 
-  const firstCurrency = orderItems[0].currency
-  const mixedCurrency = orderItems.some((item) => item.currency !== firstCurrency)
-  if (mixedCurrency) {
-    return { ok: false, error: 'Tu carrito tiene productos en monedas distintas.' }
+  if (lineas.length === 0) return { ok: false, campo: 'items', error: 'Tu carrito está vacío.' }
+
+  // El stock se revisa por producto, sumando sus colores
+  for (const productId of Array.from(new Set(lineas.map((l) => l.productId)))) {
+    const product = catalogo.find((p) => p.id === productId)
+    const pedidas = lineas.filter((l) => l.productId === productId).reduce((s, l) => s + l.cantidad, 0)
+    if (product && pedidas > product.stock) {
+      const quedan = product.stock === 1 ? 'Queda 1' : `Quedan ${product.stock}`
+      return { ok: false, campo: 'items', error: `${quedan} de ${product.name.trim()}. Baja la cantidad en tu carrito.` }
+    }
   }
 
-  const currencyLower = firstCurrency.toLowerCase()
-
-  // Mismo cálculo que el carrito: solo cuentan los productos válidos que participan del combo.
   const combo = resumenCombo(
-    lineas.map((l) => ({
-      unitAmount: l.item.unitAmount,
-      quantity: l.item.quantity,
-      comboEligible: l.comboEligible,
-    }))
+    lineas.map((l) => ({ unitAmount: l.precioUnitario, quantity: l.cantidad, comboEligible: l.comboEligible }))
   )
-  const productSubtotalGross = combo.subtotal
-  const comboDiscountAmount = combo.descuento
-  const comboApplied = comboDiscountAmount > 0
-
-  const netos = netoPorLinea(lineas, combo.subtotalCombo, comboDiscountAmount)
-  const orderItemsForCharge: OrderItem[] = orderItems.map((item, i) => ({
-    ...item,
-    unitAmount: roundMoney(netos[i] / item.quantity),
-  }))
-  const productLines = orderItems.flatMap((item, i) => lineasStripe(item, netos[i]))
-  const subtotalProducts = combo.total
-
-  let shippingLine: Stripe.Checkout.SessionCreateParams.LineItem[] = []
-  let shippingFlatAmount = 0
-
-  if (country === 'PE' && firstCurrency === 'PEN') {
-    const method = body.shippingMethod ?? 'standard'
-    const peShipping: Record<CheckoutShippingMethod, { amount: number; label: string }> = {
-      standard: { amount: 0, label: 'Envío estándar, 2 a 3 días hábiles' },
-      express: { amount: 9.9, label: 'Envío express, 24 a 48 horas' },
-      urgent: { amount: 14.9, label: 'Envío urgente (Lima Metropolitana)' },
-    }
-    const sel = peShipping[method]
-    shippingFlatAmount = sel.amount
-    if (sel.amount > 0) {
-      shippingLine = [
-        {
-          quantity: 1,
-          price_data: {
-            currency: currencyLower,
-            product_data: { name: sel.label },
-            unit_amount: toStripeUnitAmount(sel.amount, firstCurrency),
-          },
-        },
-      ]
-    }
-  } else if (countryConfig.shippingFlatAmount > 0) {
-    shippingFlatAmount = countryConfig.shippingFlatAmount
-    shippingLine = [
-      {
-        quantity: 1,
-        price_data: {
-          currency: currencyLower,
-          product_data: {
-            name: `Envío (${countryConfig.name})`,
-          },
-          unit_amount: toStripeUnitAmount(countryConfig.shippingFlatAmount, firstCurrency),
-        },
-      },
-    ]
-  }
-
-  const totalAmount = roundMoney(subtotalProducts + shippingFlatAmount)
+  const envio = ENVIOS_PERU[metodoEnvio]
+  const limpias: LineaCalculada[] = lineas.map(({ comboEligible: _comboEligible, ...l }) => l)
 
   return {
     ok: true,
-    data: {
-      orderItems: orderItemsForCharge,
-      productLines,
-      shippingLine,
-      currencyLower,
-      country,
-      totalAmount,
-      currency: firstCurrency,
-      productSubtotalGross,
-      comboApplied,
-      comboDiscountAmount,
+    pedido: {
+      lineas: limpias,
+      items: limpias.map((l) => ({
+        productId: l.productId,
+        productName: l.nombre,
+        quantity: l.cantidad,
+        unitAmount: l.precioUnitario,
+        currency: 'PEN',
+      })),
+      subtotal: combo.subtotal,
+      descuentoCombo: combo.descuento,
+      totalProductos: combo.total,
+      envio,
+      total: roundMoney(combo.total + envio.monto),
+      moneda: 'PEN',
     },
   }
 }

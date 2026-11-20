@@ -439,7 +439,19 @@ export async function getOrderById(id: string): Promise<Order | null> {
   return mapOrder(orderRow as OrderRow, (itemRows ?? []) as OrderItemRow[])
 }
 
-export async function appendOrder(order: Order): Promise<Order> {
+/** El aviso que deja un pedido nuevo en el panel. */
+export type AvisoPedidoNuevo = {
+  type: AdminNotificationType
+  severity: AdminNotification['severity']
+  title: string
+  body?: string | null
+}
+
+/**
+ * Guarda el pedido y sus líneas. Deja un aviso en el panel: el que se pase en `aviso`, o el de siempre
+ * («Pedido pendiente de pago» o «Nuevo pedido»). Con `aviso: false` no deja ninguno.
+ */
+export async function appendOrder(order: Order, opciones: { aviso?: AvisoPedidoNuevo | false } = {}): Promise<Order> {
   const supabase = getSupabaseAdmin()
   const db = supabase as any
 
@@ -479,15 +491,20 @@ export async function appendOrder(order: Order): Promise<Order> {
     }
   }
 
-  void insertAdminNotificationSafe({
-    type: paymentStatus === 'unpaid' ? 'order_pending_payment' : 'new_order',
-    severity: paymentStatus === 'unpaid' ? 'warning' : 'info',
-    title: paymentStatus === 'unpaid' ? 'Pedido pendiente de pago' : 'Nuevo pedido',
-    body: `${order.customerEmail} · ${order.currency} ${order.totalAmount.toFixed(2)}`,
-    link: `/admin/orders/${order.id}`,
-    entityType: 'order',
-    entityId: order.id,
-  })
+  if (opciones.aviso !== false) {
+    const aviso: AvisoPedidoNuevo = opciones.aviso ?? {
+      type: paymentStatus === 'unpaid' ? 'order_pending_payment' : 'new_order',
+      severity: paymentStatus === 'unpaid' ? 'warning' : 'info',
+      title: paymentStatus === 'unpaid' ? 'Pedido pendiente de pago' : 'Nuevo pedido',
+      body: `${order.customerEmail} · ${order.currency} ${order.totalAmount.toFixed(2)}`,
+    }
+    await insertAdminNotificationSafe({
+      ...aviso,
+      link: `/admin/orders/${order.id}`,
+      entityType: 'order',
+      entityId: order.id,
+    })
+  }
 
   return order
 }
@@ -514,32 +531,6 @@ export async function updateOrder(id: string, updates: Partial<Order>): Promise<
   }
 
   return getOrderById(id)
-}
-
-export async function findOrderBySession(sessionId: string): Promise<Order | null> {
-  const supabase = getSupabaseAdmin()
-  const { data: orderRow, error: orderError } = await supabase
-    .from('orders')
-    .select(orderSelect)
-    .eq('stripe_session_id', sessionId)
-    .maybeSingle()
-
-  if (orderError) {
-    throw new Error(`Failed to find order by session: ${orderError.message}`)
-  }
-  if (!orderRow) return null
-  const foundOrder = orderRow as OrderRow
-
-  const { data: itemRows, error: itemsError } = await supabase
-    .from('order_items')
-    .select('order_id,product_id,product_name,quantity,unit_amount,currency')
-    .eq('order_id', foundOrder.id)
-
-  if (itemsError) {
-    throw new Error(`Failed to load order items by session: ${itemsError.message}`)
-  }
-
-  return mapOrder(foundOrder, (itemRows ?? []) as OrderItemRow[])
 }
 
 function mapNotificationRow(row: {
@@ -599,11 +590,18 @@ async function insertAdminNotificationSafe(input: Parameters<typeof insertAdminN
   }
 }
 
+/**
+ * Filas de admin_notifications que no son avisos sino datos guardados ahí (no hay tablas propias): los datos de cada
+ * pedido (shared/lib/pedido-datos.ts). No salen en el listado de avisos ni en los conteos.
+ */
+const TIPOS_QUE_NO_SON_AVISOS = 'pedido_datos'
+
 export async function listAdminNotifications(limit = 50): Promise<AdminNotification[]> {
   const supabase = getSupabaseAdmin()
   const { data, error } = await supabase
     .from('admin_notifications')
     .select('*')
+    .neq('type', TIPOS_QUE_NO_SON_AVISOS)
     .order('created_at', { ascending: false })
     .limit(limit)
   if (error) return []
@@ -615,6 +613,7 @@ export async function countUnreadAdminNotifications(): Promise<number> {
   const { count, error } = await supabase
     .from('admin_notifications')
     .select('id', { count: 'exact', head: true })
+    .neq('type', TIPOS_QUE_NO_SON_AVISOS)
     .is('read_at', null)
   if (error) return 0
   return count ?? 0

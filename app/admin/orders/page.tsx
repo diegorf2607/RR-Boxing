@@ -13,7 +13,7 @@ export default async function AdminOrdersPage() {
       <MainNav />
       <section className="container mx-auto grid gap-6 px-4 py-10 md:grid-cols-[240px_1fr]">
         <AdminNav />
-        <div>
+        <div className="min-w-0">
           <h1 className="mb-6 text-4xl font-bold">Pedidos</h1>
           <OrdersAdminClient />
         </div>

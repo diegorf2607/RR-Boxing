@@ -1,518 +1,572 @@
 'use client'
 
-import Image from 'next/image'
+// /checkout: la pantalla única de datos del pedido, en el estilo de /clase (filas con líneas finas, un acento).
+// Arriba el resumen leído del carrito; abajo nombre, correo, WhatsApp, DNI, entrega y envío. «Confirmar pedido»
+// lo manda a POST /api/pedido, que recalcula todo en el servidor. Después: el número del pedido y el botón para
+// mandarlo por WhatsApp (o, con Mercado Pago prendido y elegido, la página de pago).
 import Link from 'next/link'
-import { HelpCircle, Lock } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useCart } from '@/features/cart/CartProvider'
 import { useCountry } from '@/features/country/CountryProvider'
-import CheckoutStripeEmbedded from '@/features/checkout/CheckoutStripeEmbedded'
-import CountrySelect from '@/components/CountrySelect'
-import type { CheckoutShippingMethod } from '@/shared/lib/cart-checkout'
-import type { CurrencyCode, Product } from '@/shared/types/commerce'
-import { formatCurrency, getCountryConfig } from '@/shared/lib/country'
-import { getPriceForCountry } from '@/features/store/pricing'
-import { resumenCombo } from '@/shared/lib/combo-promo'
+import { armarLineas, resumirCarrito, type LineaCarrito } from '@/features/cart/lineas'
+import { useCatalogo } from '@/features/cart/useCatalogo'
+import { coloresDisponibles } from '@/features/store/colores'
+import { COMBO_MIN_UNITS, roundMoney } from '@/shared/lib/combo-promo'
+import { formatCurrency } from '@/shared/lib/country'
+import { leerOrigen } from '@/shared/lib/origen'
+import { RUTAS } from '@/shared/legal/politicas'
+import AvisoDatos from '@/components/AvisoDatos'
+import type { CheckoutShippingMethod, OpcionEnvio } from '@/shared/lib/cart-checkout'
 
-type Step = 'form' | 'pay'
+type FormaPago = 'whatsapp' | 'mercadopago'
 
-const LIMA_DISTRITOS_URGENTE =
-  'Miraflores, Surco, San Isidro, San Borja, Barranco, Jesús María, Pueblo Libre, La Molina, Surquillo, Cercado, San Luis, Breña, La Victoria, Rímac, Lince, San Miguel, Magdalena y El Agustino. En los demás distritos llega el día hábil siguiente, por la tarde.'
-
-const REGIONES_PE = [
-  'Lima (Metropolitana)',
-  'Arequipa',
-  'La Libertad',
-  'Piura',
-  'Cusco',
-  'Junín',
-  'Lambayeque',
-  'Otra región',
-]
-
-function peShippingAmount(method: CheckoutShippingMethod): number {
-  if (method === 'standard') return 0
-  if (method === 'express') return 9.9
-  return 14.9
+/** Lo que responde POST /api/pedido */
+interface Resultado {
+  numero: string
+  formaPago: FormaPago
+  pagar: string | null
+  whatsapp: string
+  resumen: {
+    lineas: { nombre: string; cantidad: number; total: number }[]
+    descuentoCombo: number
+    totalProductos: number
+    envio: OpcionEnvio
+    total: number
+  } | null
+  /** Cuándo se hizo (para mostrarlo otra vez si recarga la página) */
+  hecho?: number
+  /** Eligió Mercado Pago pero no se pudo abrir: el pago se coordina por WhatsApp */
+  sinMercadoPago?: boolean
 }
 
-export default function CheckoutClient() {
-  const { items } = useCart()
-  const { country, setCountry } = useCountry()
-  const [products, setProducts] = useState<Product[]>([])
+/** El último pedido de esta pestaña: si recarga la página, vuelve a ver su número y el botón de WhatsApp. */
+const CLAVE_ULTIMO = 'rrboxing_ultimo_pedido'
+const VIGENCIA_ULTIMO_MS = 2 * 3_600_000
 
-  const [email, setEmail] = useState('')
-  const [newsletter, setNewsletter] = useState(false)
-  const [firstName, setFirstName] = useState('')
-  const [lastName, setLastName] = useState('')
-  const [addressLine, setAddressLine] = useState('')
-  const [apartment, setApartment] = useState('')
-  const [city, setCity] = useState('')
-  const [region, setRegion] = useState('Lima (Metropolitana)')
-  const [postal, setPostal] = useState('')
-  const [phone, setPhone] = useState('')
-  const [saveInfo, setSaveInfo] = useState(false)
-  const [shippingMethod, setShippingMethod] = useState<CheckoutShippingMethod>('standard')
-  const [discountCode, setDiscountCode] = useState('')
-  const [discountMsg, setDiscountMsg] = useState('')
+function leerUltimo(): Resultado | null {
+  try {
+    const crudo = sessionStorage.getItem(CLAVE_ULTIMO)
+    if (!crudo) return null
+    const r = JSON.parse(crudo) as Resultado
+    if (!r?.numero || !r.whatsapp?.startsWith('https://wa.me/') || !r.hecho || Date.now() - r.hecho > VIGENCIA_ULTIMO_MS) return null
+    return r
+  } catch {
+    return null
+  }
+}
 
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [step, setStep] = useState<Step>('form')
-  const [clientSecret, setClientSecret] = useState<string | null>(null)
+function guardarUltimo(r: Resultado | null) {
+  try {
+    if (r) sessionStorage.setItem(CLAVE_ULTIMO, JSON.stringify(r))
+    else sessionStorage.removeItem(CLAVE_ULTIMO)
+  } catch {
+    /* sin sessionStorage: no pasa nada */
+  }
+}
 
+const soles = (n: number) => formatCurrency(n, 'PEN', 'es-PE')
+const envioMonto = (e: OpcionEnvio) => (e.monto > 0 ? soles(e.monto) : 'Gratis')
+
+const campo =
+  'mt-2 block w-full rounded-lg border border-dark-300 bg-dark px-4 py-3 text-base text-white placeholder:text-neutral-dark focus:border-accent focus:outline-none aria-[invalid=true]:border-red-500'
+const etiqueta = 'mt-4 block text-sm text-neutral-light first:mt-0'
+const fila = 'flex items-baseline justify-between gap-4 px-5 py-4'
+
+type Campos = 'nombre' | 'correo' | 'whatsapp' | 'dni' | 'distrito' | 'direccion' | 'referencia'
+
+export default function CheckoutClient({ envios, pagoEnLinea }: { envios: OpcionEnvio[]; pagoEnLinea: boolean }) {
+  const { items, clearCart } = useCart()
+  const { country } = useCountry()
+  const { productos, cargado } = useCatalogo()
+
+  const [resultado, setResultado] = useState<Resultado | null>(null)
+  const [colores, setColores] = useState<Record<string, string>>({})
+  const [envio, setEnvio] = useState<CheckoutShippingMethod>('standard')
+  const [pago, setPago] = useState<FormaPago>(pagoEnLinea ? 'mercadopago' : 'whatsapp')
+  const [enviando, setEnviando] = useState(false)
+  const [error, setError] = useState<{ mensaje: string; campo?: string } | null>(null)
+  const formulario = useRef<HTMLFormElement>(null)
+
+  // Si recargó después de confirmar, vuelve a ver su pedido
   useEffect(() => {
-    fetch('/api/products')
-      .then((res) => res.json())
-      .then((data) => setProducts(data.products ?? []))
-      .catch(() => setProducts([]))
+    const ultimo = leerUltimo()
+    if (ultimo) setResultado(ultimo)
   }, [])
 
-  const rows = useMemo(() => {
-    return items
-      .map((item) => {
-        const product = products.find((p) => p.id === item.productId)
-        if (!product) return null
-        const price = getPriceForCountry(product, country)
-        return { ...item, product, price, lineTotal: price.amount * item.quantity }
-      })
-      .filter(Boolean) as Array<{
-      productId: string
-      quantity: number
-      product: Product
-      price: { amount: number; currency: string }
-      lineTotal: number
-    }>
-  }, [items, products, country])
+  // En soles siempre: enviamos solo dentro del Perú
+  const lineas = useMemo(() => armarLineas(items, productos, 'PE'), [items, productos])
+  const resumen = useMemo(() => resumirCarrito(lineas), [lineas])
+  const agotadas = lineas.filter((l) => l.agotado)
+  const opcionEnvio = envios.find((e) => e.metodo === envio) ?? envios[0]
+  const totalConEnvio = roundMoney(resumen.combo.total + (opcionEnvio?.monto ?? 0))
 
-  const config = getCountryConfig(country)
-  // Mismo cálculo que el servidor (shared/lib/cart-checkout.ts): solo cuentan los productos del combo.
-  const combo = resumenCombo(
-    rows.map((row) => ({
-      unitAmount: row.price.amount,
-      quantity: row.quantity,
-      comboEligible: row.product.comboEligible,
-    }))
-  )
-  const subtotal = combo.subtotal
-  const comboDiscountAmount = combo.descuento
-  const productSubtotalAfterCombo = combo.total
-  const currency = (rows[0]?.price.currency ?? 'PEN') as CurrencyCode
+  /** El color de una línea: el del carrito o el que eligió aquí. null si el producto no tiene colores. */
+  const colorDe = (l: LineaCarrito): string | null => {
+    if (coloresDisponibles(l.product).length === 0) return null
+    return l.variante?.color ?? colores[l.clave] ?? ''
+  }
 
-  const shippingAmount = useMemo(() => {
-    if (country === 'PE' && rows[0]?.price.currency === 'PEN') return peShippingAmount(shippingMethod)
-    return config.shippingFlatAmount
-  }, [country, shippingMethod, config, rows])
+  // Después de confirmar (o si recarga con el carrito ya vacío): el número y el botón de WhatsApp
+  if (resultado && cargado && items.length === 0) return <PedidoRecibido resultado={resultado} />
 
-  const total = productSubtotalAfterCombo + shippingAmount
+  const cargando = !cargado
+  const vacio = cargado && resumen.disponibles.length === 0
 
-  const fullName = `${firstName} ${lastName}`.trim()
-  const fullAddress = useMemo(() => {
-    const parts = [
-      addressLine,
-      apartment ? `Casa, dpto.: ${apartment}` : null,
-      city,
-      region,
-      postal ? `Código postal: ${postal}` : null,
-      phone ? `Teléfono: ${phone}` : null,
-    ].filter(Boolean)
-    return parts.join('\n')
-  }, [addressLine, apartment, city, region, postal, phone])
-
-  const disabled = useMemo(() => {
-    if (items.length === 0 || rows.length === 0) return true
-    if (!email || fullName.length < 3 || !addressLine.trim() || !city.trim() || !phone.trim()) return true
-    return false
-  }, [items.length, rows.length, email, fullName, addressLine, city, phone])
-
-  const startEmbeddedCheckout = async () => {
-    setLoading(true)
-    setError('')
+  async function confirmar(evento: React.FormEvent<HTMLFormElement>) {
+    evento.preventDefault()
+    setError(null)
+    const sinColor = resumen.disponibles.find((l) => colorDe(l) === '')
+    if (sinColor) {
+      setError({ mensaje: `Elige el color de ${sinColor.product.name.trim()}.`, campo: 'color' })
+      document.getElementById(`color-${sinColor.clave}`)?.focus()
+      return
+    }
+    const datos = new FormData(evento.currentTarget)
+    const valor = (nombre: string) => String(datos.get(nombre) ?? '')
+    setEnviando(true)
     try {
-      const res = await fetch('/api/checkout/embedded', {
+      const respuesta = await fetch('/api/pedido', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email,
-          name: fullName,
-          address: fullAddress,
-          country,
-          shippingMethod,
-          phone,
-          items,
+          nombre: valor('nombre'),
+          correo: valor('correo'),
+          whatsapp: valor('whatsapp'),
+          dni: valor('dni'),
+          distrito: valor('distrito'),
+          direccion: valor('direccion'),
+          referencia: valor('referencia'),
+          envio,
+          pago: pagoEnLinea ? pago : 'whatsapp',
+          items: resumen.disponibles.map((l) => {
+            const color = colorDe(l)
+            return { productId: l.productId, quantity: l.quantity, ...(color ? { color } : {}) }
+          }),
+          origen: leerOrigen(),
+          sitio: valor('sitio'),
         }),
       })
-      const data = (await res.json()) as { clientSecret?: string; error?: string }
-      if (!res.ok) {
-        setError(
-          typeof data.error === 'string'
-            ? data.error
-            : 'No pudimos iniciar el pago. Escríbenos por WhatsApp.'
-        )
+      const json = (await respuesta.json().catch(() => ({}))) as Partial<Resultado> & { error?: string; campo?: string }
+      if (!respuesta.ok || !json.numero || !json.whatsapp) {
+        const campoError = json.campo
+        setError({ mensaje: json.error ?? 'No pudimos registrar tu pedido.', campo: campoError })
+        if (campoError) formulario.current?.querySelector<HTMLElement>(`[name="${campoError}"]`)?.focus()
+        setEnviando(false)
         return
       }
-      if (!data.clientSecret) {
-        setError('No se recibió la sesión de pago. Intenta de nuevo.')
+      const r: Resultado = {
+        numero: json.numero,
+        formaPago: json.formaPago === 'mercadopago' ? 'mercadopago' : 'whatsapp',
+        pagar: typeof json.pagar === 'string' && json.pagar.startsWith('https://') ? json.pagar : null,
+        whatsapp: json.whatsapp,
+        resumen: json.resumen ?? null,
+        hecho: Date.now(),
+        sinMercadoPago: pagoEnLinea && pago === 'mercadopago' && json.formaPago !== 'mercadopago',
+      }
+      guardarUltimo({ ...r, pagar: null })
+      clearCart()
+      if (r.pagar) {
+        window.location.href = r.pagar
         return
       }
-      setClientSecret(data.clientSecret)
-      setStep('pay')
+      setResultado(r)
+      setEnviando(false)
+      window.scrollTo({ top: 0 })
     } catch {
-      setError('Error de red. Intenta de nuevo.')
-    } finally {
-      setLoading(false)
+      setError({ mensaje: 'No pudimos registrar tu pedido. Revisa tu conexión e inténtalo otra vez.' })
+      setEnviando(false)
     }
   }
 
-  const backToForm = () => {
-    setStep('form')
-    setClientSecret(null)
-    setError('')
-  }
-
-  const applyDiscount = () => {
-    if (!discountCode.trim()) return
-    setDiscountMsg('Por ahora no hay códigos de descuento. El único descuento es el combo, y ya se aplica solo.')
-  }
-
-  const labelClass = 'mb-1 block text-xs font-medium uppercase tracking-wide text-neutral-light'
-  const inputClass =
-    'w-full rounded-lg border border-dark-300 bg-dark px-3 py-2.5 text-sm text-white placeholder:text-neutral focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/50'
-
-  if (step === 'pay' && clientSecret) {
-    return (
-      <div className="bg-dark px-4 py-8 md:py-10">
-        <div className="mx-auto max-w-2xl">
-          <p className="mb-1 font-heading text-xs tracking-widest text-accent">RR Boxing</p>
-          <button
-            type="button"
-            onClick={backToForm}
-            className="mb-4 text-sm font-medium text-accent underline-offset-2 hover:underline"
-          >
-            ← Volver a contacto y entrega
-          </button>
-          <h1 className="font-heading text-3xl font-bold tracking-wide text-white">Pago</h1>
-          <p className="mt-1 text-sm text-neutral-light">Todas las transacciones son seguras y están encriptadas.</p>
-
-          <div className="mt-6 space-y-6">
-            <div className="rounded-xl border-2 border-accent/70 bg-dark-100 p-1 shadow-xl shadow-black/50">
-              <CheckoutStripeEmbedded clientSecret={clientSecret} />
-            </div>
-          </div>
-
-          <nav className="mt-8 flex flex-wrap justify-center gap-x-4 gap-y-2 text-center text-sm text-accent">
-            <Link href="/reembolso" className="hover:text-white hover:underline">
-              Cambios y devoluciones
-            </Link>
-            <Link href="/garantia" className="hover:text-white hover:underline">
-              Garantía
-            </Link>
-            <Link href="/privacidad" className="hover:text-white hover:underline">
-              Política de privacidad
-            </Link>
-            <Link href="/terminos" className="hover:text-white hover:underline">
-              Términos y condiciones
-            </Link>
-            <Link href="/consulta" className="hover:text-white hover:underline">
-              Contacto
-            </Link>
-          </nav>
-        </div>
-      </div>
-    )
-  }
+  const invalido = (nombre: Campos) => (error?.campo === nombre ? true : undefined)
 
   return (
-    <div className="bg-dark px-4 py-8 md:py-10">
-      <div className="mx-auto max-w-6xl">
-        <h1 className="sr-only">Finalizar compra en RR Boxing</h1>
-        <div className="mb-8 border-b border-dark-300 pb-6">
-          <p className="font-heading text-xs tracking-[0.35em] text-accent">RR Boxing</p>
-          <h2 className="mt-1 font-heading text-3xl font-bold tracking-wide text-white md:text-4xl">Finalizar compra</h2>
-          <p className="mt-2 flex flex-wrap items-center gap-2 text-sm text-accent">
-            <Lock className="h-4 w-4 shrink-0" aria-hidden />
-            Pago seguro procesado por Stripe
-          </p>
-        </div>
+    <div className="px-4 py-10 text-white sm:py-14">
+      <div className="mx-auto w-full max-w-lg">
+        <h1 className="font-heading text-5xl leading-none text-white sm:text-6xl">Tu pedido</h1>
+        <p className="mt-3 text-base leading-relaxed text-neutral-light">
+          {pagoEnLinea
+            ? 'Revisa tus productos y déjanos tus datos para enviarte tu pedido.'
+            : 'Revisa tus productos y déjanos tus datos. Te confirmamos el envío y cómo pagar por WhatsApp.'}
+        </p>
 
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)] lg:gap-8">
-          {/* Columna izquierda: contacto + entrega + envío */}
-          <div className="space-y-8 rounded-2xl border border-dark-300 bg-dark-100 p-6 shadow-xl md:p-8 lg:order-2">
-            {/* Contacto */}
-            <section>
-              <div className="mb-4">
-                <h2 className="text-lg font-semibold text-white">Contacto</h2>
-              </div>
-              <label htmlFor="co-email" className={labelClass}>
-                Correo electrónico
-              </label>
-              <input
-                id="co-email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className={inputClass}
-                autoComplete="email"
-              />
-              <label className="mt-3 flex cursor-pointer items-start gap-2 text-sm text-neutral-light">
-                <input
-                  type="checkbox"
-                  checked={newsletter}
-                  onChange={(e) => setNewsletter(e.target.checked)}
-                  className="mt-0.5 h-4 w-4 rounded border-dark-300 bg-dark text-accent focus:ring-accent"
-                />
-                <span>Enviarme novedades y ofertas por correo electrónico</span>
-              </label>
-            </section>
-
-            {/* Entrega */}
-            <section>
-              <h2 className="mb-4 text-lg font-semibold text-white">Entrega</h2>
-              <label htmlFor="co-country" className={labelClass}>
-                País / Región
-              </label>
-              <CountrySelect
-                id="co-country"
-                value={country}
-                onChange={setCountry}
-                className={`${inputClass} mb-4 text-white`}
-              />
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label htmlFor="co-fn" className={labelClass}>
-                    Nombre
-                  </label>
-                  <input id="co-fn" value={firstName} onChange={(e) => setFirstName(e.target.value)} className={inputClass} autoComplete="given-name" />
-                </div>
-                <div>
-                  <label htmlFor="co-ln" className={labelClass}>
-                    Apellidos
-                  </label>
-                  <input id="co-ln" value={lastName} onChange={(e) => setLastName(e.target.value)} className={inputClass} autoComplete="family-name" />
-                </div>
-              </div>
-              <div className="mt-4">
-                <label htmlFor="co-addr" className={labelClass}>
-                  Dirección
-                </label>
-                <input id="co-addr" value={addressLine} onChange={(e) => setAddressLine(e.target.value)} className={inputClass} autoComplete="street-address" />
-              </div>
-              <div className="mt-4">
-                <label htmlFor="co-apt" className={labelClass}>
-                  Casa, apartamento, etc. (opcional)
-                </label>
-                <input id="co-apt" value={apartment} onChange={(e) => setApartment(e.target.value)} className={inputClass} />
-              </div>
-              <div className="mt-4 grid gap-4 sm:grid-cols-3">
-                <div>
-                  <label htmlFor="co-city" className={labelClass}>
-                    Ciudad
-                  </label>
-                  <input id="co-city" value={city} onChange={(e) => setCity(e.target.value)} className={inputClass} />
-                </div>
-                <div>
-                  <label htmlFor="co-region" className={labelClass}>
-                    Región
-                  </label>
-                  <select id="co-region" value={region} onChange={(e) => setRegion(e.target.value)} className={inputClass}>
-                    {REGIONES_PE.map((r) => (
-                      <option key={r} value={r}>
-                        {r}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label htmlFor="co-postal" className={labelClass}>
-                    Código postal (opcional)
-                  </label>
-                  <input id="co-postal" value={postal} onChange={(e) => setPostal(e.target.value)} className={inputClass} />
-                </div>
-              </div>
-              <div className="mt-4">
-                <label htmlFor="co-phone" className={`${labelClass} inline-flex items-center gap-1`}>
-                  Teléfono
-                  <span title="Solo te contactamos si hay un inconveniente con tu envío." className="inline-flex cursor-help">
-                    <HelpCircle className="h-3.5 w-3.5 text-neutral" aria-hidden />
-                  </span>
-                </label>
-                <input id="co-phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className={inputClass} autoComplete="tel" />
-              </div>
-              <label className="mt-4 flex cursor-pointer items-start gap-2 text-sm text-neutral-light">
-                <input
-                  type="checkbox"
-                  checked={saveInfo}
-                  onChange={(e) => setSaveInfo(e.target.checked)}
-                  className="mt-0.5 h-4 w-4 rounded border-dark-300 bg-dark text-accent focus:ring-accent"
-                />
-                <span>Guardar mi información y consultar más rápidamente la próxima vez</span>
-              </label>
-            </section>
-
-            {/* Métodos de envío */}
-            <section>
-              <h2 className="mb-4 text-lg font-semibold text-white">Métodos de envío</h2>
-              <div className="divide-y divide-dark-300 rounded-xl border border-dark-300 bg-dark/80">
-                <label className="flex cursor-pointer items-center justify-between gap-3 p-4 transition-colors hover:bg-dark-200/50">
-                  <span className="flex items-center gap-3">
-                    <input
-                      type="radio"
-                      name="ship"
-                      checked={shippingMethod === 'standard'}
-                      onChange={() => setShippingMethod('standard')}
-                      className="h-4 w-4 text-accent focus:ring-accent"
-                    />
-                    <span className="text-sm font-medium text-white">Estándar: 2 a 3 días hábiles</span>
-                  </span>
-                  <span className="text-sm font-semibold text-accent">Gratis</span>
-                </label>
-                <label className="flex cursor-pointer items-center justify-between gap-3 p-4 transition-colors hover:bg-dark-200/50">
-                  <span className="flex items-center gap-3">
-                    <input
-                      type="radio"
-                      name="ship"
-                      checked={shippingMethod === 'express'}
-                      onChange={() => setShippingMethod('express')}
-                      className="h-4 w-4 text-accent focus:ring-accent"
-                    />
-                    <span className="text-sm font-medium text-white">Express: 24 a 48 horas</span>
-                  </span>
-                  <span className="text-sm font-semibold text-accent">S/ 9.90</span>
-                </label>
-                <label className="flex cursor-pointer items-start gap-3 p-4 transition-colors hover:bg-dark-200/50">
-                  <input
-                    type="radio"
-                    name="ship"
-                    checked={shippingMethod === 'urgent'}
-                    onChange={() => setShippingMethod('urgent')}
-                    className="mt-1 h-4 w-4 shrink-0 text-accent focus:ring-accent"
-                  />
-                  <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:justify-between sm:gap-4">
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-white">
-                        Urgente, solo en Lima Metropolitana: llega el mismo día si compras de lunes a sábado, entre las
-                        9 a. m. y la 1 p. m.
-                      </p>
-                      <p className="mt-2 text-xs leading-relaxed text-neutral">{LIMA_DISTRITOS_URGENTE}</p>
-                    </div>
-                    <span className="shrink-0 text-sm font-semibold text-accent sm:pt-0.5">S/ 14.90</span>
-                  </div>
-                </label>
-              </div>
-            </section>
-
-            {error && <p className="text-sm text-red-400">{error}</p>}
-
-            <button
-              type="button"
-              onClick={startEmbeddedCheckout}
-              disabled={disabled || loading}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-accent px-4 py-3.5 text-sm font-bold text-dark shadow-lg shadow-accent/25 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+        {cargando ? (
+          <div className="mt-8 h-40 animate-pulse rounded-2xl border border-dark-300 bg-dark-100" aria-label="Cargando tu pedido" />
+        ) : vacio ? (
+          <div className="mt-8 rounded-2xl border border-dark-300 bg-dark-100 p-5">
+            <p className="text-base leading-relaxed text-white">
+              {agotadas.length > 0
+                ? 'Lo que tienes en el carrito está agotado por ahora, así que no hay nada que pedir.'
+                : 'Tu carrito está vacío.'}
+            </p>
+            <Link
+              href="/"
+              className="mt-5 block rounded-lg bg-accent px-6 py-3.5 text-center font-bold text-dark transition-colors hover:bg-accent-dark"
             >
-              <Lock className="h-4 w-4" aria-hidden />
-              {loading ? 'Procesando…' : 'Continuar al pago'}
-            </button>
+              Ir a la tienda
+            </Link>
           </div>
-
-          {/* Columna derecha: resumen + cupón + totales */}
-          <div className="h-fit space-y-6 rounded-2xl border border-dark-300 bg-dark-100 p-6 shadow-xl md:p-8 lg:order-1">
-            {rows.length === 0 ? (
-              <p className="text-sm text-neutral-light">Tu carrito está vacío.</p>
-            ) : (
-              <>
-                <ul className="space-y-5">
-                  {rows.map((row) => {
-                    const img = row.product.imageUrls[0]
-                    return (
-                      <li key={row.productId} className="flex gap-4">
-                        <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl border-2 border-accent/40 bg-dark shadow-lg ring-1 ring-white/5">
-                          {img ? (
-                            <Image src={img} alt={row.product.name} fill className="object-cover" sizes="96px" />
-                          ) : null}
-                          <span className="absolute -right-1 -top-1 flex h-6 min-w-[1.5rem] items-center justify-center rounded-full bg-accent px-1.5 text-xs font-bold text-dark shadow-md">
-                            {row.quantity}
+        ) : (
+          <>
+            <section aria-labelledby="resumen-titulo" className="mt-8">
+              <h2 id="resumen-titulo" className="sr-only">
+                Resumen
+              </h2>
+              <dl className="rounded-2xl border border-dark-300 bg-dark-100">
+                {resumen.disponibles.map((l, i) => {
+                  const opciones = coloresDisponibles(l.product)
+                  const color = colorDe(l)
+                  return (
+                    <div key={l.clave} className={`px-5 py-4 ${i > 0 ? 'border-t border-dark-300' : ''}`}>
+                      <div className="flex items-baseline justify-between gap-4">
+                        <dt className="min-w-0 text-base">
+                          {l.product.name.trim()}
+                          <span className="block text-sm text-neutral">
+                            {l.quantity} × {soles(l.price.amount)}
+                            {l.variante?.color ? ` · ${l.variante.color}` : ''}
                           </span>
-                        </div>
-                        <div className="min-w-0 flex-1 pt-1">
-                          <p className="text-sm font-semibold leading-snug text-white md:text-base">{row.product.name}</p>
-                        </div>
-                        <p className="shrink-0 pt-1 text-sm font-bold text-accent md:text-base">
-                          {formatCurrency(row.lineTotal, row.price.currency as CurrencyCode, config.locale)}
-                        </p>
-                      </li>
-                    )
-                  })}
-                </ul>
-
-                <div>
-                  <div className="flex gap-2">
-                    <input
-                      value={discountCode}
-                      onChange={(e) => setDiscountCode(e.target.value)}
-                      placeholder="Código de descuento"
-                      className={`${inputClass} flex-1`}
-                    />
-                    <button
-                      type="button"
-                      onClick={applyDiscount}
-                      className="shrink-0 rounded-lg border border-accent/50 bg-dark px-4 py-2 text-sm font-semibold text-accent transition hover:bg-dark-200"
-                    >
-                      Aplicar
-                    </button>
-                  </div>
-                  {discountMsg ? <p className="mt-2 text-xs text-neutral-light">{discountMsg}</p> : null}
-                </div>
-
-                <div className="space-y-2 border-t border-dark-300 pt-4 text-sm">
-                  <div className="flex justify-between text-neutral-light">
-                    <span>Subtotal productos</span>
-                    <span className="font-medium text-white">{formatCurrency(subtotal, currency, config.locale)}</span>
-                  </div>
-                  {comboDiscountAmount > 0 ? (
-                    <div className="flex justify-between rounded-lg border border-accent/25 bg-accent/5 px-2 py-1.5 text-accent">
-                      <span className="font-semibold">Combo 10%</span>
-                      <span className="font-bold tabular-nums">−{formatCurrency(comboDiscountAmount, currency, config.locale)}</span>
-                    </div>
-                  ) : null}
-                  {comboDiscountAmount > 0 ? (
-                    <div className="flex justify-between text-xs text-neutral-light">
-                      <span>Productos con promo</span>
-                      <span className="font-medium text-white">
-                        {formatCurrency(productSubtotalAfterCombo, currency, config.locale)}
-                      </span>
-                    </div>
-                  ) : null}
-                  <div className="flex justify-between text-neutral-light">
-                    <span className="inline-flex items-center gap-1">
-                      Envío
-                      <span
-                        className="inline-flex text-neutral"
-                        title="Según el método elegido a la izquierda."
-                      >
-                        <HelpCircle className="h-3.5 w-3.5" aria-hidden />
-                      </span>
-                    </span>
-                    <span className="font-medium text-white">
-                      {shippingAmount === 0 ? (
-                        <span className="text-accent">Gratis</span>
-                      ) : (
-                        formatCurrency(shippingAmount, currency, config.locale)
+                        </dt>
+                        <dd className="shrink-0 text-right text-base font-medium tabular-nums">{soles(l.lineTotal)}</dd>
+                      </div>
+                      {opciones.length > 0 && !l.variante?.color && (
+                        <label className="mt-3 flex items-center justify-between gap-4 text-sm text-neutral-light">
+                          Color
+                          <select
+                            id={`color-${l.clave}`}
+                            value={color ?? ''}
+                            required
+                            aria-invalid={error?.campo === 'color' && !color ? true : undefined}
+                            onChange={(e) => setColores((c) => ({ ...c, [l.clave]: e.target.value }))}
+                            className="rounded-lg border border-dark-300 bg-dark px-3 py-2 text-base text-white focus:border-accent focus:outline-none aria-[invalid=true]:border-red-500"
+                          >
+                            <option value="" disabled>
+                              Elige
+                            </option>
+                            {opciones.map((o) => (
+                              <option key={o} value={o}>
+                                {o}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
                       )}
-                    </span>
-                  </div>
-                  <div className="flex items-baseline justify-between border-t border-dark-300 pt-4">
-                    <span className="font-heading text-xl font-bold text-white">Total</span>
-                    <p className="font-heading text-2xl font-bold tabular-nums text-accent md:text-3xl">
-                      {formatCurrency(total, currency, config.locale)}
-                    </p>
-                  </div>
+                    </div>
+                  )
+                })}
+                {resumen.combo.descuento > 0 && (
+                  <>
+                    <div className={`${fila} border-t border-dark-300`}>
+                      <dt className="text-sm text-neutral">Subtotal</dt>
+                      <dd className="text-base tabular-nums">{soles(resumen.combo.subtotal)}</dd>
+                    </div>
+                    <div className={`${fila} border-t border-dark-300`}>
+                      <dt className="text-sm text-accent">Combo 10%</dt>
+                      <dd className="text-base font-medium tabular-nums text-accent">−{soles(resumen.combo.descuento)}</dd>
+                    </div>
+                  </>
+                )}
+                <div className={`${fila} border-t border-dark-300`}>
+                  <dt className="text-sm text-neutral">Total de productos</dt>
+                  <dd className="text-lg font-bold tabular-nums">{soles(resumen.combo.total)}</dd>
                 </div>
-              </>
-            )}
-          </div>
-        </div>
+              </dl>
+              {resumen.combo.descuento === 0 && resumen.hayProductosDelCombo && (
+                <p className="mt-2 text-sm text-neutral">Con {COMBO_MIN_UNITS} o más productos del combo tienes 10% menos.</p>
+              )}
+              {agotadas.map((l) => (
+                <p key={l.clave} className="mt-2 text-sm text-neutral">
+                  {l.product.name.trim()} está agotado y no va en tu pedido.
+                </p>
+              ))}
+              {country !== 'PE' && (
+                <p className="mt-2 text-sm text-neutral">Enviamos solo dentro del Perú: el pedido va en soles.</p>
+              )}
+              <Link href="/cart" className="mt-3 inline-block text-sm text-neutral-light underline underline-offset-2 hover:text-accent">
+                Cambiar productos
+              </Link>
+            </section>
+
+            <form ref={formulario} onSubmit={confirmar} className="mt-10">
+              <fieldset>
+                <legend className="font-heading text-3xl leading-none text-white">Tus datos</legend>
+                <div className="mt-5">
+                  <label className={etiqueta}>
+                    Nombre y apellido
+                    <input name="nombre" required minLength={2} maxLength={80} autoComplete="name" aria-invalid={invalido('nombre')} className={campo} />
+                  </label>
+                  <label className={etiqueta}>
+                    Correo
+                    <input
+                      name="correo"
+                      type="email"
+                      inputMode="email"
+                      required
+                      maxLength={120}
+                      autoComplete="email"
+                      placeholder="tucorreo@gmail.com"
+                      aria-invalid={invalido('correo')}
+                      className={campo}
+                    />
+                  </label>
+                  <label className={etiqueta}>
+                    WhatsApp
+                    <input
+                      name="whatsapp"
+                      type="tel"
+                      inputMode="tel"
+                      required
+                      minLength={6}
+                      maxLength={30}
+                      autoComplete="tel"
+                      placeholder="987 654 321"
+                      aria-invalid={invalido('whatsapp')}
+                      className={campo}
+                    />
+                  </label>
+                  <label className={etiqueta}>
+                    DNI (opcional)
+                    <input
+                      name="dni"
+                      inputMode="numeric"
+                      maxLength={20}
+                      autoComplete="off"
+                      aria-invalid={invalido('dni')}
+                      className={campo}
+                    />
+                    <span className="mt-1.5 block text-xs text-neutral">O tu carné de extranjería.</span>
+                  </label>
+                </div>
+              </fieldset>
+
+              <fieldset className="mt-10">
+                <legend className="font-heading text-3xl leading-none text-white">Entrega</legend>
+                <div className="mt-5">
+                  <label className={etiqueta}>
+                    Distrito
+                    <input
+                      name="distrito"
+                      required
+                      minLength={2}
+                      maxLength={80}
+                      autoComplete="address-level2"
+                      placeholder="Surco"
+                      aria-invalid={invalido('distrito')}
+                      className={campo}
+                    />
+                    <span className="mt-1.5 block text-xs text-neutral">Si no estás en Lima, pon también tu ciudad.</span>
+                  </label>
+                  <label className={etiqueta}>
+                    Dirección
+                    <input
+                      name="direccion"
+                      required
+                      minLength={5}
+                      maxLength={200}
+                      autoComplete="street-address"
+                      placeholder="Av. Primavera 123, dpto. 401"
+                      aria-invalid={invalido('direccion')}
+                      className={campo}
+                    />
+                  </label>
+                  <label className={etiqueta}>
+                    Referencia (opcional)
+                    <input
+                      name="referencia"
+                      maxLength={200}
+                      autoComplete="off"
+                      placeholder="Frente al parque"
+                      aria-invalid={invalido('referencia')}
+                      className={campo}
+                    />
+                  </label>
+                </div>
+              </fieldset>
+
+              <fieldset className="mt-10">
+                <legend className="font-heading text-3xl leading-none text-white">Envío</legend>
+                <div className="mt-5 rounded-2xl border border-dark-300 bg-dark-100">
+                  {envios.map((e, i) => (
+                    <label
+                      key={e.metodo}
+                      className={`flex cursor-pointer items-start gap-3 px-5 py-4 ${i > 0 ? 'border-t border-dark-300' : ''}`}
+                    >
+                      <input
+                        type="radio"
+                        name="envio"
+                        value={e.metodo}
+                        checked={envio === e.metodo}
+                        onChange={() => setEnvio(e.metodo)}
+                        className="mt-1 h-4 w-4 shrink-0 accent-accent"
+                      />
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-base text-white">{e.nombre}</span>
+                        <span className="block text-sm text-neutral">{e.plazo}</span>
+                      </span>
+                      <span className="shrink-0 text-base font-medium tabular-nums">{envioMonto(e)}</span>
+                    </label>
+                  ))}
+                </div>
+                <p className="mt-2 text-sm text-neutral">Son costos de referencia: te confirmamos el envío por WhatsApp según tu distrito.</p>
+              </fieldset>
+
+              {pagoEnLinea && (
+                <fieldset className="mt-10">
+                  <legend className="font-heading text-3xl leading-none text-white">Pago</legend>
+                  <div className="mt-5 rounded-2xl border border-dark-300 bg-dark-100">
+                    {(
+                      [
+                        { valor: 'mercadopago', titulo: 'Pagar ahora con Mercado Pago', nota: 'Yape, tarjeta y más' },
+                        { valor: 'whatsapp', titulo: 'Coordinar el pago por WhatsApp', nota: 'Te escribimos para confirmar el envío y cómo pagar' },
+                      ] as const
+                    ).map((o, i) => (
+                      <label
+                        key={o.valor}
+                        className={`flex cursor-pointer items-start gap-3 px-5 py-4 ${i > 0 ? 'border-t border-dark-300' : ''}`}
+                      >
+                        <input
+                          type="radio"
+                          name="pago"
+                          value={o.valor}
+                          checked={pago === o.valor}
+                          onChange={() => setPago(o.valor)}
+                          className="mt-1 h-4 w-4 shrink-0 accent-accent"
+                        />
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-base text-white">{o.titulo}</span>
+                          <span className="block text-sm text-neutral">{o.nota}</span>
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+              )}
+
+              <dl className="mt-10 rounded-2xl border border-dark-300 bg-dark-100">
+                <div className={fila}>
+                  <dt className="text-sm text-neutral">Total de productos</dt>
+                  <dd className="text-base tabular-nums">{soles(resumen.combo.total)}</dd>
+                </div>
+                <div className={`${fila} border-t border-dark-300`}>
+                  <dt className="text-sm text-neutral">Envío {opcionEnvio?.nombre.toLowerCase()}</dt>
+                  <dd className="text-base tabular-nums">{opcionEnvio ? envioMonto(opcionEnvio) : '—'}</dd>
+                </div>
+                <div className={`${fila} border-t border-dark-300`}>
+                  <dt className="text-base text-white">Total</dt>
+                  <dd className="text-xl font-bold tabular-nums text-accent">{soles(totalConEnvio)}</dd>
+                </div>
+              </dl>
+
+              <input name="sitio" tabIndex={-1} autoComplete="off" aria-hidden="true" className="hidden" />
+
+              <button
+                type="submit"
+                disabled={enviando}
+                className="mt-6 block w-full rounded-lg bg-accent px-6 py-4 text-center text-lg font-bold text-dark transition-colors hover:bg-accent-dark disabled:opacity-60"
+              >
+                {enviando ? 'Un momento…' : pagoEnLinea && pago === 'mercadopago' ? 'Confirmar y pagar' : 'Confirmar pedido'}
+              </button>
+
+              {error && (
+                <p role="alert" className="mt-3 text-sm text-red-400">
+                  {error.mensaje}
+                </p>
+              )}
+
+              <AvisoDatos
+                para="preparar y enviar tu pedido, y escribirte sobre él por WhatsApp o por correo"
+                donde={
+                  pagoEnLinea && pago === 'mercadopago'
+                    ? 'Supabase y Vercel, y Mercado Pago recibe tu nombre y tu correo para cobrarte'
+                    : undefined
+                }
+                className="mt-4"
+              />
+              <p className="mt-2 text-xs leading-relaxed text-neutral">
+                Al confirmar aceptas los{' '}
+                <Link href={RUTAS.terminos} className="text-neutral-light underline underline-offset-2 hover:text-accent">
+                  Términos
+                </Link>{' '}
+                y la política de{' '}
+                <Link href={RUTAS.cambios} className="text-neutral-light underline underline-offset-2 hover:text-accent">
+                  Cambios y devoluciones
+                </Link>
+                .
+              </p>
+            </form>
+          </>
+        )}
       </div>
     </div>
   )
 }
 
+/** Después de confirmar: el número del pedido y el botón para mandarlo por WhatsApp. */
+function PedidoRecibido({ resultado }: { resultado: Resultado }) {
+  const r = resultado.resumen
+  return (
+    <div className="px-4 py-10 text-white sm:py-14">
+      <div className="mx-auto w-full max-w-lg">
+        <h1 className="font-heading text-5xl leading-none text-white sm:text-6xl">Pedido recibido</h1>
+
+        <dl className="mt-8 rounded-2xl border border-dark-300 bg-dark-100">
+          <div className={fila}>
+            <dt className="text-sm text-neutral">Número de pedido</dt>
+            <dd className="text-right font-mono text-lg font-bold tracking-wide text-accent">{resultado.numero}</dd>
+          </div>
+          {r?.lineas.map((l, i) => (
+            <div key={`${l.nombre}-${i}`} className={`${fila} border-t border-dark-300`}>
+              <dt className="min-w-0 text-base">
+                {l.nombre}
+                <span className="block text-sm text-neutral">{l.cantidad === 1 ? '1 unidad' : `${l.cantidad} unidades`}</span>
+              </dt>
+              <dd className="shrink-0 text-right text-base tabular-nums">{soles(l.total)}</dd>
+            </div>
+          ))}
+          {r && r.descuentoCombo > 0 && (
+            <div className={`${fila} border-t border-dark-300`}>
+              <dt className="text-sm text-accent">Combo 10%</dt>
+              <dd className="text-base tabular-nums text-accent">−{soles(r.descuentoCombo)}</dd>
+            </div>
+          )}
+          {r && (
+            <>
+              <div className={`${fila} border-t border-dark-300`}>
+                <dt className="text-sm text-neutral">
+                  Envío {r.envio.nombre.toLowerCase()}
+                  <span className="block text-xs">de referencia</span>
+                </dt>
+                <dd className="text-base tabular-nums">{envioMonto(r.envio)}</dd>
+              </div>
+              <div className={`${fila} border-t border-dark-300`}>
+                <dt className="text-base text-white">Total</dt>
+                <dd className="text-xl font-bold tabular-nums">{soles(r.total)}</dd>
+              </div>
+            </>
+          )}
+        </dl>
+
+        {resultado.sinMercadoPago && (
+          <p className="mt-8 text-base leading-relaxed text-white">
+            No pudimos abrir Mercado Pago. Tu pedido igual quedó registrado: coordinamos el pago por WhatsApp.
+          </p>
+        )}
+        <p className="mt-8 text-base leading-relaxed text-white">
+          Mándanos tu pedido por WhatsApp para terminar. Ya va escrito con tu número de pedido.
+        </p>
+        <a
+          href={resultado.whatsapp}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-5 block rounded-lg bg-accent px-6 py-4 text-center text-lg font-bold text-dark transition-colors hover:bg-accent-dark"
+        >
+          Enviar pedido por WhatsApp
+        </a>
+        <p className="mt-3 text-center text-sm text-neutral-light">Te confirmamos el envío y cómo pagar.</p>
+
+        <Link href="/" className="mt-10 block text-center text-sm text-neutral-light underline underline-offset-2 hover:text-accent">
+          Volver a la tienda
+        </Link>
+      </div>
+    </div>
+  )
+}
