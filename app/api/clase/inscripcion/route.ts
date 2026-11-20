@@ -41,7 +41,7 @@ export async function POST(request: Request) {
       type: 'clase_inscripcion',
       severity: 'info',
       title: `${PREFIJO_TITULO}${nombre}`,
-      body: `WhatsApp ${whatsappLegible(digitos)} · ${correo} · fue a pagar S/ 30`,
+      body: `WhatsApp ${whatsappLegible(digitos)} · ${correo} · inscripción gratis`,
       link: `https://wa.me/${digitos}`,
       entityType: 'clase',
       entityId: CLASE.id,

@@ -1,8 +1,7 @@
-/** Datos de la clase virtual que se cobra con el link de Mercado Pago (página /clase). */
+/** Datos de la clase virtual gratuita (página /clase). Desde el 21 nov ya no se cobra: Diego la dejó gratis. */
 export const CLASE = {
   id: '2026-11-28',
   nombreCorto: 'Clase virtual 28 nov',
-  pagoUrl: 'https://mpago.la/2cHSMib',
   whatsappNumero: '51986964194',
   whatsappLegible: '986 964 194',
   /** Inicio y fin de la clase, con la hora de Perú (UTC−5). */
@@ -11,8 +10,8 @@ export const CLASE = {
   dia: 'Sábado 28 de noviembre',
   hora: '9 a 10 a. m. (hora Perú)',
   donde: 'Virtual, desde tu casa',
-  precio: 'S/ 30',
-  precioFuera: 'US$ 10 si pagas desde fuera',
+  precio: 'Gratis',
+  precioFuera: 'Solo tienes que inscribirte',
 } as const
 
 /** true mientras la clase no haya terminado (hasta las 10 a. m. de Perú del 28 de noviembre). */

@@ -111,8 +111,8 @@ export function terminos(e: Empresa): DocumentoLegal {
           parrafo('La fecha, la hora y el precio de cada clase virtual se publican en ', enlace('la página de la clase', RUTAS.clase), '.'),
           lista(
             'Te inscribes ahí con tu nombre, tu correo y tu WhatsApp.',
-            'Pagas con Mercado Pago, en su propia página. Se cobra en soles: si pagas desde fuera del Perú, tu banco hace la conversión.',
-            'Después de pagar, nos mandas tu comprobante por WhatsApp y por ahí te enviamos el link para entrar a la clase.',
+            'Si la clase es gratis, solo te inscribes con tu nombre, tu correo y tu WhatsApp, y por WhatsApp te enviamos el link para entrar.',
+            'Si una clase tiene precio, lo dice su página: pagas con Mercado Pago, en su propia página, en soles; si pagas desde fuera del Perú, tu banco hace la conversión. Después nos mandas tu comprobante por WhatsApp y te enviamos el link.',
           ),
           parrafo(CAMBIOS_CLASE.cancelamos),
           filas([{ nombre: 'Si pagaste y no puedes asistir', valor: CAMBIOS_CLASE.noPuedes }]),
