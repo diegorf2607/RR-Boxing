@@ -5,7 +5,20 @@ export const CLASE = {
   pagoUrl: 'https://mpago.la/2cHSMib',
   whatsappNumero: '51986964194',
   whatsappLegible: '986 964 194',
+  /** Inicio y fin de la clase, con la hora de Perú (UTC−5). */
+  inicio: '2026-11-28T09:00:00-05:00',
+  fin: '2026-11-28T10:00:00-05:00',
+  dia: 'Sábado 28 de noviembre',
+  hora: '9 a 10 a. m. (hora Perú)',
+  donde: 'Virtual, desde tu casa',
+  precio: 'S/ 30',
+  precioFuera: 'US$ 10 si pagas desde fuera',
 } as const
+
+/** true mientras la clase no haya terminado (hasta las 10 a. m. de Perú del 28 de noviembre). */
+export function claseVigente(ahora: Date = new Date()): boolean {
+  return ahora.getTime() < Date.parse(CLASE.fin)
+}
 
 /**
  * Deja solo los dígitos de un celular y le agrega el 51 de Perú si escribieron los 9 dígitos

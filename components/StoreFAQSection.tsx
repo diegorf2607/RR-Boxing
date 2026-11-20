@@ -1,70 +1,155 @@
 'use client'
 
-import { useCallback, useId, useState } from 'react'
+import { useCallback, useId, useState, type ReactNode } from 'react'
+import Link from 'next/link'
 import { ChevronDown } from 'lucide-react'
+import { WHATSAPP_LEGIBLE, enlaceWhatsapp } from '@/shared/lib/whatsapp'
+import { useClaseVigente } from '@/components/EnlaceClase'
 
-type FaqItem = { id: string; question: string; answer: string }
+type FaqItem = { id: string; question: string; answer: ReactNode }
+
+const WHATSAPP_CONSULTA = enlaceWhatsapp('Hola, RR Boxing. Tengo una consulta sobre la tienda.')
+
+const enlace = 'text-accent underline underline-offset-2 hover:text-white'
+
+/** Frase de la clase virtual: solo sale mientras la clase no haya terminado. */
+function FraseClaseVirtual() {
+  const vigente = useClaseVigente()
+  if (!vigente) return null
+  return (
+    <>
+      {' '}
+      También hay una{' '}
+      <Link href="/clase" className={enlace}>
+        clase virtual
+      </Link>{' '}
+      con fecha y precio publicados.
+    </>
+  )
+}
+
+function WhatsappLink({ children }: { children: ReactNode }) {
+  return (
+    <a href={WHATSAPP_CONSULTA} target="_blank" rel="noopener noreferrer" className={enlace}>
+      {children}
+    </a>
+  )
+}
 
 const FAQ_ITEMS: FaqItem[] = [
   {
+    id: 'pedido',
+    question: '¿Cómo hago mi pedido?',
+    answer: (
+      <>
+        Agrega tus productos al carrito y pídelos por WhatsApp: el mensaje sale con tu pedido ya escrito. Ahí nos
+        dejas tu nombre, tu correo y la dirección de envío, y te confirmamos el envío y el total antes de cobrarte.
+      </>
+    ),
+  },
+  {
     id: 'envios',
     question: '¿A qué zonas envían y cuánto tarda?',
-    answer:
-      'Por ahora operamos envíos dentro de Perú. En el checkout eliges Standard (2–3 días hábiles, gratis), Express (24–48 h) o Urgente en Lima metropolitana según las condiciones indicadas allí. El coste y la opción elegida quedan reflejados antes de pagar.',
+    answer: (
+      <>
+        Por ahora enviamos dentro del Perú. El costo y el plazo dependen de tu distrito: te los confirmamos por
+        WhatsApp antes de cobrarte.
+      </>
+    ),
   },
   {
     id: 'pagos',
-    question: '¿Cómo pago y es seguro?',
-    answer:
-      'El cobro online es con tarjeta a través de Stripe (datos encriptados; no pasan por nuestros servidores). En el checkout verás otras formas de pago como referencia para el futuro; hoy solo se completa el pedido con la opción Tarjeta/Stripe.',
+    question: '¿Cómo pago?',
+    answer: (
+      <>
+        Por ahora los productos de la tienda no se pagan en la web. Cuando nos escribes por WhatsApp con tu pedido,
+        te decimos cómo pagar.
+      </>
+    ),
+  },
+  {
+    id: 'combo',
+    question: '¿Hay descuentos?',
+    answer: (
+      <>
+        Sí, uno: llevando 2 o más unidades, aunque sean del mismo producto, tienes 10% de descuento sobre los
+        productos. Se calcula solo en el carrito y va escrito en tu pedido.
+      </>
+    ),
   },
   {
     id: 'stock',
-    question: '¿El stock que veo es real?',
-    answer:
-      'Sí. Las etiquetas de urgencia y los números de inventario salen del stock configurado para cada producto. Hasta que no completes el pago, otro cliente podría llevarse la última unidad: por eso recomendamos no demorar si ya decidiste.',
+    question: '¿Cómo sé si hay stock?',
+    answer: <>Antes de cobrarte te confirmamos por WhatsApp que el producto está disponible.</>,
   },
   {
     id: 'garantia',
     question: '¿Qué cubre la garantía de 30 días?',
-    answer:
-      'Defectos de fábrica o daños ocasionados en el transporte hasta la entrega. Debes avisarnos con fotos y el número de pedido dentro de los 30 días, conservando el empaque cuando sea posible. El detalle legal está en términos y política de reembolso.',
+    answer: (
+      <>
+        Defectos de fabricación y daños del transporte hasta tu dirección. Avísanos por WhatsApp dentro de los 30
+        días calendario desde la entrega, con fotos del producto y, si llegó dañado, también del empaque. El detalle
+        está en{' '}
+        <Link href="/garantia" className={enlace}>
+          Garantía de compra
+        </Link>
+        .
+      </>
+    ),
   },
   {
     id: 'devoluciones',
     question: '¿Puedo cambiar o devolver un producto?',
-    answer:
-      'Sí, en los casos previstos en política: producto sin uso, empaque original y solicitud por los canales indicados en tu correo de confirmación o cuenta. Los complementos digitales (PDF, clase grabada) tienen reglas distintas por ser contenido descargable o en video.',
+    answer: (
+      <>
+        Si llegó fallado, dañado o no es lo que pediste, entra en la garantía de 30 días. Para cambiarlo por otro
+        motivo, el producto debe estar sin uso y en su empaque original. En los dos casos, escríbenos por WhatsApp.
+        Más detalle en la{' '}
+        <Link href="/reembolso" className={enlace}>
+          Política de reembolso
+        </Link>
+        .
+      </>
+    ),
   },
   {
     id: 'clases',
     question: '¿La tienda incluye clases de boxeo?',
-    answer:
-      'La tienda es equipamiento y productos oficiales RRBOXING. Las clases personalizadas 1 a 1 son un servicio aparte: cotización y agenda en la sección Consulta / clases personalizadas, no en el carrito de la tienda.',
-  },
-  {
-    id: 'complementos',
-    question: '¿Qué son el PDF y la clase grabada que aparecen en el checkout?',
-    answer:
-      'Son complementos opcionales cuando llevas una sola línea de producto en el carrito: un PDF de inicio en boxeo y/o una clase en video con lo básico. Solo se cobran si los marcas antes de pagar; se suman al total en soles.',
+    answer: (
+      <>
+        No, las clases son aparte. Las{' '}
+        <Link href="/consulta" className={enlace}>
+          clases 1 a 1
+        </Link>{' '}
+        con Richard se piden por WhatsApp.
+        <FraseClaseVirtual />
+      </>
+    ),
   },
   {
     id: 'pais',
     question: '¿Puedo comprar desde otro país?',
-    answer:
-      'Hoy la tienda y el checkout están configurados solo para Perú (soles y dirección de envío en Perú). Más países pueden sumarse más adelante; mientras tanto, escríbenos por redes si necesitas una excepción comercial.',
+    answer: (
+      <>
+        Por ahora solo enviamos dentro del Perú y los precios están en soles. Si estás fuera, escríbenos por{' '}
+        <WhatsappLink>WhatsApp</WhatsappLink> y te contamos si se puede.
+      </>
+    ),
   },
   {
     id: 'contacto',
     question: '¿Cómo los contacto si hay un problema con mi pedido?',
-    answer:
-      'Responde al correo de confirmación del pedido o escríbenos por Instagram @rrboxingperu con tu número de orden. El detalle de garantía está en la página Garantía de compra (enlace en el pie del sitio).',
+    answer: (
+      <>
+        Escríbenos al WhatsApp <WhatsappLink>{WHATSAPP_LEGIBLE}</WhatsappLink> con tu nombre y lo que pediste.
+      </>
+    ),
   },
 ]
 
 export default function StoreFAQSection() {
   const baseId = useId()
-  const [openIds, setOpenIds] = useState<Set<string>>(() => new Set(['envios']))
+  const [openIds, setOpenIds] = useState<Set<string>>(() => new Set(['pedido']))
 
   const toggle = useCallback((id: string) => {
     setOpenIds((prev) => {
@@ -88,8 +173,7 @@ export default function StoreFAQSection() {
             Preguntas y respuestas
           </h2>
           <p className="mt-3 text-sm text-neutral-light md:text-base">
-            Respuestas rápidas antes de comprar. Si no ves tu caso, escríbenos por Instagram o desde el correo de tu
-            pedido.
+            Si no ves tu caso, escríbenos por <WhatsappLink>WhatsApp</WhatsappLink>.
           </p>
         </div>
 

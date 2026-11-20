@@ -1,10 +1,12 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { toYouTubeEmbedUrl } from '@/shared/lib/youtube-embed'
+import { enlaceWhatsapp } from '@/shared/lib/whatsapp'
 
 export const metadata: Metadata = {
-  title: 'Clase grabada — primeros pasos',
-  description: 'Tema inicial de boxeo: calentamiento, guardia y primeros golpes. Regalo por comprar en la tienda oficial.',
+  title: 'Clase grabada: primeros pasos',
+  description: 'Tema inicial de boxeo: calentamiento, guardia y primeros golpes.',
+  robots: { index: false, follow: false },
 }
 
 export default function ClaseInicialPage() {
@@ -24,19 +26,17 @@ export default function ClaseInicialPage() {
         </div>
       </header>
       <div className="container mx-auto max-w-3xl px-4 py-10">
-        <p className="mb-2 text-xs font-bold uppercase tracking-widest text-accent">Regalo tienda oficial</p>
         <h1 className="mb-3 font-heading text-4xl font-bold tracking-wide text-white md:text-5xl">
           Clase grabada: primeros pasos
         </h1>
         <p className="mb-8 text-lg text-white">
-          Un adicional pensado para quien compra equipamiento: calentamiento, guardia y primeras combinaciones con
-          explicación clara, al estilo RRBOXING.
+          Calentamiento, guardia y primeras combinaciones, explicados paso a paso.
         </p>
 
         {embed ? (
           <div className="aspect-video w-full overflow-hidden rounded-2xl border border-dark-300 bg-black shadow-xl">
             <iframe
-              title="Clase grabada RRBOXING"
+              title="Clase grabada de RR Boxing"
               src={embed}
               className="h-full w-full"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -45,12 +45,17 @@ export default function ClaseInicialPage() {
           </div>
         ) : (
           <div className="rounded-2xl border border-dark-300 bg-dark-100 p-8 text-center">
-            <p className="mb-4 text-neutral-light">
-              Cuando configures <code className="rounded bg-dark px-1 text-accent">NEXT_PUBLIC_POST_PURCHASE_VIDEO_URL</code>{' '}
-              con tu enlace de YouTube (ver o embed), el video aparecerá aquí automáticamente.
-            </p>
-            <p className="text-sm text-neutral">
-              Mientras tanto, disfrutá la{' '}
+            <p className="mb-4 text-white">Esta clase todavía no está disponible.</p>
+            <a
+              href={enlaceWhatsapp('Hola, RR Boxing. Quiero saber cuándo estará disponible la clase grabada de primeros pasos.')}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block rounded-lg bg-accent px-6 py-3 font-bold text-dark transition-colors hover:bg-accent-dark"
+            >
+              Preguntar por WhatsApp
+            </a>
+            <p className="mt-4 text-sm text-neutral">
+              Mientras tanto, disfruta la{' '}
               <Link href="/bonus/guia-basica" className="text-accent underline">
                 guía básica en texto
               </Link>

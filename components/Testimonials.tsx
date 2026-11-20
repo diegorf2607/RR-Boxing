@@ -1,6 +1,8 @@
 'use client'
 
-import Link from 'next/link'
+import { enlaceWhatsapp } from '@/shared/lib/whatsapp'
+
+const WHATSAPP_CLASES = enlaceWhatsapp('Hola, RR Boxing. Quiero información de las clases 1 a 1.')
 
 /** IDs extraídos de los enlaces youtube.com/shorts/… */
 const testimonials = [
@@ -26,7 +28,7 @@ function TestimonialShortCard({ item }: { item: (typeof testimonials)[0] }) {
       <div className="relative aspect-[9/16] w-full bg-dark-200">
         <iframe
           src={embedSrc}
-          title={`Testimonio RRBOXING en YouTube (${item.videoId})`}
+          title={`Testimonio de RR Boxing en YouTube (${item.videoId})`}
           className="absolute inset-0 h-full w-full border-0"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           allowFullScreen
@@ -50,13 +52,11 @@ export default function Testimonials() {
     <section id="testimonios" className="bg-dark-100 py-12 md:py-20">
       <div className="container mx-auto px-4">
         <h2 className="mb-4 text-center text-3xl font-bold italic md:text-4xl lg:text-5xl">
-          Quiénes respaldan
+          Lo que cuentan
           <br />
-          <span className="not-italic text-accent">las clases y el método</span>
+          <span className="not-italic text-accent">quienes entrenan con nosotros</span>
         </h2>
-        <p className="section-subtitle">
-          Personas reales que entrenan con la visión RRBOXING: comunidad, técnica y, cuando aplica, acompañamiento 1 a 1.
-        </p>
+        <p className="section-subtitle">Personas que entrenan con RR Boxing cuentan su experiencia en video.</p>
 
         <div className="mx-auto flex max-w-5xl snap-x snap-mandatory gap-4 overflow-x-auto pb-4 scrollbar-hide md:grid md:grid-cols-3 md:gap-6 md:overflow-visible md:pb-0">
           {testimonials.map((t) => (
@@ -67,14 +67,16 @@ export default function Testimonials() {
 
         <div className="mt-10 flex flex-col items-center justify-center gap-3 px-2 text-center">
           <p className="max-w-md text-sm text-neutral-light">
-            ¿Listo para hablar de objetivos, disponibilidad y cómo encajan las clases 1 a 1 con vos?
+            ¿Quieres clases 1 a 1? Escríbenos por WhatsApp y te contamos cómo serían según tus objetivos y tu tiempo.
           </p>
-          <Link
-            href="/consulta"
+          <a
+            href={WHATSAPP_CLASES}
+            target="_blank"
+            rel="noopener noreferrer"
             className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-red-600 via-red-500 to-orange-500 px-8 py-3.5 text-base font-bold text-white shadow-lg shadow-red-500/30 transition hover:scale-[1.02] hover:brightness-110"
           >
-            Reservar mi llamada
-          </Link>
+            Clases 1 a 1 por WhatsApp
+          </a>
         </div>
       </div>
     </section>

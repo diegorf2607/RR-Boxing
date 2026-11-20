@@ -1,5 +1,7 @@
 'use client'
 
+import { enlaceWhatsapp } from '@/shared/lib/whatsapp'
+
 function WhatsAppIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden>
@@ -8,21 +10,11 @@ function WhatsAppIcon({ className }: { className?: string }) {
   )
 }
 
-/** Número de contacto (Perú +51); puede sustituirse con NEXT_PUBLIC_WHATSAPP_PHONE o URL. */
-const DEFAULT_WHATSAPP_PHONE = '51986964194'
-
 function resolveWhatsAppHref(): string {
   const url = process.env.NEXT_PUBLIC_WHATSAPP_URL?.trim()
-  if (url) {
-    if (url.startsWith('http://') || url.startsWith('https://')) return url
-    return `https://${url}`
-  }
-  const phone =
-    process.env.NEXT_PUBLIC_WHATSAPP_PHONE?.replace(/\D/g, '') || DEFAULT_WHATSAPP_PHONE
-  const message =
-    process.env.NEXT_PUBLIC_WHATSAPP_MESSAGE?.trim() ||
-    'Hola, quiero información para comprar en RRBOXING.'
-  return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
+  if (url) return url.startsWith('http://') || url.startsWith('https://') ? url : `https://${url}`
+  const message = process.env.NEXT_PUBLIC_WHATSAPP_MESSAGE?.trim() || 'Hola, RR Boxing. Quiero información.'
+  return enlaceWhatsapp(message)
 }
 
 export default function FloatingWhatsApp() {

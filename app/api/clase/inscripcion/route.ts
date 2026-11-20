@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { insertAdminNotification } from '@/shared/lib/data-store'
-import { CLASE, PREFIJO_TITULO, normalizarWhatsapp, whatsappLegible } from '@/shared/lib/clase-virtual'
+import { CLASE, PREFIJO_TITULO, claseVigente, normalizarWhatsapp, whatsappLegible } from '@/shared/lib/clase-virtual'
 
 const schema = z.object({
   nombre: z.string().trim().min(2).max(80),
@@ -12,6 +12,10 @@ const schema = z.object({
 })
 
 export async function POST(request: Request) {
+  if (!claseVigente()) {
+    return NextResponse.json({ error: 'Las inscripciones de esta clase ya cerraron.' }, { status: 400 })
+  }
+
   let body: unknown
   try {
     body = await request.json()

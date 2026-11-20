@@ -3,10 +3,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { Product } from '@/shared/types/commerce'
 import ProductCard from '@/features/store/ProductCard'
+import { useCountry } from '@/features/country/CountryProvider'
+import { getPriceForCountry } from '@/features/store/pricing'
 
-type SortBy = 'recent' | 'bestsellers' | 'price_asc' | 'price_desc'
+type SortBy = 'recent' | 'price_asc' | 'price_desc'
 
 export default function StoreClient() {
+  const { country } = useCountry()
   const [products, setProducts] = useState<Product[]>([])
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState('all')
@@ -33,22 +36,21 @@ export default function StoreClient() {
       const byFeatured = !featuredOnly || p.featured
       return byQuery && byCategory && byStock && byFeatured && p.active
     })
-    if (sortBy === 'price_asc') return [...base].sort((a, b) => a.prices[0].amount - b.prices[0].amount)
-    if (sortBy === 'price_desc') return [...base].sort((a, b) => b.prices[0].amount - a.prices[0].amount)
-    if (sortBy === 'bestsellers')
-      return [...base].sort((a, b) => (b.reviewCount ?? 0) - (a.reviewCount ?? 0))
+    const amount = (p: Product) => getPriceForCountry(p, country).amount
+    if (sortBy === 'price_asc') return [...base].sort((a, b) => amount(a) - amount(b))
+    if (sortBy === 'price_desc') return [...base].sort((a, b) => amount(b) - amount(a))
     return base
-  }, [products, query, category, inStockOnly, featuredOnly, sortBy])
+  }, [products, query, category, inStockOnly, featuredOnly, sortBy, country])
 
   return (
     <section id="catalogo" className="scroll-mt-24 container mx-auto px-4 py-10">
       <div className="mb-8">
-        <h1 className="mb-3 text-4xl font-bold">Tienda RRBOXING</h1>
-        <p className="text-neutral-light">Equipamiento premium para entrenamiento real y rendimiento competitivo.</p>
+        <h1 className="mb-3 text-4xl font-bold">Tienda RR Boxing</h1>
+        <p className="text-neutral-light">Guantes, vendas y cuerda de salto para entrenar en casa o en clase.</p>
         <p className="mt-4 rounded-xl border border-accent/35 bg-accent/5 px-4 py-3 text-sm leading-relaxed text-neutral-light">
-          <strong className="text-white">10% OFF + regalo sorpresa</strong> con 2 o más artículos en el checkout.{' '}
+          Con 2 o más unidades en tu pedido, <strong className="text-white">10% de descuento</strong> en productos.{' '}
           <a href="#combos" className="text-accent underline underline-offset-2 hover:text-white">
-            Ver ideas de packs
+            Ver combos sugeridos
           </a>
         </p>
       </div>
@@ -67,7 +69,7 @@ export default function StoreClient() {
         >
           {categories.map((item) => (
             <option key={item} value={item}>
-              {item === 'all' ? 'Todas las categorias' : item}
+              {item === 'all' ? 'Todas las categorías' : item}
             </option>
           ))}
         </select>
@@ -76,8 +78,7 @@ export default function StoreClient() {
           onChange={(e) => setSortBy(e.target.value as SortBy)}
           className="rounded-lg border border-dark-300 bg-dark-100 px-3 py-2"
         >
-          <option value="recent">Mas recientes</option>
-          <option value="bestsellers">Mas valorados</option>
+          <option value="recent">Más recientes</option>
           <option value="price_asc">Precio menor a mayor</option>
           <option value="price_desc">Precio mayor a menor</option>
         </select>

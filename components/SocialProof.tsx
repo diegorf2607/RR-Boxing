@@ -1,4 +1,3 @@
-import { CheckCircle } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -34,7 +33,7 @@ const socialStats = [
   {
     platform: 'Facebook',
     handle: 'RR Boxing Peru',
-    url: 'https://facebook.com/rrboxingperu',
+    url: 'https://www.facebook.com/p/RR-Boxing-Peru-100083217998125/',
     followers: '+185K',
     followersLabel: 'Seguidores',
     icon: (
@@ -56,12 +55,10 @@ export default function SocialProof() {
         </p>
         <div className="mx-auto mb-10 max-w-4xl text-center">
           <h2 className="font-heading text-4xl font-bold leading-[0.95] tracking-tight text-white antialiased sm:text-5xl md:text-6xl lg:text-7xl">
-            Más de <span className="text-accent">400 000</span> personas
+            Más de <span className="text-accent">470 mil</span> seguidores
           </h2>
           <p className="section-subtitle mt-4 max-w-3xl mx-auto">
-            Solo entre TikTok, Instagram y Facebook: la energía que ya viste en redes es la misma autoridad —
-            contenido, técnica y disciplina con respaldo real — detrás de{' '}
-            <span className="text-accent">RRBOXING</span>, la tienda oficial y las clases personalizadas.
+            Sumando TikTok, Instagram y Facebook, según el conteo de noviembre de 2026.
           </p>
         </div>
 
@@ -73,6 +70,7 @@ export default function SocialProof() {
               key={index} 
               href={social.url}
               target="_blank"
+              rel="noopener noreferrer"
               className="card overflow-hidden p-0 cursor-pointer hover:scale-[1.02] transition-transform"
             >
               {/* Card Image - Full screenshot showing follower numbers */}
@@ -107,35 +105,23 @@ export default function SocialProof() {
             <div className="relative h-48 sm:h-64 md:h-80 lg:h-96">
               <Image
                 src="/Richard.jpeg"
-                alt="Richard Rodríguez — RRBOXING"
+                alt="Richard Rodríguez, entrenador de RR Boxing"
                 fill
                 className="object-cover object-center"
                 sizes="(max-width: 768px) 100vw, 400px"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-dark-100 via-transparent to-transparent" />
-              {/* Certified Badge */}
-              <div className="absolute top-2 right-2 md:top-3 md:right-3 bg-green-500 text-white text-[10px] md:text-xs font-bold px-1.5 md:px-2 py-0.5 md:py-1 rounded flex items-center gap-1">
-                <CheckCircle className="w-2.5 h-2.5 md:w-3 md:h-3" />
-                CERTIFICADO
-              </div>
             </div>
 
             {/* Card Content */}
             <div className="p-2 md:p-4">
               <h3 className="text-sm md:text-xl font-bold text-white mb-0.5">Richard Rodríguez</h3>
               <p className="text-accent text-xs md:text-sm font-medium mb-1 md:mb-3">
-                Entrenador Profesional
+                Entrenador de RR Boxing
               </p>
-              <ul className="hidden md:block space-y-1 text-sm text-neutral">
-                <li className="flex items-center gap-2">
-                  <span className="text-accent">•</span>
-                  +15 años de experiencia
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="text-accent">•</span>
-                  +500 alumnos entrenados
-                </li>
-              </ul>
+              <p className="hidden md:block text-sm text-neutral">
+                Es el profe de las clases 1 a 1.
+              </p>
             </div>
           </div>
         </div>

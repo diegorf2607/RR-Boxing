@@ -1,7 +1,7 @@
 import LegalPageShell from '@/components/LegalPageShell'
 
 export const metadata = {
-  title: 'Política de privacidad | RRBOXING',
+  title: 'Política de privacidad',
   description: 'Cómo RRBOXING trata tus datos cuando navegas o compras en el sitio.',
 }
 
@@ -13,8 +13,9 @@ export default function PrivacidadPage() {
         correo, país y datos de envío que nos proporciones en el checkout).
       </p>
       <p>
-        Los pagos los gestiona Stripe según su propia política de privacidad. No almacenamos el número completo de tu
-        tarjeta en nuestros servidores.
+        Por ahora la tienda no cobra en la web: los pedidos se coordinan por WhatsApp. Cuando un pago se hace con
+        Mercado Pago, se hace en su propia página y según su política de privacidad; nosotros no recibimos ni guardamos
+        los datos de tu tarjeta.
       </p>
       <p>
         Puedes solicitar información sobre tus datos contactando al equipo RRBOXING a través de los medios oficiales de
