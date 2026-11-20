@@ -1,8 +1,10 @@
-// Página 404 en español, con el tema oscuro y dos caminos: volver a la tienda o escribir por WhatsApp.
-// Next.js le pone sola <meta name="robots" content="noindex"> por el estado 404.
+// Página 404 en español, en la línea A: la barra con el logo y, debajo, como el texto de la portada de la maqueta: el
+// titular angosto, el párrafo de entrada y dos botones (el amarillo para volver a la tienda y el de borde para
+// escribir por WhatsApp). Next.js le pone sola <meta name="robots" content="noindex"> por el estado 404.
 import type { Metadata } from 'next'
-import Image from 'next/image'
 import Link from 'next/link'
+import { CabeceraSola } from '@/components/LegalPageShell'
+import IconoWhatsapp from '@/components/legal/IconoWhatsapp'
 import { enlaceWhatsapp } from '@/shared/lib/whatsapp'
 
 export const metadata: Metadata = {
@@ -13,31 +15,37 @@ const WHATSAPP_AYUDA = enlaceWhatsapp('Hola, RR Boxing. Busqué una página en l
 
 export default function NoEncontrada() {
   return (
-    <main className="min-h-[70vh] bg-dark px-4 py-12 text-white sm:py-20">
-      <div className="mx-auto w-full max-w-md">
-        <Link href="/" className="inline-block" aria-label="RR Boxing, ir a la tienda">
-          {/* 40 × 61: la proporción exacta del logo (95 × 146), así no se deforma ni avisa en la consola */}
-          <Image src="/rr-boxing-logo.png" alt="RR Boxing" width={40} height={61} />
-        </Link>
+    <>
+      <CabeceraSola />
+      <main className="min-h-[60vh] bg-dark pb-16 pt-10 text-white md:pb-24 md:pt-16">
+        <div className="wrap">
+          <div className="max-w-[34em]">
+            <p className="text-sm text-neutral">Error 404</p>
+            <h1 className="hero-title mt-3">
+              No encontramos <span className="block text-accent">esta página</span>
+            </h1>
+            <p className="lead mt-5">
+              Puede que el enlace esté mal copiado o que la página ya no exista. Los guantes, las vendas y la cuerda
+              siguen en la tienda.
+            </p>
 
-        <p className="mt-8 text-sm text-neutral">Error 404</p>
-        <h1 className="page-title mt-2">
-          No encontramos <span className="block text-accent">esta página</span>
-        </h1>
-        <p className="mt-5 text-base leading-relaxed text-neutral-light">
-          Puede que el enlace esté mal copiado o que la página ya no exista. Los guantes, las vendas y la cuerda siguen
-          en la tienda.
-        </p>
-
-        <div className="mt-8 border-t border-dark-300">
-          <Link href="/" className="btn-primary mt-6">
-            Ir a la tienda
-          </Link>
-          <a href={WHATSAPP_AYUDA} target="_blank" rel="noopener noreferrer" className="btn-secondary mt-3">
-            Escríbenos por WhatsApp
-          </a>
+            <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <Link href="/" className="btn-primary sm:inline-flex sm:w-auto">
+                Ir a la tienda
+              </Link>
+              <a
+                href={WHATSAPP_AYUDA}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-secondary sm:inline-flex sm:w-auto"
+              >
+                <IconoWhatsapp />
+                Escríbenos por WhatsApp
+              </a>
+            </div>
+          </div>
         </div>
-      </div>
-    </main>
+      </main>
+    </>
   )
 }

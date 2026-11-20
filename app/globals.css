@@ -2,12 +2,38 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Las fuentes (Inter y Bebas Neue) las carga next/font en app/layout.tsx: se sirven desde el propio sitio y
-   dejan las variables --font-inter y --font-bebas-neue en <html>. Tailwind las usa en font-sans y font-heading. */
-
+/*
+ * Línea visual A, «Oscuro sobrio» (maqueta: RR\rrboxing-tienda-auditoria\opciones-visuales\opcion-a.html).
+ * Fondo negro, cajas con filas y líneas finas como /clase, un solo acento (el amarillo del logo), una sola letra
+ * (Archivo, que carga next/font en app/layout.tsx y deja --font-archivo en <html>). Sin sombras, píldoras,
+ * degradados ni MAYÚSCULAS. Los mismos colores están en tailwind.config.ts con los nombres de siempre
+ * (bg-dark, bg-dark-100, border-dark-300, text-neutral-light, text-accent…).
+ */
 :root {
-  --accent-color: #FFD700;
-  --dark-bg: #0a0a0a;
+  --bg: #0b0b0b; /* fondo de la página (bg-dark) */
+  --bg-1: #131313; /* cajas y tarjetas (bg-dark-100) */
+  --bg-2: #1a1a1a; /* un gris más arriba (bg-dark-200) */
+  --line: #272727; /* línea fina de toda caja (border-dark-300 o border-line) */
+  --line-2: #3a3a3a; /* línea de botones y campos (border-dark-400 o border-line-2) */
+  --tx: #f4f4f2; /* texto (text-white) */
+  --tx-2: #b9b9b5; /* texto de apoyo (text-neutral-light) */
+  --tx-3: #8c8c88; /* etiquetas y notas (text-neutral) */
+  --ac: #ffd60a; /* el acento (bg-accent, text-accent) */
+  --ac-hover: #ffe14d; /* hover del acento (hover:bg-accent-dark) */
+  --on-ac: #0b0b0b; /* texto sobre el acento (text-dark) */
+  --tile: #ececea; /* fondo de las fotos de producto (bg-tile) */
+  --r: 16px; /* cajas (rounded-2xl) */
+  --r-sm: 12px; /* fotos chicas (rounded-xl) */
+  --r-btn: 10px; /* botones y campos (rounded-lg) */
+  --wrap: 1200px; /* ancho del contenido (.wrap) */
+  --gut: 16px; /* margen lateral: 16 px en el celular, 32 px desde 768 px */
+  --ff: var(--font-archivo), 'Helvetica Neue', Arial, sans-serif;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --gut: 32px;
+  }
 }
 
 * {
@@ -30,75 +56,512 @@ body {
 }
 
 body {
-  background: var(--dark-bg);
-  color: #ffffff;
-  font-family: var(--font-inter), system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--tx);
+  font-family: var(--ff);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Bebas Neue tiene un solo peso: sin esto, font-bold la engorda con una negrita falsa. */
-.font-heading {
-  font-synthesis: none;
+@layer base {
+  /* El foco de teclado de toda la tienda: el amarillo, separado del elemento. Donde un componente pone el suyo
+     (focus:border-accent en los campos, outline-none en destinos de salto), manda el del componente. */
+  :focus-visible {
+    outline: 2px solid var(--ac);
+    outline-offset: 3px;
+  }
+
+  ::selection {
+    background: var(--ac);
+    color: var(--on-ac);
+  }
+}
+
+@layer components {
+  /* Los hijos de estas clases (dt, dd, li, summary, img…) van con :where() para que una clase de Tailwind puesta en el
+     hijo (text-white, text-base…) siempre les gane. */
+
+  /* ---------- Contenedor ---------- */
+
+  /* El contenedor de la maqueta: 1200 px de contenido, con 16 px de margen en el celular y 32 px desde 768 px. */
+  .wrap {
+    width: 100%;
+    max-width: calc(var(--wrap) + 2 * var(--gut));
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: var(--gut);
+    padding-right: var(--gut);
+  }
+
+  /* ---------- Titulares ---------- */
+
+  /* Titulares angostos en minúscula (de oración): Archivo al 72 % de ancho, en negrita. Vale para cualquier
+     elemento con font-heading (el tamaño lo pone text-*). */
+  .font-heading {
+    font-stretch: 72%;
+    font-weight: 700;
+    letter-spacing: -0.005em;
+    text-wrap: balance;
+  }
+
+  /* Cuatro tamaños de titular, de la maqueta. Todos con la misma letra angosta y el interlineado apretado (.95):
+     .hero-title  portada (44 a 76 px)              .page-title    h1 de cada página y de la ficha (40 a 60 px)
+     .section-title  título de sección (36 a 52 px)  .card-title    título dentro de una caja (30 px) */
+  .hero-title,
+  .page-title,
+  .section-title,
+  .card-title {
+    font-family: var(--ff);
+    font-stretch: 72%;
+    font-weight: 700;
+    letter-spacing: -0.005em;
+    line-height: 0.95;
+    text-wrap: balance;
+    color: var(--tx);
+  }
+
+  .hero-title {
+    font-size: clamp(44px, 5.2vw, 76px);
+  }
+
+  .page-title {
+    font-size: clamp(40px, 4.4vw, 60px);
+  }
+
+  .section-title {
+    font-size: clamp(36px, 4vw, 52px);
+  }
+
+  .card-title {
+    font-size: 30px;
+  }
+
+  /* Bajada de un título de sección o de página */
+  .section-subtitle {
+    margin-top: 12px;
+    max-width: 36em;
+    font-size: 16px;
+    line-height: 1.55;
+    color: var(--tx-2);
+  }
+
+  /* El párrafo de entrada de la portada (debajo del titular) */
+  .lead {
+    max-width: 34em;
+    font-size: 18px;
+    line-height: 1.55;
+    color: var(--tx-2);
+  }
+
+  /* ---------- Secciones ---------- */
+
+  /* Cada sección de la portada y de la ficha: 72 px arriba y abajo (52 px en el celular) y una línea fina arriba. */
+  .seccion {
+    padding-top: 52px;
+    padding-bottom: 52px;
+    border-top: 1px solid var(--line);
+  }
+
+  /* La cabecera de la sección: el título a la izquierda y la bajada a la derecha, alineados abajo (se apilan si no
+     caben). La bajada puede ser un <p> suelto o un .section-subtitle. */
+  .seccion-cab {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px 32px;
+    margin-bottom: 24px;
+  }
+
+  .seccion-cab > p,
+  .seccion-cab > .section-subtitle {
+    margin-top: 0;
+    max-width: 36em;
+    color: var(--tx-2);
+  }
+
+  @media (min-width: 768px) {
+    .seccion {
+      padding-top: 72px;
+      padding-bottom: 72px;
+    }
+
+    .seccion-cab {
+      margin-bottom: 32px;
+    }
+  }
+
+  /* ---------- Botones ---------- */
+
+  /* Los dos botones de toda la tienda: el principal (amarillo) y el secundario (con borde, como «Preguntar por
+     WhatsApp» de la maqueta). Miden 54 px de alto y van a todo el ancho; donde van en línea se les suma
+     «inline-flex w-auto». Un ícono adentro queda a 10 px del texto. */
+  .btn-primary,
+  .btn-secondary {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 54px;
+    padding: 12px 24px;
+    border: 1px solid transparent;
+    border-radius: var(--r-btn);
+    font-family: var(--ff);
+    font-size: 16px;
+    font-weight: 650;
+    line-height: 1.25;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+      background-color 0.15s,
+      border-color 0.15s,
+      color 0.15s;
+  }
+
+  .btn-primary {
+    background-color: var(--ac);
+    color: var(--on-ac);
+  }
+
+  .btn-primary:hover:not(:disabled):not([aria-disabled='true']) {
+    background-color: var(--ac-hover);
+  }
+
+  .btn-secondary {
+    background-color: transparent;
+    color: var(--tx);
+    border-color: var(--line-2);
+  }
+
+  .btn-secondary:hover:not(:disabled):not([aria-disabled='true']) {
+    border-color: var(--tx-3);
+  }
+
+  .btn-primary:disabled,
+  .btn-primary[aria-disabled='true'],
+  .btn-secondary:disabled,
+  .btn-secondary[aria-disabled='true'] {
+    cursor: not-allowed;
+    opacity: 0.4;
+  }
+
+  /* Más grande, para la compra en la ficha (58 px) */
+  .btn-xl {
+    min-height: 58px;
+    font-size: 17px;
+  }
+
+  /* Más bajo, para barras fijas (46 px, sigue pasando los 44 px del dedo) */
+  .btn-compact {
+    min-height: 46px;
+    padding: 8px 18px;
+  }
+
+  /* Enlace de texto con subrayado fino («Ver producto») */
+  .link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+  }
+
+  /* ---------- Campos ---------- */
+
+  /* Los campos de los formularios usan border-dark-300, que ahora es la línea fina de las cajas: casi no se verían.
+     Llevan la línea marcada (la de los botones con borde y las opciones de la maqueta). El foco (focus:border-accent)
+     y el error (aria-[invalid=true]:border-red-500) siguen mandando. */
+  input.border-dark-300,
+  select.border-dark-300,
+  textarea.border-dark-300 {
+    border-color: var(--line-2);
+  }
+
+  /* ---------- Cajas ---------- */
+
+  /* Caja: fondo un poco más claro, línea fina y 16 px de borde redondeado. */
+  .card {
+    background-color: var(--bg-1);
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    padding: 24px;
+    transition: border-color 0.15s;
+  }
+
+  .card:hover {
+    border-color: var(--line-2);
+  }
+
+  /* Caja con filas, la de /clase: cada hijo directo es una fila (etiqueta a la izquierda, valor a la derecha) y
+     entre filas va una línea fina. Pensada para <dl> con <div><dt/><dd/></div>, pero sirve con cualquier hijo.
+       <dl class="filas"><div><dt>Día</dt><dd>Sábado 28 de noviembre<small>nota</small></dd></div>…</dl>
+     Variantes: .filas-hundidas (fondo de la página, para filas dentro de una .card), .filas-centradas (etiqueta y
+     valor centrados en alto, para filas de dos líneas como los combos) y .filas-texto (etiqueta en una columna de
+     96 px y texto largo a la izquierda, como «Envío», «Pago», «Garantía» de la ficha). */
+  .filas {
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    background-color: var(--bg-1);
+  }
+
+  .filas > * {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 15px 20px;
+  }
+
+  .filas > * + * {
+    border-top: 1px solid var(--line);
+  }
+
+  .filas :where(dt) {
+    font-size: 14px;
+    color: var(--tx-3);
+  }
+
+  .filas :where(dd) {
+    font-size: 15.5px;
+    font-weight: 550;
+    text-align: right;
+  }
+
+  .filas :where(dt small, dd small) {
+    display: block;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--tx-3);
+  }
+
+  .filas-hundidas {
+    background-color: var(--bg);
+  }
+
+  .filas-centradas > * {
+    align-items: center;
+  }
+
+  .filas-texto > * {
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr);
+  }
+
+  .filas-texto :where(dt) {
+    font-weight: 600;
+    color: var(--tx);
+  }
+
+  .filas-texto :where(dd) {
+    font-size: 14.5px;
+    font-weight: 400;
+    text-align: left;
+    color: var(--tx-2);
+  }
+
+  /* Lista con líneas finas entre ítems y un ícono amarillo a la izquierda («Cómo son» de la ficha).
+       <ul class="lista-lineas"><li><svg …/>Texto</li>…</ul> */
+  .lista-lineas > :where(li) {
+    display: flex;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+    color: var(--tx-2);
+  }
+
+  .lista-lineas > :where(li:first-child) {
+    border-top: 1px solid var(--line);
+  }
+
+  .lista-lineas :where(li > svg) {
+    flex: none;
+    width: 20px;
+    height: 20px;
+    margin-top: 2px;
+    color: var(--ac);
+  }
+
+  /* Preguntas que se abren (<details>), separadas por líneas finas, con la flecha a la derecha.
+       <div class="acordeon"><details><summary>¿Pregunta?<svg …/></summary><p>Respuesta</p></details>…</div> */
+  .acordeon {
+    max-width: 760px;
+  }
+
+  .acordeon > :where(details) {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .acordeon > :where(details:first-child) {
+    border-top: 1px solid var(--line);
+  }
+
+  .acordeon :where(summary) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 60px;
+    padding: 14px 0;
+    font-size: 17px;
+    font-weight: 550;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .acordeon :where(summary)::-webkit-details-marker {
+    display: none;
+  }
+
+  .acordeon :where(summary > svg) {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    color: var(--tx-3);
+    transition: transform 0.2s;
+  }
+
+  .acordeon details[open] > summary > svg {
+    transform: rotate(180deg);
+  }
+
+  .acordeon :where(details > :not(summary)) {
+    max-width: 40em;
+    padding-bottom: 20px;
+    color: var(--tx-2);
+  }
+
+  /* Opciones para elegir (color, pack, envío): un radio o checkbox escondido sobre una caja con borde. La caja
+     marcada lleva borde blanco doble; con el teclado, el foco amarillo va en la caja.
+       <label class="opcion"><input type="radio" …><span class="opcion-caja"><span class="opcion-punto"></span>Texto</span></label> */
+  .opcion {
+    position: relative;
+    display: block;
+    cursor: pointer;
+  }
+
+  .opcion > input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .opcion-caja {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 52px;
+    padding: 0 16px;
+    border: 1px solid var(--line-2);
+    border-radius: var(--r-btn);
+    font-weight: 550;
+    transition: border-color 0.15s;
+  }
+
+  .opcion:hover > .opcion-caja {
+    border-color: var(--tx-3);
+  }
+
+  .opcion > input:checked + .opcion-caja {
+    border-color: var(--tx);
+    box-shadow: inset 0 0 0 1px var(--tx);
+  }
+
+  .opcion > input:focus-visible + .opcion-caja {
+    outline: 2px solid var(--ac);
+    outline-offset: 2px;
+  }
+
+  .opcion > input:disabled,
+  .opcion > input:disabled + .opcion-caja {
+    cursor: not-allowed;
+    opacity: 0.4;
+  }
+
+  /* El punto del radio dibujado: aro gris; marcado, aro amarillo grueso. */
+  .opcion-punto {
+    flex: none;
+    width: 20px;
+    height: 20px;
+    border: 1.5px solid var(--tx-3);
+    border-radius: 50%;
+  }
+
+  .opcion > input:checked + .opcion-caja .opcion-punto {
+    border: 6px solid var(--ac);
+  }
+
+  /* Foto de producto sobre el gris claro de la maqueta: el blanco de la foto se funde con el fondo. El encuadre
+     (object-contain y el margen interno) va en la imagen. */
+  .tile {
+    position: relative;
+    overflow: hidden;
+    background-color: var(--tile);
+  }
+
+  .tile :where(img) {
+    mix-blend-mode: multiply;
+  }
+
+  /* Precio de producto: negrita y cifras de ancho fijo (el tamaño se cambia con text-*) */
+  .precio {
+    font-size: 21px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Dato que falta y que no se inventa («por confirmar»): recuadro punteado chico. */
+  .por-confirmar {
+    display: inline-block;
+    padding: 1px 6px;
+    border: 1px dashed var(--line-2);
+    border-radius: 4px;
+    font-size: 12px;
+    line-height: 1.5;
+  }
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
-  
-  .text-gradient {
-    background: linear-gradient(135deg, #FFD700 0%, #FFE44D 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+}
+
+/* Quien pidió menos movimiento: sin transiciones en los componentes de arriba. */
+@media (prefers-reduced-motion: reduce) {
+  .btn-primary,
+  .btn-secondary,
+  .card,
+  .opcion-caja,
+  .acordeon :where(summary > svg) {
+    transition: none;
   }
 }
 
-@layer components {
-  /* Los dos botones de toda la tienda, en un solo lugar: el principal (amarillo) y el secundario (borde amarillo).
-     Miden lo mismo (54 px) y van a todo el ancho; donde van en línea se les suma «inline-flex w-auto». */
-  .btn-primary {
-    @apply block w-full rounded-lg border border-accent bg-accent px-6 py-3.5 text-center text-base font-bold text-dark transition-colors hover:border-accent-dark hover:bg-accent-dark disabled:cursor-not-allowed disabled:opacity-40;
-  }
-
-  .btn-secondary {
-    @apply block w-full rounded-lg border border-accent px-6 py-3.5 text-center text-base font-bold text-accent transition-colors hover:bg-accent/10;
-  }
-
-  .card {
-    @apply bg-dark-100 border border-dark-300 rounded-2xl p-6 transition-colors hover:border-accent/50;
-  }
-  
-  /* Tres niveles de título en toda la tienda: página (h1, font-heading text-5xl sm:text-6xl, como /clase), sección
-     (.section-title, a la izquierda) y bloque (text-lg font-semibold). */
-  .page-title {
-    @apply font-heading text-5xl leading-none text-white sm:text-6xl;
-  }
-
-  .section-title {
-    @apply font-heading text-4xl leading-none text-white md:text-5xl;
-  }
-
-  .section-subtitle {
-    @apply mt-3 max-w-2xl text-base leading-relaxed text-neutral-light;
-  }
-}
-
-/* Custom scrollbar */
+/* Barra de desplazamiento */
 ::-webkit-scrollbar {
   width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #1a1a1a;
+  background: var(--bg-1);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #3a3a3a;
+  background: var(--line-2);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #FFD700;
+  background: var(--tx-3);
 }
 
 /* Hide scrollbar for horizontal carousels */

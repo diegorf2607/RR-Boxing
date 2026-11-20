@@ -25,21 +25,28 @@ const benefits = [
   },
 ]
 
-/** Qué ganas con las clases 1 a 1 (/consulta): filas con líneas finas, como las de arriba en la misma página. */
+/**
+ * Qué ganas con las clases 1 a 1 (/consulta), en la línea A: la cabecera de sección de la maqueta (título a la
+ * izquierda, bajada a la derecha) y una caja de filas como las de «Envío» y «Pago» de la ficha: el beneficio a la
+ * izquierda y su explicación a la derecha (en el celular, uno debajo del otro).
+ */
 export default function Benefits() {
   return (
-    <section id="beneficios" className="border-t border-dark-300 bg-dark py-12 md:py-16">
-      <div className="container mx-auto max-w-6xl px-4">
-        <h2 className="section-title">Qué ganas entrenando con RR Boxing</h2>
-        <p className="section-subtitle">
-          Clases personalizadas con Richard para cuando quieres ir más allá de los videos gratis de las redes.
-        </p>
+    <section id="beneficios" className="seccion bg-dark">
+      <div className="wrap">
+        <div className="seccion-cab">
+          <h2 className="section-title">Qué ganas entrenando con RR Boxing</h2>
+          <p>Clases personalizadas con Richard para cuando quieres ir más allá de los videos gratis de las redes.</p>
+        </div>
 
-        <dl className="mt-8 max-w-3xl rounded-2xl border border-dark-300 bg-dark-100">
+        <dl className="filas filas-texto">
           {benefits.map((benefit) => (
-            <div key={benefit.title} className="border-t border-dark-300 px-5 py-4 first:border-t-0">
-              <dt className="text-base font-medium text-white">{benefit.title}</dt>
-              <dd className="mt-1 text-sm leading-relaxed text-neutral-light">{benefit.description}</dd>
+            <div
+              key={benefit.title}
+              className="grid-cols-1 gap-1 md:grid-cols-[minmax(0,17rem)_minmax(0,1fr)] md:gap-x-8"
+            >
+              <dt className="text-[15.5px]">{benefit.title}</dt>
+              <dd className="text-[15px] leading-relaxed">{benefit.description}</dd>
             </div>
           ))}
         </dl>
