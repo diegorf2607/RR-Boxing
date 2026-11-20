@@ -22,7 +22,7 @@ export async function POST(req: Request) {
     if (error || !data.user) {
       return NextResponse.json(
         {
-          error: 'Credenciales invalidas',
+          error: 'Credenciales inválidas',
           ...(debugAuth
             ? {
                 debug: {
@@ -75,7 +75,7 @@ export async function POST(req: Request) {
     const message = error instanceof Error ? error.message : 'Error inesperado'
     return NextResponse.json(
       {
-        error: 'Error al iniciar sesion',
+        error: 'Error al iniciar sesión',
         ...(debugAuth ? { debug: { message, projectHost: process.env.NEXT_PUBLIC_SUPABASE_URL ?? null } } : {}),
       },
       { status: 500 }

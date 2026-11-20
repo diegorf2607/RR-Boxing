@@ -18,7 +18,7 @@ export default function ClaseInicialPage() {
       <header className="border-b border-dark-300 bg-dark-100 px-4 py-4">
         <div className="container mx-auto flex flex-wrap items-center justify-between gap-2">
           <Link href="/" className="font-heading text-xl tracking-wide text-accent">
-            RRBOXING
+            RR Boxing
           </Link>
           <Link href="/bonus/guia-basica" className="text-sm text-accent hover:underline">
             ← Guía básica (PDF desde el navegador)

@@ -12,7 +12,7 @@ type Props = {
 }
 
 function optionLabel(opt: { value: string; label: string; enabled: boolean }): string {
-  if (!opt.enabled) return `${opt.label} — próximamente`
+  if (!opt.enabled) return `${opt.label} — sin envíos por ahora`
   if (!isCommerceCountry(opt.value)) return opt.label
   const c = getCountryConfig(opt.value as CountryCode)
   return `${c.name} (${opt.value}) — ${c.currency}`

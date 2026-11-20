@@ -10,6 +10,7 @@ import ClassesPromoSection from '@/components/ClassesPromoSection'
 import ClaseDestacada from '@/components/ClaseDestacada'
 import Footer from '@/components/Footer'
 import { claseVigente } from '@/shared/lib/clase-virtual'
+import { IMAGEN_COMPARTIR } from '@/shared/config/imagen-compartir'
 
 export const metadata: Metadata = {
   title: { absolute: 'RR Boxing: tienda de boxeo y clases 1 a 1' },
@@ -19,6 +20,7 @@ export const metadata: Metadata = {
     title: 'RR Boxing: tienda de boxeo y clases 1 a 1',
     description: 'Equipamiento de boxeo y clases personalizadas 1 a 1 de RR Boxing.',
     type: 'website',
+    images: [IMAGEN_COMPARTIR],
   },
 }
 

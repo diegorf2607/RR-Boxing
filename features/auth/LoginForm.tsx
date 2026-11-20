@@ -16,7 +16,7 @@ export default function LoginForm() {
       body: JSON.stringify({ email, password }),
     })
     if (!res.ok) {
-      setError('Credenciales invalidas')
+      setError('Correo o contraseña incorrectos')
       return
     }
     const data = (await res.json()) as { role?: string }
@@ -38,7 +38,7 @@ export default function LoginForm() {
         onChange={(e) => setPassword(e.target.value)}
         type="password"
         required
-        placeholder="Contrasena"
+        placeholder="Contraseña"
         className="w-full rounded-lg border border-dark-300 bg-dark px-3 py-2"
       />
       {error && <p className="text-sm text-red-400">{error}</p>}

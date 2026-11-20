@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { ChevronDown } from 'lucide-react'
 import { WHATSAPP_LEGIBLE, enlaceWhatsapp } from '@/shared/lib/whatsapp'
 import { useClaseVigente } from '@/components/EnlaceClase'
+import { CAMBIOS } from '@/shared/legal/cambios'
+import { GARANTIA_DIAS, RUTAS } from '@/shared/legal/politicas'
 
 type FaqItem = { id: string; question: string; answer: ReactNode }
 
@@ -24,6 +26,22 @@ function FraseClaseVirtual() {
         clase virtual
       </Link>{' '}
       con fecha y precio publicados.
+    </>
+  )
+}
+
+/** Para quien está fuera del Perú: solo mientras haya una clase virtual publicada. */
+function FraseClaseDesdeFuera() {
+  const vigente = useClaseVigente()
+  if (!vigente) return null
+  return (
+    <>
+      {' '}
+      La{' '}
+      <Link href="/clase" className={enlace}>
+        clase virtual
+      </Link>{' '}
+      sí la puedes tomar desde otro país.
     </>
   )
 }
@@ -84,13 +102,13 @@ const FAQ_ITEMS: FaqItem[] = [
   },
   {
     id: 'garantia',
-    question: '¿Qué cubre la garantía de 30 días?',
+    question: `¿Qué cubre la garantía de ${GARANTIA_DIAS} días?`,
     answer: (
       <>
-        Defectos de fabricación y daños del transporte hasta tu dirección. Avísanos por WhatsApp dentro de los 30
-        días calendario desde la entrega, con fotos del producto y, si llegó dañado, también del empaque. El detalle
-        está en{' '}
-        <Link href="/garantia" className={enlace}>
+        Los productos que llegan fallados, dañados o que no son los que pediste, y los defectos de fabricación.
+        Avísanos por WhatsApp dentro de los {GARANTIA_DIAS} días calendario desde la entrega: tú eliges un cambio o
+        la devolución de tu dinero, y los envíos los paga RR Boxing. El detalle está en{' '}
+        <Link href={RUTAS.garantia} className={enlace}>
           Garantía de compra
         </Link>
         .
@@ -102,11 +120,9 @@ const FAQ_ITEMS: FaqItem[] = [
     question: '¿Puedo cambiar o devolver un producto?',
     answer: (
       <>
-        Si llegó fallado, dañado o no es lo que pediste, entra en la garantía de 30 días. Para cambiarlo por otro
-        motivo, el producto debe estar sin uso y en su empaque original. En los dos casos, escríbenos por WhatsApp.
-        Más detalle en la{' '}
-        <Link href="/reembolso" className={enlace}>
-          Política de reembolso
+        {CAMBIOS.resumen} Más detalle en{' '}
+        <Link href={RUTAS.cambios} className={enlace}>
+          Cambios y devoluciones
         </Link>
         .
       </>
@@ -131,8 +147,8 @@ const FAQ_ITEMS: FaqItem[] = [
     question: '¿Puedo comprar desde otro país?',
     answer: (
       <>
-        Por ahora solo enviamos dentro del Perú y los precios están en soles. Si estás fuera, escríbenos por{' '}
-        <WhatsappLink>WhatsApp</WhatsappLink> y te contamos si se puede.
+        Por ahora solo enviamos dentro del Perú y los precios están en soles.
+        <FraseClaseDesdeFuera /> Si tienes una duda, escríbenos por <WhatsappLink>WhatsApp</WhatsappLink>.
       </>
     ),
   },

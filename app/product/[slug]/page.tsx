@@ -1,3 +1,5 @@
+import { cache } from 'react'
+import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -6,17 +8,106 @@ import { getProductBySlug, getProducts } from '@/shared/lib/data-store'
 import AddToCartButton from '@/features/store/AddToCartButton'
 import ProductPrice from '@/features/store/ProductPrice'
 import ProductTrustBlocks from '@/features/store/ProductTrustBlocks'
+import { productoPublico } from '@/shared/lib/producto-publico'
+import type { Product } from '@/shared/types/commerce'
+
+const SITIO = 'https://www.rrboxing.com'
+
+// La metadata y la página piden el mismo producto: con cache() se consulta una sola vez por visita.
+const productoPorSlug = cache((slug: string) => getProductBySlug(slug))
+
+/** Precio en Perú (PEN), el que se cobra en la tienda. */
+const precioPeru = (product: Product) => product.prices.find((p) => p.country === 'PE' && p.currency === 'PEN')
+
+const soles = (monto: number) => `S/ ${monto.toFixed(2)}`
+
+/** Ruta relativa → dirección completa (los buscadores y WhatsApp la necesitan entera). */
+const absoluta = (url: string) => (/^https?:\/\//.test(url) ? url : `${SITIO}${url.startsWith('/') ? '' : '/'}${url}`)
+
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  const product = await productoPorSlug(params.slug)
+  if (!product) return { title: 'Producto no encontrado' }
+
+  const nombre = product.name.trim()
+  const precio = precioPeru(product)
+  const titulo = precio ? `${nombre} · ${soles(precio.amount)}` : nombre
+  const ruta = `/product/${product.slug}`
+  const imagen = product.imageUrls[0]
+
+  return {
+    title: titulo,
+    description: product.description,
+    alternates: { canonical: ruta },
+    openGraph: {
+      title: titulo,
+      description: product.description,
+      type: 'website',
+      url: ruta,
+      locale: 'es_PE',
+      siteName: 'RR Boxing',
+      ...(imagen ? { images: [{ url: imagen, alt: nombre }] } : {}),
+    },
+    // Si no, X/Twitter mostraría la imagen general de la tienda en vez de la del producto.
+    twitter: {
+      card: 'summary',
+      ...(imagen ? { images: [{ url: imagen, alt: nombre }] } : {}),
+    },
+  }
+}
+
+/**
+ * Datos estructurados para Google (schema.org/Product): precio en soles y disponibilidad según el stock.
+ * La marca va solo si el producto la trae en sus atributos (la misma que se ve en la ficha). Sin calificaciones:
+ * todavía no hay reseñas reales.
+ */
+function datosProducto(product: Product) {
+  const precio = precioPeru(product)
+  const marca = product.attributes?.find((a) => a.label.trim().toLowerCase() === 'marca')?.value.trim()
+  const url = absoluta(`/product/${product.slug}`)
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.name.trim(),
+    description: product.longDescription || product.description,
+    url,
+    image: product.imageUrls.map(absoluta),
+    category: product.category,
+    ...(product.sku ? { sku: product.sku } : {}),
+    ...(marca ? { brand: { '@type': 'Brand', name: marca } } : {}),
+    ...(precio
+      ? {
+          offers: {
+            '@type': 'Offer',
+            url,
+            priceCurrency: 'PEN',
+            price: precio.amount.toFixed(2),
+            availability: product.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+            itemCondition: 'https://schema.org/NewCondition',
+            seller: { '@type': 'Organization', name: 'RR Boxing' },
+          },
+        }
+      : {}),
+  }
+}
 
 export default async function ProductDetailPage({ params }: { params: { slug: string } }) {
-  const product = await getProductBySlug(params.slug)
+  const product = await productoPorSlug(params.slug)
   if (!product) notFound()
 
+  // Lo que va a componentes del navegador queda escrito en el HTML: sin valoraciones ni notas internas
+  const publico = productoPublico(product)
   const related = (await getProducts())
     .filter((item) => item.id !== product.id && item.active)
     .slice(0, 3)
+    .map(productoPublico)
 
   return (
     <main className="min-h-screen bg-dark">
+      <script
+        type="application/ld+json"
+        // «<» escapado para que ningún texto del producto pueda cerrar la etiqueta
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(datosProducto(product)).replace(/</g, '\\u003c') }}
+      />
       <MainNav />
       <section className="container mx-auto grid gap-6 px-4 py-6 md:grid-cols-2 md:gap-8 md:py-10">
         <div className="space-y-3 md:space-y-4">
@@ -42,11 +133,11 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
         </div>
         <div>
           <h1 className="text-3xl font-bold leading-tight md:text-4xl">{product.name}</h1>
-          <ProductPrice product={product} />
+          <ProductPrice product={publico} />
           <p className="mt-4 text-neutral-light">{product.description}</p>
 
           <div className="mt-6">
-            <AddToCartButton product={product} />
+            <AddToCartButton product={publico} />
           </div>
 
           {product.comboEligible !== false ? (
@@ -81,7 +172,7 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
               </ul>
             </div>
           ) : null}
-          <ProductTrustBlocks product={product} />
+          <ProductTrustBlocks product={publico} />
           <Link href="/consulta" className="mt-4 inline-block text-accent underline">
             Quiero clases personalizadas
           </Link>

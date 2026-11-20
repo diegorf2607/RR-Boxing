@@ -1,6 +1,9 @@
 import Image from 'next/image'
 import Link from 'next/link'
 
+/** Ancho de cada tarjeta: 2 columnas hasta lg; desde lg, 4 columnas dentro de max-w-6xl (~270 px). */
+const TAMANO_TARJETA = '(min-width: 1024px) 280px, 50vw'
+
 const socialStats = [
   {
     platform: 'TikTok',
@@ -73,12 +76,15 @@ export default function SocialProof() {
               rel="noopener noreferrer"
               className="card overflow-hidden p-0 cursor-pointer hover:scale-[1.02] transition-transform"
             >
-              {/* Card Image - Full screenshot showing follower numbers */}
+              {/* Captura del perfil con los seguidores. Los PNG pesan ~2,4 MB cada uno: next/image baja una versión
+                  del ancho de la tarjeta y solo cuando la sección se acerca a la pantalla. */}
               <div className="relative h-48 sm:h-64 md:h-80 lg:h-96">
-                <img
+                <Image
                   src={social.image}
-                  alt={social.platform}
-                  className="w-full h-full object-cover object-top"
+                  alt={`Perfil de RR Boxing en ${social.platform}`}
+                  fill
+                  sizes={TAMANO_TARJETA}
+                  className="object-cover object-top"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-dark-100 via-transparent to-transparent"></div>
               </div>
@@ -108,7 +114,7 @@ export default function SocialProof() {
                 alt="Richard Rodríguez, entrenador de RR Boxing"
                 fill
                 className="object-cover object-center"
-                sizes="(max-width: 768px) 100vw, 400px"
+                sizes={TAMANO_TARJETA}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-dark-100 via-transparent to-transparent" />
             </div>

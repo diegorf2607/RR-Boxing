@@ -17,7 +17,7 @@ import { resumenCombo } from '@/shared/lib/combo-promo'
 type Step = 'form' | 'pay'
 
 const LIMA_DISTRITOS_URGENTE =
-  'Miraflores, Surco, San Isidro, San Borja, Barranco, Jesús María, Pueblo Libre, La Molina, Surquillo, Cercado, San Luis, Breña, La Victoria, Rímac, Lince, San Miguel, Magdalena, El Agustino. Distritos fuera de la lista se entrega día hábil siguiente por la tarde.'
+  'Miraflores, Surco, San Isidro, San Borja, Barranco, Jesús María, Pueblo Libre, La Molina, Surquillo, Cercado, San Luis, Breña, La Victoria, Rímac, Lince, San Miguel, Magdalena y El Agustino. En los demás distritos llega el día hábil siguiente, por la tarde.'
 
 const REGIONES_PE = [
   'Lima (Metropolitana)',
@@ -172,7 +172,7 @@ export default function CheckoutClient() {
 
   const applyDiscount = () => {
     if (!discountCode.trim()) return
-    setDiscountMsg('Los cupones estarán disponibles muy pronto.')
+    setDiscountMsg('Por ahora no hay códigos de descuento. El único descuento es el combo, y ya se aplica solo.')
   }
 
   const labelClass = 'mb-1 block text-xs font-medium uppercase tracking-wide text-neutral-light'
@@ -183,7 +183,7 @@ export default function CheckoutClient() {
     return (
       <div className="bg-dark px-4 py-8 md:py-10">
         <div className="mx-auto max-w-2xl">
-          <p className="mb-1 font-heading text-xs tracking-widest text-accent">RRBOXING</p>
+          <p className="mb-1 font-heading text-xs tracking-widest text-accent">RR Boxing</p>
           <button
             type="button"
             onClick={backToForm}
@@ -202,16 +202,16 @@ export default function CheckoutClient() {
 
           <nav className="mt-8 flex flex-wrap justify-center gap-x-4 gap-y-2 text-center text-sm text-accent">
             <Link href="/reembolso" className="hover:text-white hover:underline">
-              Política de reembolso
+              Cambios y devoluciones
             </Link>
             <Link href="/garantia" className="hover:text-white hover:underline">
-              Envío
+              Garantía
             </Link>
             <Link href="/privacidad" className="hover:text-white hover:underline">
               Política de privacidad
             </Link>
             <Link href="/terminos" className="hover:text-white hover:underline">
-              Términos del servicio
+              Términos y condiciones
             </Link>
             <Link href="/consulta" className="hover:text-white hover:underline">
               Contacto
@@ -225,10 +225,10 @@ export default function CheckoutClient() {
   return (
     <div className="bg-dark px-4 py-8 md:py-10">
       <div className="mx-auto max-w-6xl">
-        <h1 className="sr-only">Checkout RRBOXING</h1>
+        <h1 className="sr-only">Finalizar compra en RR Boxing</h1>
         <div className="mb-8 border-b border-dark-300 pb-6">
-          <p className="font-heading text-xs tracking-[0.35em] text-accent">RRBOXING</p>
-          <h2 className="mt-1 font-heading text-3xl font-bold tracking-wide text-white md:text-4xl">Checkout</h2>
+          <p className="font-heading text-xs tracking-[0.35em] text-accent">RR Boxing</p>
+          <h2 className="mt-1 font-heading text-3xl font-bold tracking-wide text-white md:text-4xl">Finalizar compra</h2>
           <p className="mt-2 flex flex-wrap items-center gap-2 text-sm text-accent">
             <Lock className="h-4 w-4 shrink-0" aria-hidden />
             Pago seguro procesado por Stripe
@@ -362,9 +362,9 @@ export default function CheckoutClient() {
                       onChange={() => setShippingMethod('standard')}
                       className="h-4 w-4 text-accent focus:ring-accent"
                     />
-                    <span className="text-sm font-medium text-white">Standard 2+3 días hábiles</span>
+                    <span className="text-sm font-medium text-white">Estándar: 2 a 3 días hábiles</span>
                   </span>
-                  <span className="text-sm font-semibold text-accent">GRATIS</span>
+                  <span className="text-sm font-semibold text-accent">Gratis</span>
                 </label>
                 <label className="flex cursor-pointer items-center justify-between gap-3 p-4 transition-colors hover:bg-dark-200/50">
                   <span className="flex items-center gap-3">
@@ -375,7 +375,7 @@ export default function CheckoutClient() {
                       onChange={() => setShippingMethod('express')}
                       className="h-4 w-4 text-accent focus:ring-accent"
                     />
-                    <span className="text-sm font-medium text-white">Express 24/48 horas</span>
+                    <span className="text-sm font-medium text-white">Express: 24 a 48 horas</span>
                   </span>
                   <span className="text-sm font-semibold text-accent">S/ 9.90</span>
                 </label>
@@ -390,8 +390,8 @@ export default function CheckoutClient() {
                   <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:justify-between sm:gap-4">
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-white">
-                        Envío URGENTE 🔥 (Solo lima metropolitana)- Entrega el mismo día para compras realizadas entre-Lun
-                        a Sab de 9am - 1pm.
+                        Urgente, solo en Lima Metropolitana: llega el mismo día si compras de lunes a sábado, entre las
+                        9 a. m. y la 1 p. m.
                       </p>
                       <p className="mt-2 text-xs leading-relaxed text-neutral">{LIMA_DISTRITOS_URGENTE}</p>
                     </div>
@@ -494,7 +494,7 @@ export default function CheckoutClient() {
                     </span>
                     <span className="font-medium text-white">
                       {shippingAmount === 0 ? (
-                        <span className="text-accent">GRATIS</span>
+                        <span className="text-accent">Gratis</span>
                       ) : (
                         formatCurrency(shippingAmount, currency, config.locale)
                       )}

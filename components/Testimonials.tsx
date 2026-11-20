@@ -1,5 +1,8 @@
 'use client'
 
+import { useState } from 'react'
+import Image from 'next/image'
+import { Play } from 'lucide-react'
 import { enlaceWhatsapp } from '@/shared/lib/whatsapp'
 
 const WHATSAPP_CLASES = enlaceWhatsapp('Hola, RR Boxing. Quiero información de las clases 1 a 1.')
@@ -20,20 +23,44 @@ const testimonials = [
   },
 ]
 
+/**
+ * Cada video empieza como una portada (la miniatura vertical del short, servida desde este sitio). El reproductor de
+ * YouTube, que pesa cerca de 1 MB y deja cookies, se carga solo cuando la persona toca «Ver».
+ */
 function TestimonialShortCard({ item }: { item: (typeof testimonials)[0] }) {
-  const embedSrc = `https://www.youtube.com/embed/${item.videoId}`
+  const [reproduciendo, setReproduciendo] = useState(false)
+  const embedSrc = `https://www.youtube-nocookie.com/embed/${item.videoId}?autoplay=1&playsinline=1&rel=0`
 
   return (
     <article className="card relative w-[min(100%,280px)] flex-shrink-0 snap-center overflow-hidden p-0 md:w-auto">
       <div className="relative aspect-[9/16] w-full bg-dark-200">
-        <iframe
-          src={embedSrc}
-          title={`Testimonio de RR Boxing en YouTube (${item.videoId})`}
-          className="absolute inset-0 h-full w-full border-0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowFullScreen
-          loading="lazy"
-        />
+        {reproduciendo ? (
+          <iframe
+            src={embedSrc}
+            title="Testimonio de RR Boxing en YouTube"
+            className="absolute inset-0 h-full w-full border-0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={() => setReproduciendo(true)}
+            className="group absolute inset-0 h-full w-full"
+            aria-label="Ver el testimonio en video"
+          >
+            <Image
+              src={`https://i.ytimg.com/vi/${item.videoId}/oardefault.jpg`}
+              alt=""
+              fill
+              sizes="(min-width: 768px) 320px, 280px"
+              className="object-cover"
+            />
+            <span className="absolute left-1/2 top-1/2 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/50 bg-black/60 text-white transition-colors group-hover:border-accent group-hover:text-accent">
+              <Play className="ml-1 h-7 w-7" aria-hidden />
+            </span>
+          </button>
+        )}
         <a
           href={item.href}
           target="_blank"

@@ -4,6 +4,7 @@ import { getStoreProducts, upsertProduct, isProductSlugTaken } from '@/shared/li
 import type { Product, ProductImage } from '@/shared/types/commerce'
 import { getSession } from '@/shared/lib/auth'
 import { getProductPublishBlockers } from '@/shared/lib/product-admin-warnings'
+import { productoPublico } from '@/shared/lib/producto-publico'
 
 const createProductSchema = z
   .object({
@@ -48,9 +49,13 @@ const createProductSchema = z
     { message: 'Se requiere al menos una imagen (URL o subida)' }
   )
 
+/**
+ * Catálogo público. No devuelve la valoración ni el número de opiniones (no hay reseñas reales detrás)
+ * ni las notas internas del panel (shared/lib/producto-publico.ts).
+ */
 export async function GET() {
   const products = await getStoreProducts()
-  return NextResponse.json({ products })
+  return NextResponse.json({ products: products.map(productoPublico) })
 }
 
 export async function POST(req: Request) {

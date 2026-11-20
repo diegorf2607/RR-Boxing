@@ -30,8 +30,9 @@ const config: Config = {
         }
       },
       fontFamily: {
-        sans: ['var(--font-geist-sans)', 'system-ui', 'sans-serif'],
-        heading: ['var(--font-bebas)', 'Impact', 'sans-serif'],
+        // Variables que deja next/font en <html> (app/layout.tsx)
+        sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
+        heading: ['var(--font-bebas-neue)', 'Impact', 'sans-serif'],
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',

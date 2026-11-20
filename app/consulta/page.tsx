@@ -5,6 +5,7 @@ import Benefits from '@/components/Benefits'
 import Testimonials from '@/components/Testimonials'
 import Footer from '@/components/Footer'
 import { enlaceWhatsapp, WHATSAPP_LEGIBLE } from '@/shared/lib/whatsapp'
+import { IMAGEN_COMPARTIR } from '@/shared/config/imagen-compartir'
 
 const MENSAJE_WHATSAPP = 'Hola, Richard. Quiero información de las clases 1 a 1.'
 
@@ -18,6 +19,7 @@ export const metadata: Metadata = {
     title: 'Clases 1 a 1 con Richard · RR Boxing',
     description: DESCRIPCION,
     type: 'website',
+    images: [IMAGEN_COMPARTIR],
   },
 }
 

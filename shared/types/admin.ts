@@ -10,6 +10,8 @@ export type AdminNotificationType =
   | 'product_incomplete'
   | 'order_manual_review'
   | 'clase_inscripcion'
+  /** Una Hoja de Reclamación del Libro de Reclamaciones: entity_id = número, body = la hoja en JSON */
+  | 'libro_reclamacion'
 
 export interface AdminNotification {
   id: string

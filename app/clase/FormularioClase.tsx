@@ -1,7 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { CLASE } from '@/shared/lib/clase-virtual'
+import { RUTAS } from '@/shared/legal/politicas'
+import AvisoDatos from '@/components/AvisoDatos'
 
 type Estado = 'listo' | 'enviando' | 'error'
 
@@ -111,6 +114,16 @@ export default function FormularioClase() {
 
       <p className="mt-3 text-sm leading-relaxed text-neutral">
         Pagas con Mercado Pago. Si estás fuera del Perú, pagas con tu tarjeta y tu banco hace el cambio.
+      </p>
+
+      <AvisoDatos para="mandarte el link de la clase y avisarte si algo cambia" className="mt-3" />
+      <p className="mt-2 text-xs leading-relaxed text-neutral">
+        <Link
+          href={`${RUTAS.terminos}#clases`}
+          className="text-neutral-light underline underline-offset-2 hover:text-accent"
+        >
+          Condiciones de la clase
+        </Link>
       </p>
     </form>
   )

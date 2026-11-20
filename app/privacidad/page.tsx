@@ -1,26 +1,20 @@
+import type { Metadata } from 'next'
 import LegalPageShell from '@/components/LegalPageShell'
+import Documento from '@/components/legal/Documento'
+import { empresa } from '@/shared/lib/empresa'
+import { privacidad } from '@/shared/legal/privacidad'
 
-export const metadata = {
+export const metadata: Metadata = {
   title: 'Política de privacidad',
-  description: 'Cómo RRBOXING trata tus datos cuando navegas o compras en el sitio.',
+  description:
+    'Qué datos tuyos usa RR Boxing, para qué, dónde se guardan, con quién se comparten y cómo ejercer tus derechos (Ley N.º 29733).',
+  alternates: { canonical: '/privacidad' },
 }
 
 export default function PrivacidadPage() {
   return (
-    <LegalPageShell title="Política de privacidad">
-      <p>
-        Recopilamos los datos necesarios para procesar pedidos, iniciar sesión y mejorar la experiencia (por ejemplo,
-        correo, país y datos de envío que nos proporciones en el checkout).
-      </p>
-      <p>
-        Por ahora la tienda no cobra en la web: los pedidos se coordinan por WhatsApp. Cuando un pago se hace con
-        Mercado Pago, se hace en su propia página y según su política de privacidad; nosotros no recibimos ni guardamos
-        los datos de tu tarjeta.
-      </p>
-      <p>
-        Puedes solicitar información sobre tus datos contactando al equipo RRBOXING a través de los medios oficiales de
-        la marca.
-      </p>
+    <LegalPageShell>
+      <Documento doc={privacidad(empresa())} />
     </LegalPageShell>
   )
 }
