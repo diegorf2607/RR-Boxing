@@ -1,7 +1,7 @@
 import LegalPageShell from '@/components/LegalPageShell'
 
 export const metadata = {
-  title: 'Términos y condiciones | RRBOXING',
+  title: 'Términos y condiciones',
   description: 'Términos de uso del sitio y la tienda oficial RRBOXING.',
 }
 
@@ -13,8 +13,8 @@ export default function TerminosPage() {
         materiales comerciales son propiedad de RRBOXING.
       </p>
       <p>
-        Los precios, envíos y disponibilidad pueden variar según país. Los pagos se procesan de forma segura a través
-        de Stripe.
+        Los precios, envíos y disponibilidad pueden variar según país. Por ahora la tienda no cobra en línea: los
+        productos se piden por WhatsApp y ahí te decimos cómo pagar.
       </p>
       <p>
         Para consultas sobre pedidos o clases personalizadas, utiliza los canales indicados en el sitio o agenda en la

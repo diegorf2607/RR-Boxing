@@ -7,24 +7,30 @@ import StoreAboutSection from '@/components/StoreAboutSection'
 import StoreFAQSection from '@/components/StoreFAQSection'
 import SocialProof from '@/components/SocialProof'
 import ClassesPromoSection from '@/components/ClassesPromoSection'
+import ClaseDestacada from '@/components/ClaseDestacada'
 import Footer from '@/components/Footer'
+import { claseVigente } from '@/shared/lib/clase-virtual'
 
 export const metadata: Metadata = {
-  title: 'Tienda oficial RRBOXING | Equipamiento y marca',
+  title: { absolute: 'RR Boxing: tienda de boxeo y clases 1 a 1' },
   description:
-    'Tienda oficial RRBOXING. Equipamiento premium y acceso a clases personalizadas 1 a 1. La propuesta y el precio de entrenamiento se definen en tu llamada.',
+    'Tienda oficial de RR Boxing. Equipamiento de boxeo y clases personalizadas 1 a 1: escríbenos y te contamos cómo son y cuánto cuestan.',
   openGraph: {
-    title: 'RRBOXING — Tienda oficial',
-    description: 'Equipamiento oficial y clases personalizadas. Precio de entrenamiento en la llamada.',
+    title: 'RR Boxing: tienda de boxeo y clases 1 a 1',
+    description: 'Equipamiento de boxeo y clases personalizadas 1 a 1 de RR Boxing.',
     type: 'website',
   },
 }
+
+// La sección de la clase del 28 de noviembre se apaga sola: la página se rehace cada hora.
+export const revalidate = 3600
 
 export default function Home() {
   return (
     <main className="min-h-screen bg-dark">
       <MainNav />
       <StoreHeroCarousel />
+      {claseVigente() && <ClaseDestacada />}
       <StoreClient />
       <StoreComboSection />
       <StoreAboutSection />

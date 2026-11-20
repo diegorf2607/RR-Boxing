@@ -2,17 +2,18 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowLeft, Lock, Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react'
+import { ArrowLeft, Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { useCart } from '@/features/cart/CartProvider'
 import { useCountry } from '@/features/country/CountryProvider'
 import type { CurrencyCode, Product } from '@/shared/types/commerce'
 import { getCountryConfig, formatCurrency } from '@/shared/lib/country'
 import { getPriceForCountry } from '@/features/store/pricing'
-import {
-  computeComboDiscountAmount,
-  subtotalAfterComboDiscount,
-} from '@/shared/lib/combo-promo'
+import { COMBO_MIN_UNITS, resumenCombo } from '@/shared/lib/combo-promo'
+import { enlaceWhatsapp, mensajePedidoWhatsapp } from '@/shared/lib/whatsapp'
+import { PAGO_EN_LINEA_ACTIVO } from '@/shared/config/pagos'
+import { getStockStatus } from '@/features/store/stockUrgency'
+import { enlaceConsultaAgotado, preguntaColor } from '@/features/store/pedidoWhatsappProducto'
 
 function CartLineSkeleton() {
   return (
@@ -58,15 +59,48 @@ export default function CartClient() {
     productId: string
     quantity: number
     product: Product
-    price: { amount: number; currency: CurrencyCode; compareAtAmount?: number }
+    price: { amount: number; currency: CurrencyCode }
     lineTotal: number
   }>
 
   const config = getCountryConfig(country)
-  const subtotal = rows.reduce((acc, row) => acc + row.lineTotal, 0)
+  const currency = rows[0]?.price.currency ?? config.currency
   const itemCount = rows.reduce((acc, row) => acc + row.quantity, 0)
-  const comboDiscount = computeComboDiscountAmount(subtotal, itemCount)
-  const subtotalConCombo = subtotalAfterComboDiscount(subtotal, itemCount)
+  // Lo agotado se queda en el carrito, pero no entra en el resumen, ni en el combo, ni en el pedido.
+  const disponibles = rows.filter((row) => row.product.stock > 0)
+  const todoAgotado = rows.length > 0 && disponibles.length === 0
+  // Mismo cálculo que el servidor (shared/lib/cart-checkout.ts): solo cuentan los productos del combo.
+  const combo = resumenCombo(
+    disponibles.map((row) => ({
+      unitAmount: row.price.amount,
+      quantity: row.quantity,
+      comboEligible: row.product.comboEligible,
+    }))
+  )
+  const subtotal = combo.subtotal
+  const comboDiscount = combo.descuento
+  const subtotalConCombo = combo.total
+  const hayProductosDelCombo = disponibles.some((row) => row.product.comboEligible !== false)
+  const dinero = (amount: number) => formatCurrency(amount, currency, config.locale)
+
+  // Si un producto viene en varios colores, el mensaje deja la pregunta para que la persona elija.
+  const preguntas = disponibles
+    .map((row) => preguntaColor(row.product))
+    .filter((pregunta): pregunta is string => pregunta !== null)
+
+  const enlacePedido = enlaceWhatsapp(
+    mensajePedidoWhatsapp({
+      lineas: disponibles.map((row) => ({
+        nombre: row.product.name.trim(),
+        cantidad: row.quantity,
+        total: formatCurrency(row.lineTotal, row.price.currency, config.locale),
+      })),
+      subtotal: dinero(subtotal),
+      descuento: comboDiscount > 0 ? dinero(comboDiscount) : undefined,
+      total: dinero(subtotalConCombo),
+      ...(preguntas.length > 0 ? { preguntas } : {}),
+    })
+  )
 
   const waitingForCatalog = items.length > 0 && !productsLoaded
   const trulyEmpty = items.length === 0
@@ -87,7 +121,7 @@ export default function CartClient() {
             <h1 className="font-heading text-4xl tracking-wide text-white md:text-5xl">Carrito</h1>
             {!trulyEmpty && !waitingForCatalog && !orphanLines && (
               <p className="mt-1 text-sm text-neutral-light">
-                {itemCount === 1 ? '1 artículo' : `${itemCount} artículos`} · Envío y pack opcional se eligen en el checkout
+                {itemCount === 1 ? '1 producto' : `${itemCount} productos`}
               </p>
             )}
           </div>
@@ -105,7 +139,7 @@ export default function CartClient() {
             </div>
             <h2 className="font-heading text-2xl tracking-wide text-white md:text-3xl">Tu carrito está vacío</h2>
             <p className="mt-3 max-w-sm text-sm leading-relaxed text-neutral-light">
-              Sumá equipamiento oficial o revisá el catálogo. Lo que guardes acá queda listo para el checkout.
+              Agrega productos desde la tienda y aquí armas tu pedido para enviarlo por WhatsApp.
             </p>
             <Link
               href="/"
@@ -120,7 +154,7 @@ export default function CartClient() {
         ) : orphanLines ? (
           <div className="rounded-2xl border border-amber-500/40 bg-amber-500/5 px-5 py-8 text-center md:px-8">
             <p className="text-sm leading-relaxed text-neutral-light md:text-base">
-              Hay productos en tu carrito que ya no están disponibles. Volvé a la tienda y agregalos de nuevo.
+              Hay productos en tu carrito que ya no están disponibles. Vuelve a la tienda y agrégalos de nuevo.
             </p>
             <Link
               href="/"
@@ -133,7 +167,8 @@ export default function CartClient() {
           <div className="grid gap-8 lg:grid-cols-[1fr_minmax(280px,340px)] lg:items-start lg:gap-10">
             <ul className="space-y-4">
               {rows.map((row) => {
-                const atStockCap = row.product.stock > 0 && row.quantity >= row.product.stock
+                const stock = getStockStatus(row.product.stock)
+                const agotado = stock.kind === 'agotado'
                 const canInc = row.product.stock > 0 && row.quantity < row.product.stock
 
                 return (
@@ -181,56 +216,60 @@ export default function CartClient() {
                             <span className="font-semibold text-accent">
                               {formatCurrency(row.price.amount, row.price.currency, config.locale)} c/u
                             </span>
-                            {row.price.compareAtAmount != null && row.price.compareAtAmount > row.price.amount && (
-                              <span className="text-neutral line-through">
-                                {formatCurrency(row.price.compareAtAmount, row.price.currency, config.locale)}
-                              </span>
-                            )}
                           </div>
 
-                          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-dark-300 pt-4">
-                            <div className="flex items-center rounded-xl border border-dark-300 bg-dark p-1">
-                              <button
-                                type="button"
-                                disabled={row.quantity <= 1}
-                                onClick={() => updateQuantity(row.productId, row.quantity - 1)}
-                                className="flex h-9 w-9 items-center justify-center rounded-lg text-neutral-light transition hover:bg-dark-200 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
-                                aria-label="Menos una unidad"
-                              >
-                                <Minus className="h-4 w-4" />
-                              </button>
-                              <span className="min-w-[2.5rem] text-center font-mono text-sm font-bold tabular-nums text-white">
-                                {row.quantity}
-                              </span>
-                              <button
-                                type="button"
-                                disabled={!canInc}
-                                onClick={() =>
-                                  updateQuantity(
-                                    row.productId,
-                                    Math.min(row.product.stock || 999, row.quantity + 1)
-                                  )
-                                }
-                                className="flex h-9 w-9 items-center justify-center rounded-lg text-neutral-light transition hover:bg-dark-200 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
-                                aria-label="Más una unidad"
-                              >
-                                <Plus className="h-4 w-4" />
-                              </button>
+                          {agotado ? (
+                            <div className="mt-4 border-t border-dark-300 pt-4 text-sm">
+                              <p className="font-semibold text-amber-400/90">{stock.label}</p>
+                              <p className="mt-1 text-neutral-light">
+                                No va en tu pedido.{' '}
+                                <a
+                                  href={enlaceConsultaAgotado(row.product)}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-accent underline underline-offset-2 hover:text-white"
+                                >
+                                  Preguntar cuándo vuelve
+                                </a>
+                              </p>
                             </div>
-                            <p className="font-heading text-2xl tracking-wide text-accent md:text-3xl">
-                              {formatCurrency(row.lineTotal, row.price.currency, config.locale)}
-                            </p>
-                          </div>
-
-                          {row.product.stock > 0 && (
-                            <p className="mt-2 text-xs text-neutral">
-                              {atStockCap ? (
-                                <span className="text-amber-400/90">Stock máximo para este producto.</span>
-                              ) : (
-                                <>Disponible: {row.product.stock} u.</>
-                              )}
-                            </p>
+                          ) : (
+                            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-dark-300 pt-4">
+                              <div className="flex items-center rounded-xl border border-dark-300 bg-dark p-1">
+                                <button
+                                  type="button"
+                                  disabled={row.quantity <= 1}
+                                  onClick={() => updateQuantity(row.productId, row.quantity - 1)}
+                                  className="flex h-9 w-9 items-center justify-center rounded-lg text-neutral-light transition hover:bg-dark-200 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+                                  aria-label="Menos una unidad"
+                                >
+                                  <Minus className="h-4 w-4" />
+                                </button>
+                                <span className="min-w-[2.5rem] text-center font-mono text-sm font-bold tabular-nums text-white">
+                                  {row.quantity}
+                                </span>
+                                <button
+                                  type="button"
+                                  disabled={!canInc}
+                                  onClick={() =>
+                                    updateQuantity(
+                                      row.productId,
+                                      Math.min(row.product.stock || 999, row.quantity + 1)
+                                    )
+                                  }
+                                  className="flex h-9 w-9 items-center justify-center rounded-lg text-neutral-light transition hover:bg-dark-200 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+                                  aria-label="Más una unidad"
+                                >
+                                  <Plus className="h-4 w-4" />
+                                </button>
+                              </div>
+                              <p className="font-heading text-2xl tracking-wide text-accent md:text-3xl">
+                                {formatCurrency(row.lineTotal, row.price.currency, config.locale)}
+                              </p>
+                            </div>
                           )}
+
+                          {stock.kind === 'pocas' && <p className="mt-2 text-xs text-neutral">{stock.label}</p>}
                         </div>
                       </div>
                     </article>
@@ -244,38 +283,62 @@ export default function CartClient() {
                 <h3 className="font-heading text-2xl tracking-wide text-white">Resumen</h3>
                 <dl className="mt-6 space-y-3 text-sm">
                   <div className="flex justify-between gap-4 text-neutral-light">
-                    <dt>Subtotal productos</dt>
-                    <dd className="font-semibold text-white">{formatCurrency(subtotal, config.currency, config.locale)}</dd>
+                    <dt>Subtotal</dt>
+                    <dd className="font-semibold tabular-nums text-white">{dinero(subtotal)}</dd>
                   </div>
                   {comboDiscount > 0 ? (
-                    <div className="flex justify-between gap-4 rounded-lg border border-accent/25 bg-accent/5 px-2 py-2 text-accent">
-                      <dt className="font-semibold">Promo combo (10%) + regalo</dt>
-                      <dd className="font-bold tabular-nums">−{formatCurrency(comboDiscount, config.currency, config.locale)}</dd>
+                    <div className="flex justify-between gap-4 text-accent">
+                      <dt className="font-semibold">Combo 10%</dt>
+                      <dd className="font-bold tabular-nums">−{dinero(comboDiscount)}</dd>
                     </div>
-                  ) : (
+                  ) : hayProductosDelCombo ? (
                     <p className="text-xs text-neutral">
-                      Agregá otro artículo y activá <strong className="text-accent">10% OFF</strong> + regalo en el checkout.
+                      Con {COMBO_MIN_UNITS} o más productos del combo tienes 10% menos.
                     </p>
-                  )}
+                  ) : null}
                 </dl>
                 <div className="my-5 h-px bg-dark-300" />
-                <div className="flex justify-between gap-4 font-heading text-2xl tracking-wide">
-                  <span className="text-neutral-light">Total estimado</span>
-                  <span className="text-accent">{formatCurrency(subtotalConCombo, config.currency, config.locale)}</span>
+                <div className="flex items-baseline justify-between gap-4 font-heading tracking-wide">
+                  <span className="whitespace-nowrap text-xl text-neutral-light">Total de productos</span>
+                  <span className="text-2xl tabular-nums text-accent">{dinero(subtotalConCombo)}</span>
                 </div>
-                <p className="mt-4 flex items-start gap-2 rounded-lg border border-dark-300 bg-dark/60 px-3 py-2.5 text-xs leading-relaxed text-neutral-light">
-                  <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent" aria-hidden />
-                  <span>
-                    Acá solo sumamos productos. El envío (puede ser gratis según método) y el pack opcional se ven en el
-                    checkout. Pago seguro con Stripe.
-                  </span>
-                </p>
-                <Link
-                  href="/checkout"
-                  className="mt-6 flex w-full items-center justify-center rounded-xl bg-accent py-3.5 text-center text-base font-bold text-dark shadow-lg shadow-accent/20 transition hover:bg-accent-dark hover:shadow-accent/30"
-                >
-                  Ir al checkout
-                </Link>
+                {todoAgotado ? (
+                  <>
+                    <button
+                      type="button"
+                      disabled
+                      className="mt-6 flex w-full cursor-not-allowed items-center justify-center rounded-xl bg-accent py-3.5 text-center text-base font-bold text-dark opacity-40"
+                    >
+                      Pedir por WhatsApp
+                    </button>
+                    <p className="mt-3 text-center text-sm leading-relaxed text-neutral-light">
+                      Lo que tienes en el carrito está agotado por ahora, así que no hay nada que pedir. Agrega otros
+                      productos desde la tienda.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <a
+                      href={enlacePedido}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-6 flex w-full items-center justify-center rounded-xl bg-accent py-3.5 text-center text-base font-bold text-dark transition hover:bg-accent-dark"
+                    >
+                      Pedir por WhatsApp
+                    </a>
+                    <p className="mt-3 text-center text-sm leading-relaxed text-neutral-light">
+                      Te confirmamos el envío y la forma de pago por WhatsApp.
+                    </p>
+                  </>
+                )}
+                {PAGO_EN_LINEA_ACTIVO ? (
+                  <Link
+                    href="/checkout"
+                    className="mt-4 flex w-full items-center justify-center rounded-xl border border-accent py-3 text-center text-sm font-bold text-accent transition hover:bg-accent/10"
+                  >
+                    Pagar en línea
+                  </Link>
+                ) : null}
                 <Link
                   href="/"
                   className="mt-3 block text-center text-sm font-medium text-neutral-light underline-offset-4 hover:text-accent hover:underline"

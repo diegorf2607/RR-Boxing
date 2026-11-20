@@ -1,6 +1,13 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import ClearCartOnSuccess from '@/features/checkout/ClearCartOnSuccess'
 import { getStripeClient } from '@/shared/lib/stripe'
+import { enlaceWhatsapp } from '@/shared/lib/whatsapp'
+
+export const metadata: Metadata = {
+  title: 'Gracias por tu pedido',
+  robots: { index: false, follow: false },
+}
 
 export default async function CheckoutSuccessPage({
   searchParams,
@@ -15,55 +22,44 @@ export default async function CheckoutSuccessPage({
       const stripe = getStripeClient()
       const session = await stripe.checkout.sessions.retrieve(sessionId)
       paid = session.payment_status === 'paid'
-    } catch {
+    } catch (e) {
+      console.error('[checkout/success] No se pudo leer la sesión de pago', e)
       paid = false
     }
   }
 
+  const whatsapp = enlaceWhatsapp('Hola, RR Boxing. Acabo de hacer un pedido en la web y quiero coordinar el envío.')
+
   return (
-    <main className="flex min-h-screen items-center justify-center bg-dark px-4">
+    <main className="min-h-screen bg-dark px-4 py-10 text-white sm:py-16">
       <ClearCartOnSuccess sessionId={sessionId} />
-      <div className="card max-w-lg text-center">
-        <h1 className="mb-3 text-3xl font-bold text-accent">Gracias por tu compra</h1>
-        {sessionId && process.env.STRIPE_SECRET_KEY && (
-          <p className="mb-2 text-sm text-neutral-light">
-            Estado del pago: {paid ? 'confirmado' : 'pendiente de verificación'}
-          </p>
-        )}
-        <p className="text-neutral-light">
-          RRBOXING procesa tu pedido con el mismo estándar que aplicamos al entrenamiento: disciplina y claridad.
+      <div className="mx-auto w-full max-w-md">
+        <h1 className="font-heading text-5xl leading-none text-white sm:text-6xl">Gracias por tu pedido</h1>
+
+        {sessionId && process.env.STRIPE_SECRET_KEY ? (
+          <dl className="mt-8 rounded-2xl border border-dark-300 bg-dark-100">
+            <div className="flex items-baseline justify-between gap-4 px-5 py-4">
+              <dt className="text-sm text-neutral">Pago</dt>
+              <dd className="text-right text-base font-medium">{paid ? 'Confirmado' : 'Por confirmar'}</dd>
+            </div>
+          </dl>
+        ) : null}
+
+        <p className="mt-8 text-base leading-relaxed text-neutral-light">
+          Escríbenos por WhatsApp para coordinar el envío o si tienes alguna duda sobre tu pedido.
         </p>
 
-        {paid && (
-          <div className="mt-8 rounded-2xl border border-accent/30 bg-dark-100/80 p-6 text-left">
-            <h2 className="mb-2 font-heading text-2xl font-bold text-accent">Tu pack de bienvenida</h2>
-            <p className="mb-4 text-sm text-neutral-light">
-              Por comprar en la tienda oficial te regalamos material para empezar con buen pie: una guía con lo básico
-              que necesitás saber de boxeo y una clase grabada con un tema inicial — presentado como el adicional que
-              es.
-            </p>
-            <ul className="space-y-3 text-sm">
-              <li>
-                <Link href="/bonus/guia-basica" className="font-semibold text-white underline decoration-accent underline-offset-4 hover:text-accent">
-                  Guía básica de boxeo
-                </Link>
-                <span className="block text-neutral">Versión web; podés guardarla como PDF desde el navegador.</span>
-              </li>
-              <li>
-                <Link href="/bonus/clase-inicial" className="font-semibold text-white underline decoration-accent underline-offset-4 hover:text-accent">
-                  Clase grabada: primeros pasos
-                </Link>
-                <span className="block text-neutral">Tema inicial de boxeo, estilo RRBOXING.</span>
-              </li>
-            </ul>
-          </div>
-        )}
-
-        <div className="mt-6 flex flex-wrap justify-center gap-3">
-          <Link href="/" className="inline-block rounded-lg bg-accent px-4 py-2 font-semibold text-dark">
-            Volver a la tienda
-          </Link>
-        </div>
+        <a
+          href={whatsapp}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-5 block rounded-lg bg-accent px-6 py-3.5 text-center font-bold text-dark transition-colors hover:bg-accent-dark"
+        >
+          Escribir por WhatsApp
+        </a>
+        <Link href="/" className="mt-4 block text-center text-sm text-neutral-light underline-offset-4 hover:text-accent hover:underline">
+          Volver a la tienda
+        </Link>
       </div>
     </main>
   )

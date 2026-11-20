@@ -12,17 +12,7 @@ import type { CheckoutShippingMethod } from '@/shared/lib/cart-checkout'
 import type { CurrencyCode, Product } from '@/shared/types/commerce'
 import { formatCurrency, getCountryConfig } from '@/shared/lib/country'
 import { getPriceForCountry } from '@/features/store/pricing'
-import {
-  GIFT_CLASS_PRICE_PEN,
-  GIFT_GUIDE_PRICE_PEN,
-  GIFT_THRESHOLD_PE_PEN,
-  isGiftFreePePen,
-} from '@/shared/constants/gift-pricing'
-import {
-  computeComboDiscountAmount,
-  subtotalAfterComboDiscount,
-  totalCartUnits,
-} from '@/shared/lib/combo-promo'
+import { resumenCombo } from '@/shared/lib/combo-promo'
 
 type Step = 'form' | 'pay'
 
@@ -46,112 +36,13 @@ function peShippingAmount(method: CheckoutShippingMethod): number {
   return 14.9
 }
 
-function GiftMegaBanner({ compact }: { compact?: boolean }) {
-  if (compact) {
-    return (
-      <div className="rounded-lg border-2 border-accent bg-dark-100 px-3 py-2.5 text-center shadow-lg shadow-accent/10">
-        <p className="text-xs font-black uppercase tracking-wide text-accent sm:text-sm">
-          Compra &gt; S/ {GIFT_THRESHOLD_PE_PEN} — regalo (PDF + clase){' '}
-          <span className="text-white underline decoration-accent">GRATIS</span>
-        </p>
-      </div>
-    )
-  }
-  return (
-    <div className="rounded-xl border-2 border-accent/80 bg-gradient-to-b from-dark-100 via-dark to-dark-100 px-3 py-5 text-center shadow-xl shadow-accent/15 ring-1 ring-accent/20 md:px-5 md:py-7">
-      <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-accent sm:text-xs">Ojo acá</p>
-      <p className="mt-1 font-heading text-2xl font-black uppercase leading-[0.95] text-white sm:text-4xl md:text-5xl">
-        Tu compra supera los S/ {GIFT_THRESHOLD_PE_PEN}
-      </p>
-      <p className="mt-3 font-heading text-3xl font-black uppercase leading-none text-accent sm:text-5xl md:text-6xl">
-        El regalo va <span className="underline decoration-white decoration-4 underline-offset-4">100% gratis</span>
-      </p>
-      <p className="mx-auto mt-3 max-w-md text-sm font-bold text-neutral-light sm:text-base">
-        Guía PDF + clase virtual grabada: <span className="whitespace-nowrap text-accent">S/ 0.00</span> en este pedido.
-        Diferencial RRBOXING sin un sol extra.
-      </p>
-    </div>
-  )
-}
-
-function GiftBlock({
-  compact,
-  giftFree,
-  appliesGift,
-  giftPackOptIn,
-}: {
-  compact?: boolean
-  giftFree: boolean
-  appliesGift: boolean
-  /** Perú PEN, subtotal sin umbral gratis: si el usuario marcó sumar el pack (solo lectura en paso “pago”). */
-  giftPackOptIn?: boolean
-}) {
-  if (!appliesGift) {
-    return (
-      <div
-        className={`rounded-xl border border-dark-300 bg-dark-100/90 p-4 text-neutral-light shadow-inner ${
-          compact ? 'text-sm' : ''
-        }`}
-      >
-        <p className="text-xs font-bold uppercase tracking-wider text-accent">Bienvenida RRBOXING</p>
-        <p className={`mt-1 font-semibold text-white ${compact ? 'text-sm' : ''}`}>
-          Tras pagar, en la confirmación accedes a la guía y material de apoyo según tu región.
-        </p>
-      </div>
-    )
-  }
-
-  /** Si el pack va gratis, el copy completo va en `GiftMegaBanner`; evitamos duplicar el mismo mensaje. */
-  if (giftFree) {
-    return null
-  }
-
-  if (compact) {
-    return (
-      <div className="rounded-xl border border-dark-300 bg-dark-100/90 p-3 text-xs text-neutral-light shadow-inner">
-        {giftPackOptIn ? (
-          <p>
-            <span className="font-bold text-accent">Pack bienvenida</span> (PDF + clase grabada) incluido en este
-            pago.
-          </p>
-        ) : (
-          <p>Pedido sin pack digital opcional (guía + clase grabada).</p>
-        )}
-      </div>
-    )
-  }
-
-  return (
-    <div className="rounded-xl border-2 border-accent/40 bg-dark-100 p-4 shadow-lg shadow-black/40">
-      <p className="mb-1 text-xs font-bold uppercase tracking-wider text-accent">PACK DE BIENVENIDA — OPCIONAL</p>
-      <p className="font-bold leading-snug text-white md:text-lg">
-        Si tu compra es menor a S/ {GIFT_THRESHOLD_PE_PEN} en productos, puedes sumar la guía en PDF y la clase grabada
-        marcando la opción en el resumen del pedido.
-      </p>
-      <div className="mt-3 space-y-1.5 rounded-lg border border-dark-300 bg-dark/80 px-3 py-2 text-sm font-semibold text-white">
-        <div className="flex justify-between gap-2">
-          <span className="text-neutral-light">Guía PDF — fundamentos</span>
-          <span className="shrink-0 text-accent">{formatCurrency(GIFT_GUIDE_PRICE_PEN, 'PEN', 'es-PE')}</span>
-        </div>
-        <div className="flex justify-between gap-2">
-          <span className="text-neutral-light">Clase virtual grabada</span>
-          <span className="shrink-0 text-accent">{formatCurrency(GIFT_CLASS_PRICE_PEN, 'PEN', 'es-PE')}</span>
-        </div>
-      </div>
-      <p className="mt-2 text-sm text-neutral-light leading-relaxed">
-        Si superas S/ {GIFT_THRESHOLD_PE_PEN} en productos, el mismo pack se incluye <strong className="text-accent">sin cargo</strong> automáticamente.
-      </p>
-    </div>
-  )
-}
-
 export default function CheckoutClient() {
   const { items } = useCart()
   const { country, setCountry } = useCountry()
   const [products, setProducts] = useState<Product[]>([])
 
   const [email, setEmail] = useState('')
-  const [newsletter, setNewsletter] = useState(true)
+  const [newsletter, setNewsletter] = useState(false)
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [addressLine, setAddressLine] = useState('')
@@ -169,8 +60,6 @@ export default function CheckoutClient() {
   const [error, setError] = useState('')
   const [step, setStep] = useState<Step>('form')
   const [clientSecret, setClientSecret] = useState<string | null>(null)
-  /** Perú PEN y subtotal bajo S/ 100: el cliente elige si paga el pack PDF + clase grabada. */
-  const [includeGiftPack, setIncludeGiftPack] = useState(false)
 
   useEffect(() => {
     fetch('/api/products')
@@ -197,26 +86,25 @@ export default function CheckoutClient() {
   }, [items, products, country])
 
   const config = getCountryConfig(country)
-  const subtotal = rows.reduce((acc, row) => acc + row.lineTotal, 0)
-  const totalUnits = totalCartUnits(rows)
-  const comboDiscountAmount = computeComboDiscountAmount(subtotal, totalUnits)
-  const productSubtotalAfterCombo = subtotalAfterComboDiscount(subtotal, totalUnits)
+  // Mismo cálculo que el servidor (shared/lib/cart-checkout.ts): solo cuentan los productos del combo.
+  const combo = resumenCombo(
+    rows.map((row) => ({
+      unitAmount: row.price.amount,
+      quantity: row.quantity,
+      comboEligible: row.product.comboEligible,
+    }))
+  )
+  const subtotal = combo.subtotal
+  const comboDiscountAmount = combo.descuento
+  const productSubtotalAfterCombo = combo.total
   const currency = (rows[0]?.price.currency ?? 'PEN') as CurrencyCode
-  const appliesGift = country === 'PE' && currency === 'PEN'
-  const giftFree = appliesGift && isGiftFreePePen(subtotal)
-  const giftCharge =
-    appliesGift && !giftFree && includeGiftPack ? GIFT_GUIDE_PRICE_PEN + GIFT_CLASS_PRICE_PEN : 0
-
-  useEffect(() => {
-    if (!appliesGift || giftFree) setIncludeGiftPack(false)
-  }, [appliesGift, giftFree])
 
   const shippingAmount = useMemo(() => {
     if (country === 'PE' && rows[0]?.price.currency === 'PEN') return peShippingAmount(shippingMethod)
     return config.shippingFlatAmount
   }, [country, shippingMethod, config, rows])
 
-  const total = productSubtotalAfterCombo + shippingAmount + giftCharge
+  const total = productSubtotalAfterCombo + shippingAmount
 
   const fullName = `${firstName} ${lastName}`.trim()
   const fullAddress = useMemo(() => {
@@ -251,7 +139,6 @@ export default function CheckoutClient() {
           country,
           shippingMethod,
           phone,
-          includeGiftPack,
           items,
         }),
       })
@@ -260,7 +147,7 @@ export default function CheckoutClient() {
         setError(
           typeof data.error === 'string'
             ? data.error
-            : 'No se pudo iniciar el pago. Revisa Stripe y variables de entorno.'
+            : 'No pudimos iniciar el pago. Escríbenos por WhatsApp.'
         )
         return
       }
@@ -308,13 +195,6 @@ export default function CheckoutClient() {
           <p className="mt-1 text-sm text-neutral-light">Todas las transacciones son seguras y están encriptadas.</p>
 
           <div className="mt-6 space-y-6">
-            {appliesGift && giftFree ? <GiftMegaBanner compact /> : null}
-            <GiftBlock
-              compact
-              giftFree={giftFree}
-              appliesGift={appliesGift}
-              giftPackOptIn={includeGiftPack}
-            />
             <div className="rounded-xl border-2 border-accent/70 bg-dark-100 p-1 shadow-xl shadow-black/50">
               <CheckoutStripeEmbedded clientSecret={clientSecret} />
             </div>
@@ -534,7 +414,7 @@ export default function CheckoutClient() {
             </button>
           </div>
 
-          {/* Columna derecha: resumen + regalo + cupón + totales */}
+          {/* Columna derecha: resumen + cupón + totales */}
           <div className="h-fit space-y-6 rounded-2xl border border-dark-300 bg-dark-100 p-6 shadow-xl md:p-8 lg:order-1">
             {rows.length === 0 ? (
               <p className="text-sm text-neutral-light">Tu carrito está vacío.</p>
@@ -564,25 +444,6 @@ export default function CheckoutClient() {
                   })}
                 </ul>
 
-                {appliesGift && giftFree ? <GiftMegaBanner /> : null}
-                <GiftBlock giftFree={giftFree} appliesGift={appliesGift} />
-
-                {appliesGift && !giftFree ? (
-                  <label className="flex cursor-pointer gap-3 rounded-xl border border-dark-300 bg-dark/50 p-4 transition hover:border-accent/45">
-                    <input
-                      type="checkbox"
-                      checked={includeGiftPack}
-                      onChange={(e) => setIncludeGiftPack(e.target.checked)}
-                      className="mt-1 h-4 w-4 shrink-0 rounded border-dark-300 bg-dark text-accent focus:ring-2 focus:ring-accent/50"
-                    />
-                    <span className="text-sm leading-relaxed text-neutral-light">
-                      <span className="font-bold text-white">Sumar pack de bienvenida</span> (opcional): guía PDF —
-                      fundamentos ({formatCurrency(GIFT_GUIDE_PRICE_PEN, 'PEN', config.locale)}) + clase virtual grabada (
-                      {formatCurrency(GIFT_CLASS_PRICE_PEN, 'PEN', config.locale)}).
-                    </span>
-                  </label>
-                ) : null}
-
                 <div>
                   <div className="flex gap-2">
                     <input
@@ -609,7 +470,7 @@ export default function CheckoutClient() {
                   </div>
                   {comboDiscountAmount > 0 ? (
                     <div className="flex justify-between rounded-lg border border-accent/25 bg-accent/5 px-2 py-1.5 text-accent">
-                      <span className="font-semibold">Promo combo (10% OFF) + regalo sorpresa</span>
+                      <span className="font-semibold">Combo 10%</span>
                       <span className="font-bold tabular-nums">−{formatCurrency(comboDiscountAmount, currency, config.locale)}</span>
                     </div>
                   ) : null}
@@ -639,28 +500,6 @@ export default function CheckoutClient() {
                       )}
                     </span>
                   </div>
-                  {appliesGift && giftFree ? (
-                    <div className="flex justify-between rounded-lg border border-accent/30 bg-dark/60 px-2 py-2 text-sm font-bold text-accent">
-                      <span className="text-white">Pack bienvenida (PDF + clase grabada)</span>
-                      <span>GRATIS</span>
-                    </div>
-                  ) : null}
-                  {appliesGift && !giftFree && includeGiftPack ? (
-                    <>
-                      <div className="flex justify-between text-neutral-light">
-                        <span className="pr-2">Guía PDF — fundamentos de boxeo</span>
-                        <span className="shrink-0 font-semibold text-accent">
-                          {formatCurrency(GIFT_GUIDE_PRICE_PEN, 'PEN', config.locale)}
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-neutral-light">
-                        <span className="pr-2">Clase virtual grabada — primeros pasos</span>
-                        <span className="shrink-0 font-semibold text-accent">
-                          {formatCurrency(GIFT_CLASS_PRICE_PEN, 'PEN', config.locale)}
-                        </span>
-                      </div>
-                    </>
-                  ) : null}
                   <div className="flex items-baseline justify-between border-t border-dark-300 pt-4">
                     <span className="font-heading text-xl font-bold text-white">Total</span>
                     <p className="font-heading text-2xl font-bold tabular-nums text-accent md:text-3xl">
@@ -668,16 +507,6 @@ export default function CheckoutClient() {
                     </p>
                   </div>
                 </div>
-                <p className="text-xs leading-relaxed text-neutral">
-                  Al completar el pago aseguras stock y accedes al material indicado en la confirmación.
-                  {appliesGift && !giftFree ? (
-                    <>
-                      {' '}
-                      Con subtotal mayor a S/ {GIFT_THRESHOLD_PE_PEN} en productos, el pack PDF + clase grabada va{' '}
-                      <strong className="text-accent">GRATIS</strong> sin marcar nada.
-                    </>
-                  ) : null}
-                </p>
               </>
             )}
           </div>

@@ -2,11 +2,15 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Guía básica de boxeo — regalo RRBOXING',
-  description: 'Fundamentos que todo boxeador debe dominar: guardia, desplazamiento y primer golpe.',
+  title: 'Guía básica de boxeo',
+  description: 'Lo básico para empezar: guardia, desplazamiento y primer golpe.',
+  robots: { index: false, follow: false },
 }
 
 export default function GuiaBasicaPage() {
+  // La clase grabada solo se enlaza cuando ya tiene video.
+  const hayClaseGrabada = Boolean(process.env.NEXT_PUBLIC_POST_PURCHASE_VIDEO_URL?.trim())
+
   return (
     <main className="min-h-screen bg-dark text-neutral-light">
       <header className="border-b border-dark-300 bg-dark-100 px-4 py-4">
@@ -14,18 +18,19 @@ export default function GuiaBasicaPage() {
           <Link href="/" className="font-heading text-xl tracking-wide text-accent">
             RRBOXING
           </Link>
-          <Link href="/bonus/clase-inicial" className="text-sm text-accent hover:underline">
-            Ver clase grabada de bienvenida →
-          </Link>
+          {hayClaseGrabada ? (
+            <Link href="/bonus/clase-inicial" className="text-sm text-accent hover:underline">
+              Ver la clase grabada →
+            </Link>
+          ) : null}
         </div>
       </header>
       <article className="container mx-auto max-w-2xl px-4 py-10">
-        <p className="mb-2 text-xs font-bold uppercase tracking-widest text-accent">Regalo tienda oficial</p>
         <h1 className="mb-6 font-heading text-4xl font-bold tracking-wide text-white md:text-5xl">
           Guía básica de boxeo
         </h1>
         <p className="mb-8 rounded-xl border border-accent/20 bg-dark-100 p-4 text-sm text-white">
-          Guardá esta página como PDF desde el navegador (Ctrl+P → Guardar como PDF) para llevarla al gimnasio o
+          Guarda esta página como PDF desde el navegador (Ctrl+P → Guardar como PDF) para llevarla al gimnasio o
           consultarla sin conexión.
         </p>
 
@@ -73,7 +78,7 @@ export default function GuiaBasicaPage() {
         <p className="text-sm text-neutral">
           Esta guía es material introductorio. Para progresar con técnica supervisada, considera las{' '}
           <Link href="/consulta" className="text-accent underline">
-            clases personalizadas RRBOXING
+            clases 1 a 1 con Richard
           </Link>
           .
         </p>

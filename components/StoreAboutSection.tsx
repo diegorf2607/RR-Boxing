@@ -12,7 +12,7 @@ export default function StoreAboutSection() {
           <div className="relative mx-auto flex aspect-[4/5] w-full max-w-sm items-center justify-center overflow-hidden rounded-2xl border border-dark-300 bg-dark-100 md:mx-0 md:max-w-md">
             <Image
               src={LOGO_VERTICAL_SRC}
-              alt="RRBOXING — logo vertical"
+              alt="Logo de RR Boxing"
               fill
               className="object-contain p-8 md:p-12"
               sizes="(max-width: 768px) 100vw, 400px"
@@ -23,28 +23,24 @@ export default function StoreAboutSection() {
           <div>
             <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-accent">Quiénes somos</p>
             <h2 className="mb-4 text-3xl font-bold md:text-4xl">
-              RRBOXING no es una tienda genérica: es <span className="text-accent">marca con método</span>
+              RR Boxing: <span className="text-accent">tienda y clases</span>
             </h2>
             <p className="mb-4 text-neutral-light leading-relaxed">
-              Llevamos años construyendo comunidad, técnica y disciplina en boxeo. La{' '}
-              <strong className="text-white">tienda oficial</strong> existe para que entrenes con el mismo criterio que
-              aplicamos en pista: equipamiento seleccionado, calidad y coherencia con lo que enseñamos.
+              En la <strong className="text-white">tienda</strong> encuentras lo básico para entrenar: guantes, vendas
+              y cuerda de salto. Haces tu pedido por WhatsApp y ahí te confirmamos el envío.
             </p>
-            <p className="mb-2 text-sm font-medium text-white">
-              Richard Rodríguez — entrenamiento y método RRBOXING
-            </p>
+            <p className="mb-2 text-sm font-medium text-white">Richard Rodríguez, el profe de RR Boxing</p>
             <p className="mb-6 text-neutral-light leading-relaxed">
-              Las <strong className="text-white">clases personalizadas 1 a 1</strong> son el siguiente nivel: plan
-              hecho para ti, seguimiento real y resultados medibles. Lo hablamos en una llamada sin compromiso.
+              Las <strong className="text-white">clases personalizadas 1 a 1</strong> son con Richard, con un plan
+              hecho para ti. Se piden por WhatsApp y ahí te contamos cómo son y cuánto cuestan.
             </p>
             <div className="flex flex-wrap gap-3">
               <Link
                 href="/consulta"
                 className="inline-flex rounded-xl bg-gradient-to-r from-red-600 via-red-500 to-orange-500 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-red-500/25"
               >
-                Agendar llamada
+                Clases 1 a 1
               </Link>
-              <span className="self-center text-xs text-neutral">Precio de clases en la consulta</span>
             </div>
           </div>
         </div>

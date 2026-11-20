@@ -3,17 +3,19 @@ import './globals.css'
 import AppProviders from '@/components/AppProviders'
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://www.rrboxing.com'),
   title: {
-    default: 'RRBOXING — Tienda y clases personalizadas',
-    template: '%s | RRBOXING',
+    default: 'RR Boxing: tienda de boxeo y clases 1 a 1',
+    template: '%s | RR Boxing',
   },
   description:
-    'RRBOXING: tienda oficial y entrenamiento personalizado. Las clases 1 a 1 se cotizan en tu llamada.',
-  keywords: 'RRBOXING, boxeo, tienda boxeo, clases personalizadas boxeo, equipamiento boxeo',
+    'Tienda de RR Boxing: guantes, vendas y cuerda para entrenar. Clases 1 a 1 y clases virtuales; pide información por WhatsApp.',
   openGraph: {
-    title: 'RRBOXING',
-    description: 'Tienda oficial y clases personalizadas. Precio de entrenamiento en la llamada.',
+    title: 'RR Boxing',
+    description: 'Guantes, vendas y cuerda para entrenar, y clases 1 a 1. Pedidos y consultas por WhatsApp.',
     type: 'website',
+    locale: 'es_PE',
+    siteName: 'RR Boxing',
   },
 }
 

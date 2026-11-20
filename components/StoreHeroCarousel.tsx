@@ -45,9 +45,14 @@ export default function StoreHeroCarousel() {
     <section
       className="relative w-full overflow-hidden bg-dark"
       aria-roledescription="carrusel"
-      aria-label="Destacados RRBOXING"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
+      aria-label="Destacados RR Boxing"
+      // Solo el mouse pausa: en el celular un toque no trae «salida» y el carrusel quedaba pausado.
+      onPointerEnter={(e) => {
+        if (e.pointerType === 'mouse') setPaused(true)
+      }}
+      onPointerLeave={(e) => {
+        if (e.pointerType === 'mouse') setPaused(false)
+      }}
     >
       <div className="relative h-[min(88vh,820px)] w-full md:h-[min(85vh,760px)]">
         {slides.map((slide, index) => {
@@ -131,7 +136,7 @@ export default function StoreHeroCarousel() {
             <button
               type="button"
               onClick={() => go(-1)}
-              className="absolute left-2 top-1/2 z-20 -translate-y-1/2 rounded-full border border-white/20 bg-black/40 p-2.5 text-white backdrop-blur-md transition hover:border-accent/50 hover:bg-black/60 md:left-4"
+              className="absolute left-2 top-1/2 z-20 hidden -translate-y-1/2 rounded-full border border-white/20 bg-black/40 p-2.5 text-white backdrop-blur-md transition hover:border-accent/50 hover:bg-black/60 md:left-4 md:block"
               aria-label="Anterior"
             >
               <ChevronLeft className="h-6 w-6" />
@@ -139,7 +144,7 @@ export default function StoreHeroCarousel() {
             <button
               type="button"
               onClick={() => go(1)}
-              className="absolute right-2 top-1/2 z-20 -translate-y-1/2 rounded-full border border-white/20 bg-black/40 p-2.5 text-white backdrop-blur-md transition hover:border-accent/50 hover:bg-black/60 md:right-4"
+              className="absolute right-2 top-1/2 z-20 hidden -translate-y-1/2 rounded-full border border-white/20 bg-black/40 p-2.5 text-white backdrop-blur-md transition hover:border-accent/50 hover:bg-black/60 md:right-4 md:block"
               aria-label="Siguiente"
             >
               <ChevronRight className="h-6 w-6" />
@@ -158,18 +163,24 @@ export default function StoreHeroCarousel() {
               }}
             />
           </div>
-          <div className="flex justify-center gap-2 py-4">
+          <div className="flex justify-center">
+            {/* Cada punto tiene 44 px de alto para el dedo; la barrita se dibuja adentro. */}
             {slides.map((s, i) => (
               <button
                 key={s.id}
                 type="button"
                 onClick={() => goTo(i)}
-                className={`h-1.5 rounded-full transition-all ${
-                  i === active ? 'w-10 bg-accent' : 'w-1.5 bg-white/40 hover:bg-white/60'
-                }`}
+                className="group flex h-11 min-w-[32px] items-center justify-center px-1"
                 aria-label={`Ir a slide ${i + 1}`}
                 aria-current={i === active}
-              />
+              >
+                <span
+                  aria-hidden
+                  className={`block h-1.5 rounded-full transition-all ${
+                    i === active ? 'w-10 bg-accent' : 'w-1.5 bg-white/40 group-hover:bg-white/60'
+                  }`}
+                />
+              </button>
             ))}
           </div>
         </div>
@@ -185,14 +196,15 @@ export default function StoreHeroCarousel() {
         </div>
       </div>
 
-      {/* Flotante izquierda: consulta (WhatsApp compras va en layout, abajo derecha) */}
+      {/* Flotante izquierda: clases 1 a 1 (WhatsApp compras va en layout, abajo derecha) */}
       <div className="pointer-events-none fixed bottom-6 left-6 z-[60] flex flex-col gap-3">
         <Link
           href="/consulta"
+          aria-label="Clases 1 a 1"
           className="pointer-events-auto flex items-center gap-2 rounded-full border border-accent/40 bg-dark/90 px-4 py-3 text-sm font-semibold text-white shadow-lg backdrop-blur-md transition hover:border-accent hover:text-accent"
         >
-          <MessageCircle className="h-5 w-5 text-accent" />
-          <span className="hidden sm:inline">Agenda tu clase</span>
+          <MessageCircle className="h-5 w-5 text-accent" aria-hidden />
+          <span className="hidden sm:inline">Clases 1 a 1</span>
         </Link>
       </div>
     </section>

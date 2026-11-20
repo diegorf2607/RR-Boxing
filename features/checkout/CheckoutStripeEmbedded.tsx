@@ -17,9 +17,11 @@ export default function CheckoutStripeEmbedded({ clientSecret }: Props) {
   }, [publishableKey])
 
   if (!publishableKey || !stripePromise) {
+    // El detalle técnico va a la consola; el público solo ve un mensaje simple.
+    console.error('[checkout] Falta NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY')
     return (
       <p className="rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800">
-        Falta la clave publicable de Stripe (NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY o STRIPE_PUBLISHABLE_KEY en Vercel).
+        No pudimos iniciar el pago. Escríbenos por WhatsApp.
       </p>
     )
   }

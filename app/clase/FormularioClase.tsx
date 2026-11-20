@@ -95,7 +95,7 @@ export default function FormularioClase() {
 
       {mensaje && (
         <p role="alert" className="mt-3 text-sm text-red-400">
-          {mensaje}.
+          {mensaje.endsWith('.') ? mensaje : `${mensaje}.`}
           {estado === 'error' && (
             <>
               {' '}
