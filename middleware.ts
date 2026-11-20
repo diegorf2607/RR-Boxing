@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { jwtVerify } from 'jose'
+import { getSessionSecret } from '@/shared/lib/session-secret'
 
 async function getPayload(token: string) {
-  const secret = new TextEncoder().encode(process.env.AUTH_SECRET ?? 'rrboxing-dev-secret-change-me')
-  const { payload } = await jwtVerify(token, secret)
+  const { payload } = await jwtVerify(token, getSessionSecret(), { algorithms: ['HS256'] })
   return payload as { role?: string }
 }
 

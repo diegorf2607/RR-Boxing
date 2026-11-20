@@ -1,12 +1,12 @@
 import { SignJWT, jwtVerify } from 'jose'
 import { cookies } from 'next/headers'
 import type { UserSession } from '@/shared/types/commerce'
+import { getSessionSecret } from '@/shared/lib/session-secret'
 
 const cookieName = 'rrboxing_session'
-const encoder = new TextEncoder()
 
 function getJwtSecret() {
-  return encoder.encode(process.env.AUTH_SECRET ?? 'rrboxing-dev-secret-change-me')
+  return getSessionSecret()
 }
 
 export async function createSession(session: UserSession) {
@@ -34,7 +34,7 @@ export async function getSession(): Promise<UserSession | null> {
   if (!token) return null
 
   try {
-    const { payload } = await jwtVerify(token, getJwtSecret())
+    const { payload } = await jwtVerify(token, getJwtSecret(), { algorithms: ['HS256'] })
     return payload as unknown as UserSession
   } catch {
     return null
