@@ -662,7 +662,7 @@ export async function getStoreSettings(): Promise<StoreSettings> {
   const { data, error } = await supabase.from('store_settings').select('*').eq('id', 1).maybeSingle()
   if (error || !data) {
     return {
-      storeName: 'RRBOXING',
+      storeName: 'RR Boxing',
       defaultCurrencyDisplay: 'PEN',
       lowStockThreshold: 5,
       supportContactText: '',
@@ -995,11 +995,11 @@ export function buildDigitalGiftsEmailDraft(params: {
     const tipo = g.giftType === 'pdf' ? 'PDF' : g.giftType === 'video' ? 'Video' : 'Enlace'
     return `- ${g.name} (${tipo}): ${g.contentUrl}`
   })
-  const subject = `Tus regalos digitales — pedido ${params.orderId}`
+  const subject = `Tu material digital, pedido ${params.orderId}`
   const greet = params.customerName ? `Hola ${params.customerName},` : 'Hola,'
   const text = `${greet}
 
-Gracias por tu compra. Aquí tienes los enlaces a tus regalos digitales prometidos:
+Gracias por tu compra. Aquí tienes los enlaces de tu material digital:
 
 ${lines.join('\n')}
 

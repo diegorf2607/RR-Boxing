@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { IMAGEN_COMPARTIR } from '@/shared/config/imagen-compartir'
 import Image from 'next/image'
 import Link from 'next/link'
 import { CLASE, claseVigente } from '@/shared/lib/clase-virtual'
@@ -22,6 +23,7 @@ export const metadata: Metadata = {
     title: 'Clase virtual RR Boxing · sábado 28 de noviembre',
     description: 'De 9 a 10 a. m. (hora Perú). S/ 30 o US$ 10 si pagas desde fuera.',
     type: 'website',
+    images: [IMAGEN_COMPARTIR],
   },
 }
 

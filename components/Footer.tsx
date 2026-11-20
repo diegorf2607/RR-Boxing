@@ -8,7 +8,7 @@ const WHATSAPP_URL = enlaceWhatsapp('Hola, RR Boxing. Tengo una consulta.')
 
 export default function Footer() {
   return (
-    <footer className="bg-dark-100 border-t border-dark-300 pt-6 pb-24 md:py-12">
+    <footer className="bg-dark-100 border-t border-dark-300 py-6 md:py-12">
       <div className="container mx-auto px-4">
         {/* Mobile: Simple compact footer */}
         <div className="md:hidden">
@@ -40,7 +40,7 @@ export default function Footer() {
             </div>
           </div>
           {/* Links in row */}
-          <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-neutral mb-3">
+          <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-neutral">
             <Link href="/" className="hover:text-accent">
               Tienda
             </Link>
@@ -54,28 +54,15 @@ export default function Footer() {
             <Link href="/#comunidad" className="hover:text-accent">
               Comunidad
             </Link>
-            <Link href="/garantia" className="hover:text-accent">
-              Garantía
-            </Link>
             <Link href="/#preguntas-frecuentes" className="hover:text-accent">
               Preguntas
             </Link>
-            <Link href="/terminos" className="hover:text-accent">
-              Términos
-            </Link>
-            <Link href="/privacidad" className="hover:text-accent">
-              Privacidad
-            </Link>
-            <Link href="/reembolso" className="hover:text-accent">
-              Reembolso
-            </Link>
           </div>
-          <p className="text-center text-neutral text-xs">© 2026 RR Boxing</p>
         </div>
 
         {/* Desktop: Full footer */}
         <div className="hidden md:block">
-          <div className="grid grid-cols-4 gap-8 mb-8">
+          <div className="grid grid-cols-3 gap-8">
             {/* Logo & Tagline */}
             <div>
               <div className="flex items-center gap-2 mb-4">
@@ -156,26 +143,6 @@ export default function Footer() {
                 </li>
               </ul>
             </div>
-
-            {/* Legal Links */}
-            <div>
-              <h4 className="font-bold text-white mb-4">Legal</h4>
-              <ul className="space-y-2">
-                <li>
-                  <Link href="/garantia" className="text-neutral hover:text-accent transition-colors text-sm">
-                    Garantía de compra
-                  </Link>
-                </li>
-                <li><Link href="/terminos" className="text-neutral hover:text-accent transition-colors text-sm">Términos y Condiciones</Link></li>
-                <li><Link href="/privacidad" className="text-neutral hover:text-accent transition-colors text-sm">Política de Privacidad</Link></li>
-                <li><Link href="/reembolso" className="text-neutral hover:text-accent transition-colors text-sm">Política de Reembolso</Link></li>
-              </ul>
-            </div>
-          </div>
-
-          {/* Copyright */}
-          <div className="border-t border-dark-300 pt-8">
-            <p className="text-center text-neutral text-sm">© 2026 RR Boxing. Todos los derechos reservados.</p>
           </div>
         </div>
       </div>

@@ -6,7 +6,7 @@ export const COUNTRIES_WITH_STORE: CountryCode[] = ['PE']
 export type CountrySelectOption = {
   value: string
   label: string
-  /** Si false, se muestra en la lista pero no se puede elegir (próximamente). */
+  /** Si false, se muestra en la lista pero no se puede elegir («sin envíos por ahora»). */
   enabled: boolean
 }
 

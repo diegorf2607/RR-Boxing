@@ -155,9 +155,9 @@ export async function prepareCartCheckout(
   if (country === 'PE' && firstCurrency === 'PEN') {
     const method = body.shippingMethod ?? 'standard'
     const peShipping: Record<CheckoutShippingMethod, { amount: number; label: string }> = {
-      standard: { amount: 0, label: 'Standard 2+3 días hábiles' },
-      express: { amount: 9.9, label: 'Express 24/48 horas' },
-      urgent: { amount: 14.9, label: 'Envío URGENTE (Lima metropolitana)' },
+      standard: { amount: 0, label: 'Envío estándar, 2 a 3 días hábiles' },
+      express: { amount: 9.9, label: 'Envío express, 24 a 48 horas' },
+      urgent: { amount: 14.9, label: 'Envío urgente (Lima Metropolitana)' },
     }
     const sel = peShipping[method]
     shippingFlatAmount = sel.amount

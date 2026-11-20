@@ -171,7 +171,7 @@ export default function StoreHeroCarousel() {
                 type="button"
                 onClick={() => goTo(i)}
                 className="group flex h-11 min-w-[32px] items-center justify-center px-1"
-                aria-label={`Ir a slide ${i + 1}`}
+                aria-label={`Ir al destacado ${i + 1}`}
                 aria-current={i === active}
               >
                 <span

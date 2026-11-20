@@ -12,8 +12,16 @@ function supabaseImageHost() {
 const supabaseHost = supabaseImageHost()
 
 const nextConfig = {
+  // En local, cada servidor de prueba puede usar su propia carpeta (NEXT_DIST_DIR); en Vercel queda .next.
+  distDir: process.env.NEXT_DIST_DIR || '.next',
   images: {
-    domains: ['images.unsplash.com', ...(supabaseHost ? [supabaseHost] : [])],
+    // Hosts de los que next/image puede bajar y optimizar fotos (remotePatterns reemplaza a `domains`, ya obsoleto):
+    // las fotos del carrusel (Unsplash), las portadas de los testimonios (miniaturas de YouTube) y Supabase Storage.
+    remotePatterns: [
+      { protocol: 'https', hostname: 'images.unsplash.com' },
+      { protocol: 'https', hostname: 'i.ytimg.com', pathname: '/vi/**' },
+      ...(supabaseHost ? [{ hostname: supabaseHost }] : []),
+    ],
   },
 }
 

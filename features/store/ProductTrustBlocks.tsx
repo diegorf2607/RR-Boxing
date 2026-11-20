@@ -19,7 +19,8 @@ export default function ProductTrustBlocks({ product }: { product: Product }) {
       <div className="border-t border-dark-300 px-5 py-4">
         <dt className="text-sm text-neutral">Cambios</dt>
         <dd className="mt-1 text-base text-white">
-          Si tu producto llega fallado o no es el que pediste, lo cambiamos.{' '}
+          Si tu producto llega fallado, dañado o no es el que pediste, tú eliges un cambio o la devolución de tu
+          dinero, y los envíos los paga RR Boxing.{' '}
           <a
             href={whatsappCambio}
             target="_blank"

@@ -16,7 +16,7 @@ export default function GuiaBasicaPage() {
       <header className="border-b border-dark-300 bg-dark-100 px-4 py-4">
         <div className="container mx-auto flex flex-wrap items-center justify-between gap-2">
           <Link href="/" className="font-heading text-xl tracking-wide text-accent">
-            RRBOXING
+            RR Boxing
           </Link>
           {hayClaseGrabada ? (
             <Link href="/bonus/clase-inicial" className="text-sm text-accent hover:underline">
@@ -55,7 +55,7 @@ export default function GuiaBasicaPage() {
           <h2 className="font-heading text-2xl text-white">3. El jab (directo de izquierda si eres diestro)</h2>
           <p>
             Sale en línea recta desde la guardia, hombro que rota levemente, mano que vuelve igual de rápido de lo que
-            sale. Sirve para medir distancia, tapar la visión del rival y preparar la derecha.
+            sale. Sirve para medir la distancia y preparar la derecha.
           </p>
         </section>
 

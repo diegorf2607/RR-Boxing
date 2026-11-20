@@ -80,7 +80,7 @@ export default function DashboardAdminClient({ snapshot }: { snapshot: Dashboard
     <div className="space-y-8">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-bold text-white">Dashboard</h1>
+          <h1 className="text-4xl font-bold text-white">Panel</h1>
           <p className="mt-1 text-sm text-neutral-light">
             Resumen operativo · umbral stock bajo: <span className="text-accent">{settings.lowStockThreshold}</span>
             {!settings.storeEnabled && (
@@ -187,7 +187,13 @@ export default function DashboardAdminClient({ snapshot }: { snapshot: Dashboard
             >
               <div>
                 <p className="font-semibold text-white">{n.title}</p>
-                {n.body && <p className="text-xs opacity-90">{n.body}</p>}
+                {n.type === 'libro_reclamacion' ? (
+                  <a href={n.link ?? '/admin/reclamos'} className="text-xs underline opacity-90">
+                    Ver la hoja en el Libro de reclamaciones
+                  </a>
+                ) : (
+                  n.body && <p className="text-xs opacity-90">{n.body}</p>
+                )}
                 <p className="mt-1 text-[10px] uppercase tracking-wide text-neutral">
                   {new Date(n.createdAt).toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' })}
                 </p>
