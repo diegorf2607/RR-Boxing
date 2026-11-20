@@ -1,6 +1,6 @@
 'use client'
 
-import { useId, type ReactNode } from 'react'
+import { useCallback, useId, useState, type ReactNode } from 'react'
 import Link from 'next/link'
 import { ChevronDown } from 'lucide-react'
 import { WHATSAPP_LEGIBLE, enlaceWhatsapp } from '@/shared/lib/whatsapp'
@@ -14,8 +14,7 @@ type FaqItem = { id: string; question: string; answer: ReactNode }
 
 const WHATSAPP_CONSULTA = enlaceWhatsapp('Hola, RR Boxing. Tengo una consulta sobre la tienda.')
 
-// Enlaces dentro de las respuestas: blancos y subrayados, como en la maqueta (el amarillo queda para los botones)
-const enlace = 'text-white underline underline-offset-2 hover:text-accent'
+const enlace = 'text-accent underline underline-offset-2 hover:text-white'
 
 /** Frase de la clase virtual: solo sale mientras la clase no haya terminado. La clase es gratis desde el 20 nov. */
 function FraseClaseVirtual() {
@@ -188,49 +187,79 @@ const preguntas = (pagoEnLinea: boolean, tarifas: string): FaqItem[] => [
 ]
 
 /**
- * Preguntas frecuentes del inicio, como la maqueta de la línea A: el título y las preguntas separadas por líneas finas
- * (.acordeon en globals.css), con <details>, que se abre con el teclado y funciona sin JavaScript (igual que las de la
- * ficha, features/store/PreguntasProducto.tsx). La primera va abierta; se pueden abrir varias a la vez.
- * `pagoEnLinea` viene de la página (servidor) con pagoEnLineaActivo() (shared/config/pagos.ts): en el navegador no se
- * puede saber.
+ * Preguntas frecuentes del inicio. `pagoEnLinea` viene de la página (servidor) con pagoEnLineaActivo()
+ * (shared/config/pagos.ts): en el navegador no se puede saber.
  */
 export default function StoreFAQSection({ pagoEnLinea, tarifas }: { pagoEnLinea: boolean; tarifas: string }) {
   const baseId = useId()
   const items = preguntas(pagoEnLinea, tarifas)
+  const [openIds, setOpenIds] = useState<Set<string>>(() => new Set(['pedido']))
+
+  const toggle = useCallback((id: string) => {
+    setOpenIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }, [])
 
   return (
     <section
       id="preguntas-frecuentes"
-      className="seccion scroll-mt-[68px]"
+      className="scroll-mt-24 border-t border-dark-300 bg-dark py-12 md:py-16"
       aria-labelledby={`${baseId}-heading`}
     >
-      <div className="wrap">
-        <div className="seccion-cab">
+      <div className="container mx-auto max-w-6xl px-4">
+        <div className="max-w-3xl">
           <h2 id={`${baseId}-heading`} className="section-title">
             Preguntas frecuentes
           </h2>
+          <p className="section-subtitle">
+            Si no ves tu caso, escríbenos por <WhatsappLink>WhatsApp</WhatsappLink>.
+          </p>
         </div>
 
-        <div className="acordeon">
-          {items.map((item) => (
-            <details key={item.id} open={item.id === 'pedido'}>
-              {/* Cada pregunta es un h3 (se llega con la tecla H del lector); la flecha gira al abrir */}
-              <summary>
-                <h3>{item.question}</h3>
-                <ChevronDown strokeWidth={1.6} aria-hidden />
-              </summary>
-              <p>{item.answer}</p>
-            </details>
-          ))}
+        {/* Una sola caja con filas finas, como las preguntas de la ficha (features/store/PreguntasProducto.tsx) */}
+        <div className="mt-8 max-w-3xl rounded-2xl border border-dark-300 bg-dark-100">
+          {items.map((item) => {
+            const isOpen = openIds.has(item.id)
+            const panelId = `${baseId}-panel-${item.id}`
+            const buttonId = `${baseId}-btn-${item.id}`
+            return (
+              <div key={item.id} className="border-t border-dark-300 first:border-t-0">
+                <h3 className="text-base font-medium leading-snug">
+                  <button
+                    id={buttonId}
+                    type="button"
+                    aria-expanded={isOpen}
+                    aria-controls={panelId}
+                    onClick={() => toggle(item.id)}
+                    className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left text-white transition hover:text-accent"
+                  >
+                    <span>{item.question}</span>
+                    <ChevronDown
+                      className={`h-5 w-5 shrink-0 text-accent transition-transform duration-200 ${
+                        isOpen ? 'rotate-180' : ''
+                      }`}
+                      aria-hidden
+                    />
+                  </button>
+                </h3>
+                <div
+                  id={panelId}
+                  role="region"
+                  aria-labelledby={buttonId}
+                  hidden={!isOpen}
+                >
+                  {isOpen ? (
+                    <p className="px-5 pb-4 text-sm leading-relaxed text-neutral-light">{item.answer}</p>
+                  ) : null}
+                </div>
+              </div>
+            )
+          })}
         </div>
-
-        <p className="mt-5 text-neutral-light">
-          ¿No ves tu caso? Escríbenos al WhatsApp{' '}
-          <WhatsappLink>
-            <span className="whitespace-nowrap">{WHATSAPP_LEGIBLE}</span>
-          </WhatsappLink>
-          .
-        </p>
       </div>
     </section>
   )

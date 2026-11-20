@@ -12,9 +12,8 @@ const filas: { etiqueta: string; valor: string; nota?: string }[] = [
 ]
 
 /**
- * La caja de la clase virtual, al lado de las clases 1 a 1 en «Clases con Richard» (components/ClassesPromoSection.tsx).
- * La página decide en el servidor si se muestra; si la página se armó antes de la clase y alguien la abre después,
- * aquí se esconde al cargar (y la caja de las 1 a 1 pasa a ocupar el ancho).
+ * Aviso de la clase virtual en el inicio. La página decide en el servidor si se muestra; si la página
+ * se armó antes de la clase y alguien la abre después, aquí se esconde al cargar.
  */
 export default function ClaseDestacada() {
   const [vigente, setVigente] = useState(true)
@@ -26,30 +25,39 @@ export default function ClaseDestacada() {
   if (!vigente) return null
 
   return (
-    <article
-      aria-labelledby="clase-destacada-titulo"
-      className="flex flex-col overflow-hidden rounded-2xl border border-dark-300 bg-dark-100"
-    >
-      <div className="flex flex-1 flex-col gap-3.5 p-5 min-[900px]:p-6">
-        <h3 id="clase-destacada-titulo" className="card-title">
-          Clase virtual
-        </h3>
-        <p className="text-neutral-light">Es gratis: te inscribes y te mandamos el link de la clase por WhatsApp.</p>
-        <dl className="filas filas-hundidas">
-          {filas.map((fila) => (
-            <div key={fila.etiqueta}>
-              <dt>{fila.etiqueta}</dt>
-              <dd>
-                {fila.valor}
-                {fila.nota && <small>{fila.nota}</small>}
-              </dd>
-            </div>
-          ))}
-        </dl>
-        <Link href="/clase" className="btn-primary mt-auto">
-          Inscribirme gratis
-        </Link>
+    <section aria-labelledby="clase-destacada-titulo" className="border-t border-dark-300 bg-dark py-12 text-white md:py-16">
+      <div className="container mx-auto grid max-w-6xl gap-8 px-4 md:grid-cols-2 md:items-center md:gap-12">
+        <div>
+          <h2 id="clase-destacada-titulo" className="section-title">
+            Clase virtual <span className="text-accent">gratis</span>
+          </h2>
+          <p className="section-subtitle max-w-sm">
+            Es gratis: te inscribes y te mandamos el link de la clase por WhatsApp.
+          </p>
+        </div>
+
+        <div>
+          <dl className="rounded-2xl border border-dark-300 bg-dark-100">
+            {filas.map((fila, i) => (
+              <div
+                key={fila.etiqueta}
+                className={`flex items-baseline justify-between gap-4 px-5 py-4 ${
+                  i > 0 ? 'border-t border-dark-300' : ''
+                }`}
+              >
+                <dt className="text-sm text-neutral">{fila.etiqueta}</dt>
+                <dd className="text-right text-base font-medium">
+                  {fila.valor}
+                  {fila.nota && <span className="block text-sm font-normal text-neutral">{fila.nota}</span>}
+                </dd>
+              </div>
+            ))}
+          </dl>
+          <Link href="/clase" className="btn-primary mt-5">
+            Inscribirme gratis
+          </Link>
+        </div>
       </div>
-    </article>
+    </section>
   )
 }

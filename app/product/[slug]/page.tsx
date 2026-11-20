@@ -3,7 +3,6 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { Check } from 'lucide-react'
 import MainNav from '@/components/MainNav'
 import { getProductBySlug, getProducts } from '@/shared/lib/data-store'
 import CajaCompra from '@/features/store/CajaCompra'
@@ -117,14 +116,7 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
   const related = otros.slice(0, 3)
   // Si hay pago en línea (MERCADOPAGO_ACCESS_TOKEN) lo sabe solo el servidor: va como prop a las filas y preguntas
   const pagoEnLinea = pagoEnLineaActivo()
-  const nombre = product.name.trim()
   const resumen = resumenDe(product)
-  // «Guantes · Woesad»: la categoría y la marca del producto, encima del nombre (como en la maqueta)
-  const marca = product.attributes?.find((a) => a.label.trim().toLowerCase() === 'marca')?.value.trim()
-  const antetitulo = [product.category?.trim(), marca].filter(Boolean).join(' · ')
-  const atributos = (product.attributes ?? []).filter((a) => a.label.trim() && a.value.trim())
-  const caracteristicas = (product.features ?? []).filter((f) => f.trim())
-  const hayDetalle = atributos.length > 0 || caracteristicas.length > 0 || Boolean(product.longDescription)
 
   return (
     <main className="min-h-screen bg-dark">
@@ -134,137 +126,82 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
         dangerouslySetInnerHTML={{ __html: JSON.stringify(datosProducto(product)).replace(/</g, '\\u003c') }}
       />
       <MainNav />
-
-      {/* Línea A (maqueta opcion-a.html, ficha): fotos a la izquierda (quietas al bajar) y la caja de compra a la
-          derecha desde 900 px; en el celular, fotos de borde a borde, nombre, compra y las filas de envío y garantía. */}
-      <div className="wrap">
-        {/* Las migas: el enlace mide 44 px de alto para el dedo, por eso el margen de arriba es menor que en la maqueta */}
-        <nav aria-label="Estás en" className="pt-[9px] text-sm text-neutral">
-          <Link href="/" className="inline-flex min-h-[44px] items-center text-neutral-light hover:text-white">
-            Tienda
-          </Link>{' '}
-          / <span aria-current="page">{nombre}</span>
-        </nav>
-
-        <div className="grid items-start gap-6 pb-14 pt-px min-[900px]:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] min-[900px]:gap-14 min-[900px]:pb-16 min-[900px]:pt-[9px]">
-          <div className="min-w-0 min-[900px]:sticky min-[900px]:top-[88px]">
-            <GaleriaProducto imagenes={product.imageUrls} nombre={nombre} />
-          </div>
-
-          <div className="flex min-w-0 flex-col gap-[22px]">
-            <div>
-              {antetitulo ? <p className="text-sm text-neutral">{antetitulo}</p> : null}
-              <h1 className="page-title mt-1.5">{nombre}</h1>
-              {resumen ? <p className="mt-2 text-neutral-light">{resumen}</p> : null}
-            </div>
-            <CajaCompra product={publico} candidatos={otros} />
-            <ProductTrustBlocks pagoEnLinea={pagoEnLinea} tarifas={textoTarifas(LISTA_ENVIOS)} />
-          </div>
+      {/* Escritorio: fotos y detalle a la izquierda, compra a la derecha. Celular: fotos, nombre, compra y detalle. */}
+      <section className="container mx-auto grid max-w-6xl items-start gap-6 px-4 py-6 md:grid-cols-2 md:grid-rows-[auto_1fr] md:gap-x-10 md:gap-y-8 md:py-10">
+        <div className="md:col-start-1 md:row-start-1">
+          <GaleriaProducto imagenes={product.imageUrls} nombre={product.name.trim()} />
         </div>
-      </div>
 
-      {hayDetalle ? (
-        <section className="seccion" aria-label={`Detalle de ${nombre}`}>
-          <div className="wrap grid items-start gap-5 min-[900px]:grid-cols-2">
-            {caracteristicas.length > 0 || product.longDescription ? (
-              <div className="min-w-0">
-                <h2 className="card-title mb-4">Características</h2>
-                {product.longDescription ? (
-                  <p className="mb-5 max-w-[40em] text-neutral-light">{product.longDescription}</p>
-                ) : null}
-                {caracteristicas.length > 0 ? (
-                  <ul className="lista-lineas">
-                    {caracteristicas.map((f) => (
-                      <li key={f}>
-                        <Check strokeWidth={1.8} aria-hidden />
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-                ) : null}
-              </div>
-            ) : null}
-            {atributos.length > 0 ? (
-              <div className="min-w-0">
-                <h2 className="card-title mb-4">Ficha técnica</h2>
-                <dl className="filas">
-                  {atributos.map((attr) => (
-                    <div key={attr.label}>
-                      <dt>{attr.label}</dt>
-                      <dd>{attr.value}</dd>
-                    </div>
-                  ))}
-                </dl>
-              </div>
-            ) : null}
+        <div className="md:col-start-2 md:row-span-2 md:row-start-1">
+          <h1 className="text-3xl font-bold leading-tight md:text-4xl">{product.name}</h1>
+          {resumen ? <p className="mt-1 text-sm text-neutral-light">{resumen}</p> : null}
+          <div className="mt-2">
+            <CajaCompra product={publico} candidatos={otros} />
           </div>
-        </section>
-      ) : null}
-
-      {related.length > 0 ? (
-        <section className="seccion" aria-labelledby="productos-relacionados">
-          <div className="wrap">
-            <div className="seccion-cab">
-              <h2 id="productos-relacionados" className="section-title">
-                Productos relacionados
-              </h2>
-            </div>
-            <div className="grid gap-5 min-[900px]:grid-cols-2">
-              {related.map((item) => (
-                <Link
-                  key={item.id}
-                  href={`/product/${item.slug}`}
-                  className="flex items-center gap-[18px] rounded-2xl border border-dark-300 bg-dark-100 p-3.5 transition-colors hover:border-dark-400 motion-reduce:transition-none"
-                >
-                  <span className="tile relative aspect-square w-[112px] shrink-0 rounded-xl sm:w-[132px]">
-                    {item.imageUrls[0] ? (
-                      <Image src={item.imageUrls[0]} alt="" fill sizes="132px" className="object-contain p-[9%]" />
-                    ) : null}
-                  </span>
-                  <div className="flex min-w-0 flex-1 flex-col gap-1">
-                    <h3 className="text-[16.5px] font-semibold leading-tight text-white min-[900px]:text-[19px]">
-                      {item.name.trim()}
-                    </h3>
-                    <p className="line-clamp-3 text-[13.5px] leading-snug text-neutral-light min-[900px]:text-[14.5px]">
-                      {item.description}
-                    </p>
-                    <div className="mt-1.5 flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
-                      <ProductPrice product={item} size="sm" />
-                      <span aria-hidden className="link text-[14.5px] text-neutral-light">
-                        Ver producto
-                      </span>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-      ) : null}
-
-      <section className="seccion" aria-labelledby="preguntas-producto">
-        <div className="wrap">
+          <ProductTrustBlocks pagoEnLinea={pagoEnLinea} tarifas={textoTarifas(LISTA_ENVIOS)} />
           <PreguntasProducto
             nombre={product.name}
             participaDelCombo={product.comboEligible !== false}
             pagoEnLinea={pagoEnLinea}
           />
-          {/* El paso a las clases (antes, el enlace «Quiero clases personalizadas»), en una caja como la de la maqueta.
-              Los textos son los de la sección de clases del inicio. */}
-          <div className="mt-10 flex flex-wrap items-center justify-between gap-x-8 gap-y-4 rounded-2xl border border-dark-300 bg-dark-100 p-5 sm:p-6">
-            <div className="min-w-0">
-              <h2 className="font-heading text-[28px] leading-[0.95] text-white">Clases personalizadas 1 a 1</h2>
-              <p className="mt-1.5 text-neutral-light">Entrena a tu ritmo, con un plan para lo que buscas.</p>
+        </div>
+
+        <div className="space-y-6 md:col-start-1 md:row-start-2">
+          {product.attributes && product.attributes.length > 0 ? (
+            <dl className="rounded-2xl border border-dark-300 bg-dark-100">
+              {product.attributes.map((attr) => (
+                <div
+                  key={attr.label}
+                  className="flex items-baseline justify-between gap-4 border-t border-dark-300 px-5 py-3 first:border-t-0"
+                >
+                  <dt className="text-sm text-neutral">{attr.label}</dt>
+                  <dd className="text-right text-base font-medium text-white">{attr.value}</dd>
+                </div>
+              ))}
+            </dl>
+          ) : null}
+          {product.longDescription ? (
+            <p className="text-sm leading-relaxed text-neutral-light">{product.longDescription}</p>
+          ) : null}
+          {product.features && product.features.length > 0 ? (
+            <div>
+              <h2 className="mb-2 text-lg font-semibold text-white">Características</h2>
+              <ul className="list-inside list-disc space-y-1.5 text-sm text-neutral-light">
+                {product.features.map((f) => (
+                  <li key={f}>{f}</li>
+                ))}
+              </ul>
             </div>
-            <Link href="/consulta" className="btn-secondary sm:inline-flex sm:w-auto">
-              Quiero clases personalizadas
-            </Link>
-          </div>
+          ) : null}
+          <Link href="/consulta" className="inline-block text-accent underline">
+            Quiero clases personalizadas
+          </Link>
         </div>
       </section>
-
+      {related.length > 0 ? (
+        <section className="container mx-auto max-w-6xl px-4 pb-16">
+          <h2 className="mb-4 text-lg font-semibold text-white">Productos relacionados</h2>
+          <div className="grid gap-3 md:grid-cols-3 md:gap-4">
+            {related.map((item) => (
+              <Link
+                key={item.id}
+                href={`/product/${item.slug}`}
+                className="flex items-center gap-4 rounded-2xl border border-dark-300 bg-dark-100 p-3 transition-colors hover:border-accent/60"
+              >
+                <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-dark-300 bg-white">
+                  <Image src={item.imageUrls[0]} alt={item.name} fill sizes="64px" className="object-contain" />
+                </div>
+                <div className="min-w-0">
+                  <p className="font-semibold text-white">{item.name}</p>
+                  <ProductPrice product={item} size="sm" />
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      ) : null}
       {/* Espacio para la barra de compra del celular: al llegar aquí se esconde y no tapa el pie */}
-      <div id={ID_FIN_FICHA} aria-hidden className="h-[72px] min-[900px]:hidden" />
+      <div id={ID_FIN_FICHA} aria-hidden className="h-14 md:hidden" />
     </main>
   )
 }

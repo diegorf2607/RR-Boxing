@@ -7,7 +7,6 @@ import { RUTAS } from '@/shared/legal/politicas'
 import AvisoDatos from '@/components/AvisoDatos'
 import { leerOrigen } from '@/shared/lib/origen'
 import { enlaceWhatsapp, WHATSAPP_LEGIBLE } from '@/shared/lib/whatsapp'
-import IconoWhatsapp from '@/components/legal/IconoWhatsapp'
 
 type Estado = 'listo' | 'enviando' | 'error' | 'inscrito'
 type Campo = 'nombre' | 'correo' | 'whatsapp'
@@ -15,11 +14,7 @@ const CAMPOS: readonly string[] = ['nombre', 'correo', 'whatsapp']
 
 // El texto de ejemplo va en neutral (7,8:1 sobre el fondo) y empieza con «Ej.:» para que no parezca ya escrito
 const campo =
-  'mt-2 block min-h-[50px] w-full rounded-lg border border-dark-300 bg-dark px-4 py-3 text-base font-normal text-white placeholder:text-neutral focus:border-accent focus:outline-none aria-[invalid=true]:border-red-500'
-/** El rótulo de cada campo, como los de «Color» y «Elige tu pack» de la ficha de la maqueta */
-const rotulo = 'block text-[14.5px] font-semibold text-white'
-/** La caja de la inscripción (formulario o confirmación), la de «Clase virtual» de la maqueta */
-const caja = 'rounded-2xl border border-line bg-dark-100 p-5 md:p-6'
+  'mt-2 block w-full rounded-lg border border-dark-300 bg-dark px-4 py-3 text-base text-white placeholder:text-neutral focus:border-accent focus:outline-none aria-[invalid=true]:border-red-500'
 
 const conPunto = (texto: string) => (texto.endsWith('.') ? texto : `${texto}.`)
 
@@ -73,15 +68,14 @@ export default function FormularioClase() {
       `Hola, RR Boxing. Me inscribí a la clase virtual gratis del ${CLASE.dia.toLowerCase()}.`
     )
     return (
-      <div className={caja} role="status">
-        <p className="font-heading text-[30px] leading-[0.95] text-white">{nombre ? `Listo, ${nombre}: ya estás inscrito.` : 'Listo: ya estás inscrito.'}</p>
-        <p className="mt-3 text-base leading-relaxed text-neutral-light">
+      <div className="mt-8 rounded-2xl border border-dark-300 bg-dark-100 p-5" role="status">
+        <p className="text-lg font-semibold text-white">{nombre ? `Listo, ${nombre}: ya estás inscrito.` : 'Listo: ya estás inscrito.'}</p>
+        <p className="mt-2 text-base leading-relaxed text-neutral-light">
           La clase es gratis. Antes del sábado te mandamos el link para entrar por WhatsApp. Escríbenos un hola al{' '}
           <span className="whitespace-nowrap text-white">{WHATSAPP_LEGIBLE}</span> para que te llegue sin
           problemas.
         </p>
-        <a href={saludar} target="_blank" rel="noopener noreferrer" className="btn-primary mt-6">
-          <IconoWhatsapp />
+        <a href={saludar} target="_blank" rel="noopener noreferrer" className="btn-primary mt-5">
           Escribir a RR Boxing
         </a>
       </div>
@@ -93,7 +87,7 @@ export default function FormularioClase() {
   /** Junto al campo: el mensaje del error, enlazado con aria-describedby */
   const errorDe = (n: Campo) =>
     campoError === n && mensaje ? (
-      <span id={`clase-error-${n}`} className="mt-1.5 block text-sm font-normal text-red-400">
+      <span id={`clase-error-${n}`} className="mt-1.5 block text-sm text-red-400">
         {conPunto(mensaje)}
       </span>
     ) : null
@@ -107,12 +101,12 @@ export default function FormularioClase() {
   }
 
   return (
-    <form ref={formulario} onSubmit={enviar} onInput={alEscribir} className={caja}>
-      <p className="text-base leading-relaxed text-white">
+    <form ref={formulario} onSubmit={enviar} onInput={alEscribir} className="mt-8">
+      <p className="text-base leading-relaxed">
         Déjanos tu nombre, tu correo y tu WhatsApp para mandarte el link de la clase.
       </p>
 
-      <label className={`mt-6 ${rotulo}`}>
+      <label className="mt-5 block text-sm text-neutral-light">
         Nombre y apellido
         <input
           name="nombre"
@@ -127,7 +121,7 @@ export default function FormularioClase() {
       </label>
       {errorDe('nombre')}
 
-      <label className={`mt-5 ${rotulo}`}>
+      <label className="mt-4 block text-sm text-neutral-light">
         Correo
         <input
           name="correo"
@@ -144,7 +138,7 @@ export default function FormularioClase() {
       </label>
       {errorDe('correo')}
 
-      <label className={`mt-5 ${rotulo}`}>
+      <label className="mt-4 block text-sm text-neutral-light">
         WhatsApp
         <input
           name="whatsapp"
@@ -159,9 +153,7 @@ export default function FormularioClase() {
           aria-describedby={describe('whatsapp')}
           className={campo}
         />
-        <span className="mt-1.5 block text-[13px] font-normal text-neutral">
-          Si no eres de Perú, ponlo con el código de tu país.
-        </span>
+        <span className="mt-1.5 block text-xs text-neutral">Si no eres de Perú, ponlo con el código de tu país.</span>
       </label>
       {errorDe('whatsapp')}
 
@@ -183,23 +175,20 @@ export default function FormularioClase() {
       <button
         type="submit"
         disabled={estado === 'enviando'}
-        className={`btn-primary btn-xl ${mensaje && !campoError ? 'mt-3' : 'mt-7'}`}
+        className={`btn-primary ${mensaje && !campoError ? 'mt-3' : 'mt-6'}`}
       >
         {estado === 'enviando' ? 'Un momento…' : 'Inscribirme gratis'}
       </button>
 
-      <p className="mt-3 text-center text-[13.5px] leading-relaxed text-neutral">
+      <p className="mt-3 text-sm leading-relaxed text-neutral">
         La clase es gratis. Puedes entrar desde cualquier país.
       </p>
 
-      <AvisoDatos
-        para="mandarte el link de la clase y avisarte si algo cambia"
-        className="mt-5 border-t border-line pt-5"
-      />
+      <AvisoDatos para="mandarte el link de la clase y avisarte si algo cambia" className="mt-3" />
       <p className="mt-2 text-xs leading-relaxed text-neutral">
         <Link
           href={`${RUTAS.terminos}#clases`}
-          className="inline-flex min-h-[32px] items-center text-neutral-light underline decoration-neutral underline-offset-4 hover:text-white hover:decoration-white"
+          className="text-neutral-light underline underline-offset-2 hover:text-accent"
         >
           Condiciones de la clase
         </Link>

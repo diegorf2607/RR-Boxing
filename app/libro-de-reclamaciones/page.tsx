@@ -3,7 +3,8 @@
 // (shared/lib/empresa.ts) al publicar: lo que falta se ve «por confirmar». Las hojas van a POST /api/reclamo y se
 // revisan en /admin/reclamos.
 import type { Metadata } from 'next'
-import { CabeceraSola } from '@/components/LegalPageShell'
+import Image from 'next/image'
+import Link from 'next/link'
 import HojaReclamacion, { Contacto } from '@/features/legal/HojaReclamacion'
 import { PLAZO_RECLAMO_DIAS_HABILES } from '@/shared/lib/plazos'
 import { proveedorDelLibro, TEXTOS_HOJA } from '@/shared/lib/reclamo'
@@ -38,43 +39,39 @@ export default function LibroDeReclamacionesPage() {
   const proveedor = proveedorDelLibro()
 
   return (
-    <>
-      {/* La barra con el logo queda fuera de #libro: al imprimir no sale (ver IMPRESION) */}
-      <CabeceraSola />
-      <main id="libro" className="bg-dark pb-16 pt-8 text-white md:pb-20 md:pt-12 print:min-h-0 print:p-0">
-        <style dangerouslySetInnerHTML={{ __html: IMPRESION }} />
-        <div className="wrap print:max-w-none print:p-0">
-          <div className="max-w-3xl">
-            <h1 className="page-title print:text-4xl">
-              Libro de <span className="text-accent">Reclamaciones</span>
-            </h1>
-            <p className="lead lr-no-imprimir mt-5">
-              Hoja de reclamación de RR Boxing. Te respondemos por escrito en un plazo máximo de {PLAZO_RECLAMO_DIAS_HABILES}{' '}
-              días hábiles.
-            </p>
+    <main id="libro" className="min-h-screen bg-dark px-4 py-10 text-white sm:py-16 print:min-h-0 print:p-0">
+      <style dangerouslySetInnerHTML={{ __html: IMPRESION }} />
+      <div className="mx-auto w-full max-w-2xl">
+        <Link href="/" className="lr-no-imprimir inline-block" aria-label="RR Boxing, ir a la tienda">
+          <Image src="/rr-boxing-logo.png" alt="RR Boxing" width={40} height={62} priority />
+        </Link>
 
-            <noscript dangerouslySetInnerHTML={{ __html: SIN_JS }} />
-            <noscript>
-              <p className="mt-6 rounded-2xl border border-line bg-dark-100 p-5 text-base leading-relaxed">
-                Para presentar la hoja desde aquí, activa JavaScript en tu navegador.
-              </p>
-            </noscript>
-            <p
-              id="sin-enviar"
-              className="lr-no-imprimir mt-6 hidden rounded-2xl border border-red-500 bg-red-500/10 p-5 text-base leading-relaxed target:block"
-            >
-              No pudimos presentar tu hoja. Vuelve a intentarlo cuando la página termine de cargar, con JavaScript activado, o{' '}
-              <Contacto proveedor={proveedor} />.
-            </p>
+        <h1 className="mt-6 font-heading text-5xl leading-none text-white sm:text-6xl print:mt-0 print:text-4xl">
+          Libro de <span className="text-accent">Reclamaciones</span>
+        </h1>
+        <p className="lr-no-imprimir mt-4 text-base leading-relaxed text-neutral-light">
+          Hoja de reclamación de RR Boxing. Te respondemos por escrito en un plazo máximo de {PLAZO_RECLAMO_DIAS_HABILES}{' '}
+          días hábiles.
+        </p>
 
-            <HojaReclamacion proveedor={proveedor} />
+        <noscript dangerouslySetInnerHTML={{ __html: SIN_JS }} />
+        <noscript>
+          <p className="mt-6 rounded-2xl border border-dark-300 bg-dark-100 p-5 text-base leading-relaxed">
+            Para presentar la hoja desde aquí, activa JavaScript en tu navegador.
+          </p>
+        </noscript>
+        <p
+          id="sin-enviar"
+          className="lr-no-imprimir mt-6 hidden rounded-2xl border border-red-500 bg-red-500/10 p-5 text-base leading-relaxed target:block"
+        >
+          No pudimos presentar tu hoja. Vuelve a intentarlo cuando la página termine de cargar, con JavaScript activado, o{' '}
+          <Contacto proveedor={proveedor} />.
+        </p>
 
-            <p className="mt-10 border-t border-line pt-5 text-xs leading-relaxed text-neutral">
-              Base legal: {TEXTOS_HOJA.baseLegal}
-            </p>
-          </div>
-        </div>
-      </main>
-    </>
+        <HojaReclamacion proveedor={proveedor} />
+
+        <p className="mt-8 text-xs leading-relaxed text-neutral">Base legal: {TEXTOS_HOJA.baseLegal}</p>
+      </div>
+    </main>
   )
 }

@@ -1,11 +1,5 @@
 import type { Config } from 'tailwindcss'
 
-/**
- * Línea visual A, «Oscuro sobrio» (la maqueta de RR\rrboxing-tienda-auditoria\opciones-visuales\opcion-a.html).
- * Los colores conservan los nombres que ya usaba el código (dark, accent, neutral) para que todo el sitio cambie de
- * una vez; dos cambiaron de sentido (ver los comentarios de accent.dark y dark.300). Los mismos valores están como
- * variables CSS en app/globals.css (--bg, --line, --ac…).
- */
 const config: Config = {
   content: [
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
@@ -17,56 +11,32 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // El único acento: el amarillo del logo. El texto encima va en text-dark (#0B0B0B).
         accent: {
-          DEFAULT: '#FFD60A',
-          // Ojo: «dark» ahora es el amarillo del hover, MÁS CLARO que el acento (antes era uno más oscuro). Todo el
-          // código lo usa como hover:bg-accent-dark, así que el hover queda como en la maqueta sin tocar las páginas.
-          dark: '#FFE14D',
-          light: '#FFE14D',
-          hover: '#FFE14D',
+          DEFAULT: '#FFD700',
+          dark: '#E6C200',
+          light: '#FFE44D',
         },
-        // Fondos y líneas. dark = fondo de la página; 100 = cajas y tarjetas; 200 = un gris más arriba (hover, campos
-        // sobre cajas); 300 = la línea fina de toda caja (antes era un gris de relleno: sigue sirviendo de fondo de
-        // íconos, pero su uso principal es border-dark-300); 400 = la línea más marcada (bordes de botones y campos).
         dark: {
-          DEFAULT: '#0B0B0B',
-          100: '#131313',
-          200: '#1A1A1A',
-          300: '#272727',
-          400: '#3A3A3A',
+          DEFAULT: '#0a0a0a',
+          100: '#1a1a1a',
+          200: '#2a2a2a',
+          300: '#3a3a3a',
+          400: '#4a4a4a',
         },
-        // Textos secundarios. light = texto de apoyo (párrafos); DEFAULT = etiquetas, notas y datos chicos.
-        // dark = igual que DEFAULT: se usa en placeholders y en el borde del hover, y en esos dos casos la maqueta usa
-        // este gris (con uno más oscuro los placeholders no llegarían a AA).
         neutral: {
-          DEFAULT: '#8C8C88',
-          light: '#B9B9B5',
-          dark: '#8C8C88',
-        },
-        // Alias con nombre claro para código nuevo: border-line = border-dark-300; border-line-2 = border-dark-400.
-        line: {
-          DEFAULT: '#272727',
-          2: '#3A3A3A',
-        },
-        // Fondo claro de las fotos de producto (con mix-blend-multiply el blanco de la foto se funde con él).
-        tile: '#ECECEA',
-      },
-      // El texto «blanco» de la maqueta es un blanco roto. Solo cambia text-white; bg-white sigue siendo blanco puro
-      // (las fotos de producto tienen fondo blanco y no deben verse como un recuadro).
-      textColor: {
-        white: '#F4F4F2',
-      },
-      // Bordes de la maqueta: 16 px cajas (rounded-2xl), 12 px fotos chicas (rounded-xl), 10 px botones y campos.
-      borderRadius: {
-        lg: '10px',
+          DEFAULT: '#9ca3af',
+          light: '#d1d5db',
+          dark: '#6b7280',
+        }
       },
       fontFamily: {
-        // Una sola letra: Archivo (variable, con ancho). La carga next/font en app/layout.tsx y deja --font-archivo.
-        // font-heading es la misma letra: lo angosto, el peso y el interlineado de los titulares los pone
-        // .font-heading en globals.css.
-        sans: ['var(--font-archivo)', 'Helvetica Neue', 'Arial', 'sans-serif'],
-        heading: ['var(--font-archivo)', 'Helvetica Neue', 'Arial', 'sans-serif'],
+        // Variables que deja next/font en <html> (app/layout.tsx)
+        sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
+        heading: ['var(--font-bebas-neue)', 'Impact', 'sans-serif'],
+      },
+      backgroundImage: {
+        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+        'hero-gradient': 'linear-gradient(180deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.9) 100%)',
       },
       animation: {
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',

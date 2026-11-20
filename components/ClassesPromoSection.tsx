@@ -1,71 +1,19 @@
-import Image from 'next/image'
-import type { ReactNode } from 'react'
-import { enlaceWhatsapp } from '@/shared/lib/whatsapp'
-import { MENSAJE_CLASES_1A1 } from '@/shared/config/clases'
+'use client'
 
-/** Foto de Richard entrenando con un alumno (`public/clases-personalizadas/…`). */
-const FOTO_CLASE = `/clases-personalizadas/${encodeURIComponent('Entrenamiento de boxeo en acción.png')}`
+import Link from 'next/link'
 
-function WhatsAppIcon({ className }: { className?: string }) {
+export default function ClassesPromoSection() {
   return (
-    <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden>
-      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.435 9.884-9.883 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-    </svg>
-  )
-}
-
-/**
- * La sección «Clases con Richard» del inicio (línea A): dos cajas, las clases 1 a 1 (con foto y el WhatsApp) y la clase
- * virtual, que la página pasa como `children` solo mientras esté vigente (components/ClaseDestacada.tsx). Cuando la
- * clase virtual ya pasó, la caja de las 1 a 1 queda sola y, desde 900 px, ocupa todo el ancho con la foto al lado.
- */
-export default function ClassesPromoSection({ children }: { children?: ReactNode }) {
-  return (
-    <section id="clases" aria-labelledby="clases-titulo" className="seccion scroll-mt-[68px]">
-      <div className="wrap">
-        <div className="seccion-cab">
-          <h2 id="clases-titulo" className="section-title">
-            Clases con Richard
-          </h2>
-          <p>Para aprender bien desde el principio, a tu ritmo.</p>
-        </div>
-
-        <div className="grid grid-cols-1 gap-5 min-[900px]:grid-cols-2">
-          <article
-            aria-labelledby="clases-1a1-titulo"
-            className="group flex flex-col overflow-hidden rounded-2xl border border-dark-300 bg-dark-100 min-[900px]:only:col-span-2 min-[900px]:only:flex-row"
-          >
-            <div className="relative aspect-video w-full flex-none min-[900px]:group-only:w-1/2">
-              <Image
-                src={FOTO_CLASE}
-                alt="Richard Rodríguez entrenando con un alumno"
-                fill
-                sizes="(min-width: 1264px) 590px, (min-width: 900px) 50vw, 100vw"
-                className="object-cover object-[70%_30%]"
-              />
-            </div>
-            <div className="flex flex-1 flex-col gap-3.5 p-5 min-[900px]:p-6 min-[900px]:group-only:justify-center min-[900px]:group-only:p-8">
-              <h3 id="clases-1a1-titulo" className="card-title">
-                Clases 1 a 1
-              </h3>
-              <p className="text-neutral-light">
-                Entrena a tu ritmo, con un plan para lo que buscas. Escríbenos y te contamos cómo son las clases, qué
-                horarios hay y cuánto cuestan.
-              </p>
-              <a
-                href={enlaceWhatsapp(MENSAJE_CLASES_1A1)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-secondary mt-auto min-[900px]:group-only:mt-2"
-              >
-                <WhatsAppIcon className="h-5 w-5 flex-none" />
-                Preguntar por WhatsApp
-              </a>
-            </div>
-          </article>
-
-          {children}
-        </div>
+    <section className="border-t border-dark-300 bg-dark py-12 md:py-16">
+      <div className="container mx-auto max-w-6xl px-4">
+        <h2 className="section-title">Clases personalizadas 1 a 1</h2>
+        <p className="section-subtitle max-w-xl">
+          Entrena a tu ritmo, con un plan para lo que buscas. Escríbenos y te contamos cómo son las clases, qué
+          horarios hay y cuánto cuestan.
+        </p>
+        <Link href="/consulta" className="btn-primary mt-6 inline-flex w-auto items-center justify-center">
+          Pedir información de clases 1 a 1
+        </Link>
       </div>
     </section>
   )

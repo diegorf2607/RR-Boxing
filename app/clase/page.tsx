@@ -1,10 +1,10 @@
 import type { Metadata } from 'next'
 import { IMAGEN_COMPARTIR } from '@/shared/config/imagen-compartir'
-import { claseVigente } from '@/shared/lib/clase-virtual'
+import Image from 'next/image'
+import Link from 'next/link'
+import { CLASE, claseVigente } from '@/shared/lib/clase-virtual'
 import { enlaceWhatsapp } from '@/shared/lib/whatsapp'
 import { SegunClaseVigente } from '@/components/EnlaceClase'
-import { CabeceraSola } from '@/components/LegalPageShell'
-import IconoWhatsapp from '@/components/legal/IconoWhatsapp'
 import FormularioClase from './FormularioClase'
 
 /** Se vuelve a armar cada hora; además, en el navegador se comprueba si la clase ya terminó. */
@@ -31,57 +31,57 @@ const datos: { etiqueta: string; valor: string; nota?: string }[] = [
   { etiqueta: 'Precio', valor: 'Gratis', nota: 'Solo tienes que inscribirte' },
 ]
 
-/**
- * La clase virtual, en la línea A: la barra con el logo (sin el menú de la tienda: es una página suelta) y, desde
- * 900 px, dos columnas como la ficha de la maqueta: el título y los datos de la clase en filas a la izquierda, y la
- * inscripción en una caja a la derecha. En el celular va todo en una columna, en el mismo orden.
- */
 export default function ClaseVirtualPage() {
   const vigente = claseVigente()
 
   return (
-    <>
-      <CabeceraSola />
-      <main className="bg-dark pb-16 pt-8 text-white min-[900px]:pb-20 min-[900px]:pt-12">
-        <div className="wrap grid grid-cols-1 gap-8 min-[900px]:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] min-[900px]:items-start min-[900px]:gap-16">
-          <div className="min-[900px]:sticky min-[900px]:top-8">
-            <h1 className="page-title">
-              Clase virtual <span className="block text-accent">RR Boxing</span>
-            </h1>
+    <main className="min-h-screen bg-dark px-4 py-10 text-white sm:py-16">
+      <div className="mx-auto w-full max-w-md">
+        <Link href="/" className="inline-block" aria-label="RR Boxing, ir a la tienda">
+          <Image src="/rr-boxing-logo.png" alt="RR Boxing" width={40} height={62} priority />
+        </Link>
 
-            <dl className="filas mt-7">
-              {datos.map((fila) => (
-                <div key={fila.etiqueta}>
-                  <dt>{fila.etiqueta}</dt>
-                  <dd>
-                    {fila.valor}
-                    {fila.nota && <small>{fila.nota}</small>}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          </div>
+        <h1 className="page-title mt-6">
+          Clase virtual <span className="block text-accent">RR Boxing</span>
+        </h1>
 
-          <SegunClaseVigente
-            inicial={vigente}
-            abierta={<FormularioClase />}
-            cerrada={
-              <div className="rounded-2xl border border-line bg-dark-100 p-5 md:p-6">
-                <p className="text-base leading-relaxed text-white">Las inscripciones de esta clase ya cerraron.</p>
-                <a
-                  href={WHATSAPP_PROXIMA}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-primary mt-5"
-                >
-                  <IconoWhatsapp />
-                  Preguntar por la próxima clase
-                </a>
-              </div>
-            }
-          />
-        </div>
-      </main>
-    </>
+        <dl className="mt-8 rounded-2xl border border-dark-300 bg-dark-100">
+          {datos.map((fila, i) => (
+            <div
+              key={fila.etiqueta}
+              className={`flex items-baseline justify-between gap-4 px-5 py-4 ${
+                i > 0 ? 'border-t border-dark-300' : ''
+              }`}
+            >
+              <dt className="text-sm text-neutral">{fila.etiqueta}</dt>
+              <dd className="text-right text-base font-medium">
+                {fila.valor}
+                {fila.nota && <span className="block text-sm font-normal text-neutral">{fila.nota}</span>}
+              </dd>
+            </div>
+          ))}
+        </dl>
+
+        <SegunClaseVigente
+          inicial={vigente}
+          abierta={
+            <FormularioClase />
+          }
+          cerrada={
+            <div className="mt-8 rounded-2xl border border-dark-300 bg-dark-100 p-5">
+              <p className="text-base leading-relaxed text-white">Las inscripciones de esta clase ya cerraron.</p>
+              <a
+                href={WHATSAPP_PROXIMA}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-primary mt-5"
+              >
+                Preguntar por la próxima clase
+              </a>
+            </div>
+          }
+        />
+      </div>
+    </main>
   )
 }

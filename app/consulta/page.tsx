@@ -7,7 +7,6 @@ import Footer from '@/components/Footer'
 import { enlaceWhatsapp, WHATSAPP_LEGIBLE } from '@/shared/lib/whatsapp'
 import { IMAGEN_COMPARTIR } from '@/shared/config/imagen-compartir'
 import { MENSAJE_CLASES_1A1 } from '@/shared/config/clases'
-import IconoWhatsapp from '@/components/legal/IconoWhatsapp'
 
 const DESCRIPCION =
   'Entrenamiento personalizado con Richard, enfocado en la salud y pensado para personas comunes. El horario y el precio se coordinan por WhatsApp.'
@@ -30,44 +29,33 @@ const filas: { etiqueta: string; valor: string }[] = [
   { etiqueta: 'Lugar, horario y precio', valor: 'Se coordinan por WhatsApp' },
 ]
 
-/**
- * Clases 1 a 1, en la línea A: como la portada de la maqueta. En el celular, el título, la foto de Richard y el texto,
- * uno debajo del otro; desde 900 px, el título y el texto a la izquierda y la foto a la derecha. Abajo, qué ganas
- * (filas) y los testimonios en video.
- */
 export default function ConsultaPage() {
   return (
     <main className="min-h-screen bg-dark">
       <MainNav />
 
-      <section className="pb-12 pt-7 text-white min-[900px]:pb-16 min-[900px]:pt-10">
-        <div className="wrap grid grid-cols-1 gap-y-5 [grid-template-areas:'tit'_'foto'_'txt'] min-[900px]:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] min-[900px]:gap-x-16 min-[900px]:gap-y-0 min-[900px]:[grid-template-areas:'tit_foto'_'txt_foto']">
-          <h1 className="hero-title self-end [grid-area:tit]">
-            Clases 1 a 1 <span className="block text-accent">con Richard</span>
-          </h1>
+      <section className="py-10 text-white sm:py-16">
+        <div className="container mx-auto grid max-w-6xl items-center gap-10 px-4 md:grid-cols-2 md:gap-12">
+          <div className="mx-auto w-full max-w-md md:mx-0 md:max-w-none">
+            <h1 className="font-heading text-5xl leading-none text-white sm:text-6xl">
+              Clases 1 a 1 <span className="block text-accent">con Richard</span>
+            </h1>
 
-          <div className="relative aspect-[1319/1170] w-full overflow-hidden rounded-2xl border border-line [grid-area:foto]">
-            <Image
-              src="/Richard.jpeg"
-              alt="Richard Rodríguez con manoplas durante un entrenamiento"
-              fill
-              priority
-              sizes="(min-width: 1264px) 620px, (min-width: 900px) 52vw, 100vw"
-              className="object-cover"
-            />
-          </div>
-
-          <div className="[grid-area:txt] min-[900px]:mt-5">
-            <p className="lead">
+            <p className="mt-6 text-lg leading-relaxed text-neutral-light">
               Entrenamiento personalizado, enfocado en tu salud y pensado para personas comunes. Escríbenos y
               coordinamos contigo el lugar, el horario y el precio.
             </p>
 
-            <dl className="filas mt-6">
-              {filas.map((fila) => (
-                <div key={fila.etiqueta}>
-                  <dt className="shrink-0">{fila.etiqueta}</dt>
-                  <dd>{fila.valor}</dd>
+            <dl className="mt-8 rounded-2xl border border-dark-300 bg-dark-100">
+              {filas.map((fila, i) => (
+                <div
+                  key={fila.etiqueta}
+                  className={`flex items-baseline justify-between gap-4 px-5 py-4 ${
+                    i > 0 ? 'border-t border-dark-300' : ''
+                  }`}
+                >
+                  <dt className="shrink-0 text-sm text-neutral">{fila.etiqueta}</dt>
+                  <dd className="text-right text-base font-medium">{fila.valor}</dd>
                 </div>
               ))}
             </dl>
@@ -76,14 +64,23 @@ export default function ConsultaPage() {
               href={enlaceWhatsapp(MENSAJE_CLASES_1A1)}
               target="_blank"
               rel="noopener noreferrer"
-              className="btn-primary mt-7 sm:inline-flex sm:w-auto"
+              className="btn-primary mt-6"
             >
-              <IconoWhatsapp />
               Escribir por WhatsApp
             </a>
-            <p className="mt-3 text-sm text-neutral">
+            <p className="mt-3 text-center text-sm text-neutral">
               O escribe al <span className="whitespace-nowrap font-semibold text-white">{WHATSAPP_LEGIBLE}</span>.
             </p>
+          </div>
+
+          <div className="relative mx-auto aspect-[1319/1170] w-full max-w-md overflow-hidden rounded-2xl border border-dark-300 md:max-w-none">
+            <Image
+              src="/Richard.jpeg"
+              alt="Richard Rodríguez con manoplas durante un entrenamiento"
+              fill
+              sizes="(min-width: 768px) 480px, 100vw"
+              className="object-cover"
+            />
           </div>
         </div>
       </section>
