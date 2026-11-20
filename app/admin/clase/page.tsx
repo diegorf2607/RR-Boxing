@@ -35,8 +35,9 @@ export default async function AdminClasePage() {
         <div>
           <h1 className="mb-2 text-4xl font-bold">Clase virtual · sábado 28 de noviembre</h1>
           <p className="mb-6 max-w-2xl text-sm text-neutral-light">
-            Quienes dejaron su nombre, su correo y su WhatsApp en rrboxing.com/clase antes de ir a pagar. Cruza los nombres con los
-            pagos de Mercado Pago (referencia RRBOXING-CLASE-2811) y escríbele a quien no mandó su comprobante.
+            Quienes se inscribieron en rrboxing.com/clase con su nombre, su correo y su WhatsApp. La clase es gratis desde el 21
+            de noviembre: mándale a cada uno el link por WhatsApp antes del sábado. Quienes pagaron S/ 30 antes del cambio
+            figuran con «fue a pagar».
           </p>
 
           {error && <p className="mb-4 text-sm text-red-400">No se pudo leer la lista: {error}</p>}

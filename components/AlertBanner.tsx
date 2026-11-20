@@ -35,9 +35,9 @@ export default function AlertBanner() {
         href="/clase"
         className="block px-10 py-2.5 text-center text-xs font-medium leading-snug transition-colors hover:bg-red-700 sm:text-sm"
       >
-        <span className="sm:hidden">Clase virtual: sáb 28 nov, 9 a. m. · {CLASE.precio} · </span>
+        <span className="sm:hidden">Clase virtual gratis: sáb 28 nov, 9 a. m. · </span>
         <span className="hidden sm:inline">
-          Clase virtual: sábado 28 de noviembre, 9 a. m. (hora Perú) · {CLASE.precio} ·{' '}
+          Clase virtual gratis: sábado 28 de noviembre, 9 a. m. (hora Perú) ·{' '}
         </span>
         <span className="font-semibold underline underline-offset-2">Inscríbete</span>
       </Link>

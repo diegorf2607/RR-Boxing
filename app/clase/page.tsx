@@ -10,18 +10,15 @@ import FormularioClase from './FormularioClase'
 /** Se vuelve a armar cada hora; además, en el navegador se comprueba si la clase ya terminó. */
 export const revalidate = 3600
 
-const WHATSAPP_TEXTO =
-  'Hola, ya pagué la clase virtual del sábado 28 de noviembre. Te mando mi comprobante.'
-const WHATSAPP_URL = `https://wa.me/${CLASE.whatsappNumero}?text=${encodeURIComponent(WHATSAPP_TEXTO)}`
 const WHATSAPP_PROXIMA = enlaceWhatsapp('Hola, RR Boxing. Quiero saber cuándo es la próxima clase virtual.')
 
 export const metadata: Metadata = {
-  title: 'Clase virtual · sábado 28 de noviembre',
+  title: 'Clase virtual gratis · sábado 28 de noviembre',
   description:
-    'Clase virtual de RR Boxing. Sábado 28 de noviembre, de 9 a 10 a. m. (hora Perú). S/ 30 o US$ 10 si pagas desde fuera.',
+    'Clase virtual gratis de RR Boxing. Sábado 28 de noviembre, de 9 a 10 a. m. (hora Perú). Inscríbete y te mandamos el link.',
   openGraph: {
-    title: 'Clase virtual RR Boxing · sábado 28 de noviembre',
-    description: 'De 9 a 10 a. m. (hora Perú). S/ 30 o US$ 10 si pagas desde fuera.',
+    title: 'Clase virtual gratis de RR Boxing · sábado 28 de noviembre',
+    description: 'De 9 a 10 a. m. (hora Perú). Gratis: inscríbete y te mandamos el link por WhatsApp.',
     type: 'website',
     images: [IMAGEN_COMPARTIR],
   },
@@ -31,7 +28,7 @@ const datos: { etiqueta: string; valor: string; nota?: string }[] = [
   { etiqueta: 'Día', valor: 'Sábado 28 de noviembre' },
   { etiqueta: 'Hora', valor: '9 a 10 a. m. (hora Perú)' },
   { etiqueta: 'Dónde', valor: 'Virtual, desde tu casa' },
-  { etiqueta: 'Precio', valor: 'S/ 30', nota: 'US$ 10 si pagas desde fuera' },
+  { etiqueta: 'Precio', valor: 'Gratis', nota: 'Solo tienes que inscribirte' },
 ]
 
 export default function ClaseVirtualPage() {
@@ -68,25 +65,7 @@ export default function ClaseVirtualPage() {
         <SegunClaseVigente
           inicial={vigente}
           abierta={
-            <>
-              <FormularioClase />
-
-              <div className="mt-8 rounded-2xl border border-red-500 bg-red-500/10 p-5">
-                <p className="text-base leading-relaxed text-white">
-                  <span className="font-bold text-red-400">Después de pagar,</span> manda tu comprobante al WhatsApp{' '}
-                  <span className="whitespace-nowrap font-semibold">{CLASE.whatsappLegible}</span> y te enviamos el
-                  link de la clase.
-                </p>
-                <a
-                  href={WHATSAPP_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-5 block rounded-lg bg-red-600 px-6 py-3.5 text-center font-bold text-white transition-colors hover:bg-red-700"
-                >
-                  Mandar mi comprobante
-                </a>
-              </div>
-            </>
+            <FormularioClase />
           }
           cerrada={
             <div className="mt-8 rounded-2xl border border-dark-300 bg-dark-100 p-5">

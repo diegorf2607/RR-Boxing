@@ -32,7 +32,7 @@ export default function ClaseDestacada() {
             Clase virtual <span className="block text-accent">RR Boxing</span>
           </h2>
           <p className="mt-4 max-w-sm text-base leading-relaxed text-neutral-light">
-            Te inscribes, pagas con Mercado Pago, mandas tu comprobante por WhatsApp y te enviamos el link de la clase.
+            Es gratis: te inscribes y te mandamos el link de la clase por WhatsApp.
           </p>
         </div>
 
