@@ -5,10 +5,16 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import MainNav from '@/components/MainNav'
 import { getProductBySlug, getProducts } from '@/shared/lib/data-store'
-import AddToCartButton from '@/features/store/AddToCartButton'
+import CajaCompra from '@/features/store/CajaCompra'
+import GaleriaProducto from '@/features/store/GaleriaProducto'
+import PreguntasProducto from '@/features/store/PreguntasProducto'
 import ProductPrice from '@/features/store/ProductPrice'
 import ProductTrustBlocks from '@/features/store/ProductTrustBlocks'
+import { ID_FIN_FICHA } from '@/features/store/packs'
 import { productoPublico } from '@/shared/lib/producto-publico'
+import { pagoEnLineaActivo } from '@/shared/config/pagos'
+import { textoTarifas } from '@/shared/config/envios'
+import { LISTA_ENVIOS } from '@/shared/lib/cart-checkout'
 import type { Product } from '@/shared/types/commerce'
 
 const SITIO = 'https://www.rrboxing.com'
@@ -20,6 +26,16 @@ const productoPorSlug = cache((slug: string) => getProductBySlug(slug))
 const precioPeru = (product: Product) => product.prices.find((p) => p.country === 'PE' && p.currency === 'PEN')
 
 const soles = (monto: number) => `S/ ${monto.toFixed(2)}`
+
+/** Lo que no va en el resumen bajo el nombre: los colores se eligen abajo, y la marca y la foto no lo describen. */
+const FUERA_DEL_RESUMEN = ['colores disponibles', 'marca', 'color de las fotos']
+
+/** «Cuero PU · 12 oz», «4.5 metros»: la medida y el material junto al nombre, que es lo primero que se pregunta. */
+const resumenDe = (product: Product) =>
+  (product.attributes ?? [])
+    .filter((a) => !FUERA_DEL_RESUMEN.includes(a.label.trim().toLowerCase()) && a.value.trim())
+    .map((a) => a.value.trim())
+    .join(' · ')
 
 /** Ruta relativa → dirección completa (los buscadores y WhatsApp la necesitan entera). */
 const absoluta = (url: string) => (/^https?:\/\//.test(url) ? url : `${SITIO}${url.startsWith('/') ? '' : '/'}${url}`)
@@ -96,10 +112,11 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
 
   // Lo que va a componentes del navegador queda escrito en el HTML: sin valoraciones ni notas internas
   const publico = productoPublico(product)
-  const related = (await getProducts())
-    .filter((item) => item.id !== product.id && item.active)
-    .slice(0, 3)
-    .map(productoPublico)
+  const otros = (await getProducts()).filter((item) => item.id !== product.id && item.active).map(productoPublico)
+  const related = otros.slice(0, 3)
+  // Si hay pago en línea (MERCADOPAGO_ACCESS_TOKEN) lo sabe solo el servidor: va como prop a las filas y preguntas
+  const pagoEnLinea = pagoEnLineaActivo()
+  const resumen = resumenDe(product)
 
   return (
     <main className="min-h-screen bg-dark">
@@ -109,61 +126,45 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
         dangerouslySetInnerHTML={{ __html: JSON.stringify(datosProducto(product)).replace(/</g, '\\u003c') }}
       />
       <MainNav />
-      <section className="container mx-auto grid gap-6 px-4 py-6 md:grid-cols-2 md:gap-8 md:py-10">
-        <div className="space-y-3 md:space-y-4">
-          <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-dark-300 bg-white md:aspect-square">
-            <Image
-              src={product.imageUrls[0]}
-              alt={product.name}
-              fill
-              priority
-              sizes="(min-width: 768px) 50vw, 100vw"
-              className="object-contain md:object-cover"
-            />
-          </div>
-          {product.imageUrls.length > 1 ? (
-            <div className="hidden md:grid md:grid-cols-3 md:gap-3">
-              {product.imageUrls.slice(0, 3).map((url) => (
-                <div key={url} className="relative aspect-square overflow-hidden rounded-xl border border-dark-300">
-                  <Image src={url} alt={product.name} fill sizes="(min-width: 768px) 16vw, 20vw" className="object-cover" />
-                </div>
-              ))}
-            </div>
-          ) : null}
+      {/* Escritorio: fotos y detalle a la izquierda, compra a la derecha. Celular: fotos, nombre, compra y detalle. */}
+      <section className="container mx-auto grid max-w-6xl items-start gap-6 px-4 py-6 md:grid-cols-2 md:grid-rows-[auto_1fr] md:gap-x-10 md:gap-y-8 md:py-10">
+        <div className="md:col-start-1 md:row-start-1">
+          <GaleriaProducto imagenes={product.imageUrls} nombre={product.name.trim()} />
         </div>
-        <div>
+
+        <div className="md:col-start-2 md:row-span-2 md:row-start-1">
           <h1 className="text-3xl font-bold leading-tight md:text-4xl">{product.name}</h1>
-          <ProductPrice product={publico} />
-          <p className="mt-4 text-neutral-light">{product.description}</p>
-
-          <div className="mt-6">
-            <AddToCartButton product={publico} />
+          {resumen ? <p className="mt-1 text-sm text-neutral-light">{resumen}</p> : null}
+          <div className="mt-2">
+            <CajaCompra product={publico} candidatos={otros} />
           </div>
+          <ProductTrustBlocks pagoEnLinea={pagoEnLinea} tarifas={textoTarifas(LISTA_ENVIOS)} />
+          <PreguntasProducto
+            nombre={product.name}
+            participaDelCombo={product.comboEligible !== false}
+            pagoEnLinea={pagoEnLinea}
+          />
+        </div>
 
-          {product.comboEligible !== false ? (
-            <p className="mt-4 text-sm text-neutral-light">
-              Con 2 o más unidades en tu pedido, <span className="text-white">10% de descuento</span> en productos.{' '}
-              <a href="/#combos" className="text-accent underline underline-offset-2 hover:text-white">
-                Ver combos sugeridos
-              </a>
-            </p>
-          ) : null}
-
+        <div className="space-y-6 md:col-start-1 md:row-start-2">
           {product.attributes && product.attributes.length > 0 ? (
-            <dl className="mt-8 grid gap-2 text-sm sm:grid-cols-2">
+            <dl className="rounded-2xl border border-dark-300 bg-dark-100">
               {product.attributes.map((attr) => (
-                <div key={attr.label} className="rounded-lg border border-dark-300 bg-dark-100/80 px-3 py-2">
-                  <dt className="text-xs text-neutral">{attr.label}</dt>
-                  <dd className="mt-0.5 font-medium text-white">{attr.value}</dd>
+                <div
+                  key={attr.label}
+                  className="flex items-baseline justify-between gap-4 border-t border-dark-300 px-5 py-3 first:border-t-0"
+                >
+                  <dt className="text-sm text-neutral">{attr.label}</dt>
+                  <dd className="text-right text-base font-medium text-white">{attr.value}</dd>
                 </div>
               ))}
             </dl>
           ) : null}
           {product.longDescription ? (
-            <p className="mt-6 text-sm leading-relaxed text-neutral-light">{product.longDescription}</p>
+            <p className="text-sm leading-relaxed text-neutral-light">{product.longDescription}</p>
           ) : null}
           {product.features && product.features.length > 0 ? (
-            <div className="mt-6">
+            <div>
               <h2 className="mb-2 text-lg font-semibold text-white">Características</h2>
               <ul className="list-inside list-disc space-y-1.5 text-sm text-neutral-light">
                 {product.features.map((f) => (
@@ -172,15 +173,14 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
               </ul>
             </div>
           ) : null}
-          <ProductTrustBlocks product={publico} />
-          <Link href="/consulta" className="mt-4 inline-block text-accent underline">
+          <Link href="/consulta" className="inline-block text-accent underline">
             Quiero clases personalizadas
           </Link>
         </div>
       </section>
       {related.length > 0 ? (
-        <section className="container mx-auto px-4 pb-16">
-          <h2 className="mb-4 text-2xl font-bold">Productos relacionados</h2>
+        <section className="container mx-auto max-w-6xl px-4 pb-16">
+          <h2 className="mb-4 text-lg font-semibold text-white">Productos relacionados</h2>
           <div className="grid gap-3 md:grid-cols-3 md:gap-4">
             {related.map((item) => (
               <Link
@@ -188,8 +188,8 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
                 href={`/product/${item.slug}`}
                 className="flex items-center gap-4 rounded-2xl border border-dark-300 bg-dark-100 p-3 transition-colors hover:border-accent/60"
               >
-                <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-dark-300">
-                  <Image src={item.imageUrls[0]} alt={item.name} fill sizes="64px" className="object-cover" />
+                <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-dark-300 bg-white">
+                  <Image src={item.imageUrls[0]} alt={item.name} fill sizes="64px" className="object-contain" />
                 </div>
                 <div className="min-w-0">
                   <p className="font-semibold text-white">{item.name}</p>
@@ -200,6 +200,8 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
           </div>
         </section>
       ) : null}
+      {/* Espacio para la barra de compra del celular: al llegar aquí se esconde y no tapa el pie */}
+      <div id={ID_FIN_FICHA} aria-hidden className="h-14 md:hidden" />
     </main>
   )
 }

@@ -11,6 +11,9 @@ import ClaseDestacada from '@/components/ClaseDestacada'
 import Footer from '@/components/Footer'
 import { claseVigente } from '@/shared/lib/clase-virtual'
 import { IMAGEN_COMPARTIR } from '@/shared/config/imagen-compartir'
+import { pagoEnLineaActivo } from '@/shared/config/pagos'
+import { textoTarifas } from '@/shared/config/envios'
+import { LISTA_ENVIOS } from '@/shared/lib/cart-checkout'
 
 export const metadata: Metadata = {
   title: { absolute: 'RR Boxing: tienda de boxeo y clases 1 a 1' },
@@ -27,17 +30,18 @@ export const metadata: Metadata = {
 // La sección de la clase del 28 de noviembre se apaga sola: la página se rehace cada hora.
 export const revalidate = 3600
 
+// Primero lo que se vende: un carrusel más bajo, el catálogo (con su precio a la vista), la clase gratis y los combos.
 export default function Home() {
   return (
     <main className="min-h-screen bg-dark">
       <MainNav />
       <StoreHeroCarousel />
-      {claseVigente() && <ClaseDestacada />}
       <StoreClient />
+      {claseVigente() && <ClaseDestacada />}
       <StoreComboSection />
       <StoreAboutSection />
       <SocialProof />
-      <StoreFAQSection />
+      <StoreFAQSection pagoEnLinea={pagoEnLineaActivo()} tarifas={textoTarifas(LISTA_ENVIOS)} />
       <ClassesPromoSection />
       <Footer />
     </main>

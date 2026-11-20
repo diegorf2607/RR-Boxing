@@ -3,15 +3,34 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
-import { ChevronLeft, ChevronRight, MessageCircle } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { STORE_HERO_SLIDES } from '@/shared/config/store-hero-slides'
 
 const AUTO_MS = 7000
 
+/** true si el foco llegó con el teclado (o por código), no con un toque o un clic */
+function focoConTeclado(el: Element): boolean {
+  try {
+    return el.matches(':focus-visible')
+  } catch {
+    return true
+  }
+}
+
+/**
+ * Carrusel de la portada. Cambia solo cada 7 s, salvo que: el mouse esté encima, el foco del teclado esté adentro,
+ * la persona lo haya pausado con «Pausar» o el sistema pida menos movimiento (ahí no gira ni anima nada). Los
+ * destacados ocultos van con inert: sus enlaces no reciben el foco ni los lee el lector de pantalla. Las flechas
+ * ← → cambian de destacado solo con el foco en los controles del carrusel (antes escuchaban en toda la página y
+ * movían el carrusel al mover el cursor en el buscador).
+ */
 export default function StoreHeroCarousel() {
   const slides = STORE_HERO_SLIDES
   const [active, setActive] = useState(0)
+  // paused: mouse encima o foco adentro (vuelve a girar al salir); detenido: la persona tocó «Pausar»
   const [paused, setPaused] = useState(false)
+  const [detenido, setDetenido] = useState(false)
+  const [menosMovimiento, setMenosMovimiento] = useState(false)
 
   const go = useCallback(
     (dir: -1 | 1) => {
@@ -24,22 +43,25 @@ export default function StoreHeroCarousel() {
     setActive(index)
   }, [])
 
+  // Si el sistema pide menos movimiento, el carrusel no gira solo
   useEffect(() => {
-    if (paused || slides.length <= 1) return
+    const consulta = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const leer = () => setMenosMovimiento(consulta.matches)
+    leer()
+    consulta.addEventListener('change', leer)
+    return () => consulta.removeEventListener('change', leer)
+  }, [])
+
+  const gira = slides.length > 1 && !menosMovimiento
+  const quieto = paused || detenido || !gira
+
+  useEffect(() => {
+    if (quieto) return
     const id = setInterval(() => {
       setActive((i) => (i + 1) % slides.length)
     }, AUTO_MS)
     return () => clearInterval(id)
-  }, [paused, slides.length, active])
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') go(-1)
-      if (e.key === 'ArrowRight') go(1)
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [go])
+  }, [quieto, slides.length, active])
 
   return (
     <section
@@ -53,77 +75,89 @@ export default function StoreHeroCarousel() {
       onPointerLeave={(e) => {
         if (e.pointerType === 'mouse') setPaused(false)
       }}
+      // Con el foco del teclado adentro no gira: el enlace enfocado no desaparece
+      onFocus={(e) => {
+        if (focoConTeclado(e.target)) setPaused(true)
+      }}
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setPaused(false)
+      }}
+      // Las flechas, solo desde los controles (puntos, Pausar, Anterior y Siguiente): desde un enlace del destacado,
+      // ese enlace quedaría oculto (inert) y el foco se caería al <body>
+      onKeyDown={(e) => {
+        if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
+        if ((e.target as HTMLElement).closest('[data-destacado]')) return
+        go(e.key === 'ArrowLeft' ? -1 : 1)
+      }}
     >
-      <div className="relative h-[min(88vh,820px)] w-full md:h-[min(85vh,760px)]">
+      {/* Más bajo que antes (era 88 % de la pantalla): en el celular ya asoma el catálogo debajo */}
+      <div className="relative h-[min(56svh,520px)] w-full md:h-[min(60vh,560px)]">
         {slides.map((slide, index) => {
           const isActive = index === active
           const alignRight = slide.align === 'right'
+          const enlaceCatalogo = slide.href === '#catalogo'
           return (
             <div
               key={slide.id}
-              className={`absolute inset-0 transition-opacity duration-700 ease-out ${
+              data-destacado
+              ref={(el) => {
+                if (el) el.inert = !isActive
+              }}
+              className={`absolute inset-0 transition-opacity duration-700 ease-out motion-reduce:transition-none ${
                 isActive ? 'z-10 opacity-100' : 'z-0 opacity-0 pointer-events-none'
               }`}
               aria-hidden={!isActive}
             >
-              <Image
-                src={slide.imageUrl}
-                alt=""
-                fill
-                priority={index === 0}
-                className="object-cover object-center"
-                sizes="100vw"
-              />
+              {/* Las fotos verticales, en escritorio, van en la mitad derecha: no se cortan ni quedan bajo el texto */}
+              <div className={`absolute inset-y-0 right-0 ${slide.vertical ? 'left-0 md:left-1/2' : 'left-0'}`}>
+                <Image
+                  src={slide.imageUrl}
+                  alt=""
+                  fill
+                  priority={index === 0}
+                  className="object-cover"
+                  style={{ objectPosition: slide.encuadre ?? 'center' }}
+                  sizes={slide.vertical ? '(min-width: 768px) 50vw, 100vw' : '100vw'}
+                />
+              </div>
+              {/* En el celular el texto ocupa todo el ancho: la capa es pareja para que se lea sobre cualquier foto.
+                  En escritorio sigue el degradado de antes, más oscuro, para que el texto pase 4,5:1. */}
               <div
-                className={`absolute inset-0 ${
+                className={`absolute inset-0 bg-black/70 md:bg-transparent ${
                   alignRight
-                    ? 'bg-gradient-to-l from-black/85 via-black/45 to-transparent'
-                    : 'bg-gradient-to-r from-black/85 via-black/45 to-transparent'
+                    ? 'md:bg-gradient-to-l md:from-black/90 md:via-black/70 md:to-black/30'
+                    : 'md:bg-gradient-to-r md:from-black/90 md:via-black/70 md:to-black/30'
                 }`}
               />
-              <div
-                className={`absolute inset-0 flex items-center ${
-                  alignRight ? 'justify-end' : 'justify-start'
-                }`}
-              >
-                <div
-                  className={`container mx-auto max-w-2xl px-5 pb-24 pt-16 md:px-8 md:pb-28 ${
-                    alignRight ? 'text-right md:pr-16' : 'md:pl-16'
-                  }`}
-                >
-                  <p className="mb-2 font-sans text-xs font-medium uppercase tracking-[0.35em] text-accent/95">
-                    {slide.eyebrow}
-                  </p>
-                  <h2
-                    className="font-heading max-w-xl text-5xl font-bold uppercase leading-[0.95] tracking-wide text-accent drop-shadow-lg sm:text-6xl md:text-7xl lg:text-8xl"
-                  >
-                    {slide.headline}
-                  </h2>
-                  <p className="mt-5 max-w-md font-sans text-base leading-relaxed text-neutral-light md:text-lg">
-                    {slide.text}
-                  </p>
-                  <div className={`mt-8 flex flex-wrap gap-3 ${alignRight ? 'justify-end' : ''}`}>
-                    {slide.href.startsWith('#') ? (
-                      <a
-                        href={slide.href}
-                        className="inline-flex items-center justify-center rounded-full bg-accent px-8 py-3.5 text-sm font-bold uppercase tracking-wide text-dark shadow-lg shadow-accent/30 transition hover:bg-accent-light"
-                      >
-                        {slide.cta}
-                      </a>
-                    ) : (
-                      <Link
-                        href={slide.href}
-                        className="inline-flex items-center justify-center rounded-full bg-accent px-8 py-3.5 text-sm font-bold uppercase tracking-wide text-dark shadow-lg shadow-accent/30 transition hover:bg-accent-light"
-                      >
-                        {slide.cta}
-                      </Link>
-                    )}
-                    <a
-                      href="#catalogo"
-                      className="inline-flex items-center justify-center rounded-full border border-white/40 bg-white/5 px-6 py-3.5 text-sm font-semibold text-white backdrop-blur-sm transition hover:border-accent/60 hover:text-accent"
-                    >
-                      Ver tienda
-                    </a>
+              <div className="absolute inset-0 flex items-center">
+                {/* La misma columna que el menú y el catálogo (max-w-6xl); entre md y xl deja lugar a las flechas */}
+                <div className="container mx-auto max-w-6xl px-4 pb-14 pt-8 md:px-20 md:pb-16 xl:px-4">
+                  <div className={`max-w-xl ${alignRight ? 'ml-auto text-right' : ''}`}>
+                    <p className="mb-2 text-sm font-medium text-accent">{slide.eyebrow}</p>
+                    <h2 className="font-heading text-5xl leading-[0.95] text-accent md:text-6xl">{slide.headline}</h2>
+                    <p className="mt-4 max-w-md text-base leading-relaxed text-neutral-light md:text-lg">
+                      {slide.text}
+                    </p>
+                    <div className={`mt-6 flex flex-wrap gap-3 ${alignRight ? 'justify-end' : ''}`}>
+                      {slide.href.startsWith('#') ? (
+                        <a href={slide.href} className="btn-primary inline-flex w-auto items-center justify-center">
+                          {slide.cta}
+                        </a>
+                      ) : (
+                        <Link href={slide.href} className="btn-primary inline-flex w-auto items-center justify-center">
+                          {slide.cta}
+                        </Link>
+                      )}
+                      {/* «Ver tienda» solo donde el botón principal lleva a otra parte: dos botones al mismo lugar confunden */}
+                      {!enlaceCatalogo ? (
+                        <a
+                          href="#catalogo"
+                          className="inline-flex items-center justify-center rounded-lg border border-white/40 px-6 py-3.5 text-base font-semibold text-white transition-colors hover:border-accent hover:text-accent"
+                        >
+                          Ver tienda
+                        </a>
+                      ) : null}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -136,7 +170,7 @@ export default function StoreHeroCarousel() {
             <button
               type="button"
               onClick={() => go(-1)}
-              className="absolute left-2 top-1/2 z-20 hidden -translate-y-1/2 rounded-full border border-white/20 bg-black/40 p-2.5 text-white backdrop-blur-md transition hover:border-accent/50 hover:bg-black/60 md:left-4 md:block"
+              className="absolute left-2 top-1/2 z-20 hidden -translate-y-1/2 rounded-lg border border-white/20 bg-black/60 p-2.5 text-white transition-colors hover:border-accent hover:text-accent md:left-4 md:block"
               aria-label="Anterior"
             >
               <ChevronLeft className="h-6 w-6" />
@@ -144,7 +178,7 @@ export default function StoreHeroCarousel() {
             <button
               type="button"
               onClick={() => go(1)}
-              className="absolute right-2 top-1/2 z-20 hidden -translate-y-1/2 rounded-full border border-white/20 bg-black/40 p-2.5 text-white backdrop-blur-md transition hover:border-accent/50 hover:bg-black/60 md:right-4 md:block"
+              className="absolute right-2 top-1/2 z-20 hidden -translate-y-1/2 rounded-lg border border-white/20 bg-black/60 p-2.5 text-white transition-colors hover:border-accent hover:text-accent md:right-4 md:block"
               aria-label="Siguiente"
             >
               <ChevronRight className="h-6 w-6" />
@@ -154,16 +188,16 @@ export default function StoreHeroCarousel() {
 
         {/* Indicadores + barra de progreso estilo ecommerce */}
         <div className="absolute bottom-0 left-0 right-0 z-20">
-          <div className="h-1 w-full bg-white/15">
+          <div className="h-1 w-full bg-white/15 motion-reduce:hidden">
             <div
-              key={`${active}-${paused ? 'p' : 'r'}`}
+              key={`${active}-${quieto ? 'p' : 'r'}`}
               className="h-full origin-left bg-accent"
               style={{
-                animation: paused ? 'none' : `storeHeroProgress ${AUTO_MS}ms linear forwards`,
+                animation: quieto ? 'none' : `storeHeroProgress ${AUTO_MS}ms linear forwards`,
               }}
             />
           </div>
-          <div className="flex justify-center">
+          <div className="flex items-center justify-center">
             {/* Cada punto tiene 44 px de alto para el dedo; la barrita se dibuja adentro. */}
             {slides.map((s, i) => (
               <button
@@ -176,36 +210,24 @@ export default function StoreHeroCarousel() {
               >
                 <span
                   aria-hidden
-                  className={`block h-1.5 rounded-full transition-all ${
+                  className={`block h-1.5 rounded-full transition-all motion-reduce:transition-none ${
                     i === active ? 'w-10 bg-accent' : 'w-1.5 bg-white/40 group-hover:bg-white/60'
                   }`}
                 />
               </button>
             ))}
+            {/* Lo que se mueve solo por más de 5 s necesita una forma de detenerlo (WCAG 2.2.2) */}
+            {gira ? (
+              <button
+                type="button"
+                onClick={() => setDetenido((d) => !d)}
+                className="flex h-11 items-center px-3 text-sm text-white underline underline-offset-2"
+              >
+                {detenido ? 'Reanudar' : 'Pausar'}
+              </button>
+            ) : null}
           </div>
         </div>
-
-        {/* Insignia decorativa */}
-        <div
-          className="pointer-events-none absolute right-6 top-24 z-20 hidden md:block"
-          aria-hidden
-        >
-          <div className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-accent/80 bg-accent/10 text-2xl shadow-lg shadow-accent/20">
-            ★
-          </div>
-        </div>
-      </div>
-
-      {/* Flotante izquierda: clases 1 a 1 (WhatsApp compras va en layout, abajo derecha) */}
-      <div className="pointer-events-none fixed bottom-6 left-6 z-[60] flex flex-col gap-3">
-        <Link
-          href="/consulta"
-          aria-label="Clases 1 a 1"
-          className="pointer-events-auto flex items-center gap-2 rounded-full border border-accent/40 bg-dark/90 px-4 py-3 text-sm font-semibold text-white shadow-lg backdrop-blur-md transition hover:border-accent hover:text-accent"
-        >
-          <MessageCircle className="h-5 w-5 text-accent" aria-hidden />
-          <span className="hidden sm:inline">Clases 1 a 1</span>
-        </Link>
       </div>
     </section>
   )

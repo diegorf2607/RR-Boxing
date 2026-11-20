@@ -41,7 +41,7 @@ export default function ClaseVirtualPage() {
           <Image src="/rr-boxing-logo.png" alt="RR Boxing" width={40} height={62} priority />
         </Link>
 
-        <h1 className="mt-6 font-heading text-5xl leading-none text-white sm:text-6xl">
+        <h1 className="page-title mt-6">
           Clase virtual <span className="block text-accent">RR Boxing</span>
         </h1>
 
@@ -74,7 +74,7 @@ export default function ClaseVirtualPage() {
                 href={WHATSAPP_PROXIMA}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-5 block rounded-lg bg-red-600 px-6 py-3.5 text-center font-bold text-white transition-colors hover:bg-red-700"
+                className="btn-primary mt-5"
               >
                 Preguntar por la próxima clase
               </a>

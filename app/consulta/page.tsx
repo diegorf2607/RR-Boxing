@@ -6,8 +6,7 @@ import Testimonials from '@/components/Testimonials'
 import Footer from '@/components/Footer'
 import { enlaceWhatsapp, WHATSAPP_LEGIBLE } from '@/shared/lib/whatsapp'
 import { IMAGEN_COMPARTIR } from '@/shared/config/imagen-compartir'
-
-const MENSAJE_WHATSAPP = 'Hola, Richard. Quiero información de las clases 1 a 1.'
+import { MENSAJE_CLASES_1A1 } from '@/shared/config/clases'
 
 const DESCRIPCION =
   'Entrenamiento personalizado con Richard, enfocado en la salud y pensado para personas comunes. El horario y el precio se coordinan por WhatsApp.'
@@ -26,7 +25,8 @@ export const metadata: Metadata = {
 const filas: { etiqueta: string; valor: string }[] = [
   { etiqueta: 'Con quién', valor: 'Richard Rodríguez' },
   { etiqueta: 'Para quién', valor: 'Personas comunes que quieren cuidar su salud' },
-  { etiqueta: 'Horario y precio', valor: 'Se coordinan por WhatsApp' },
+  // Dónde son y cuánto dura cada sesión todavía no está escrito en ningún lado: no se inventa, se coordina
+  { etiqueta: 'Lugar, horario y precio', valor: 'Se coordinan por WhatsApp' },
 ]
 
 export default function ConsultaPage() {
@@ -34,8 +34,8 @@ export default function ConsultaPage() {
     <main className="min-h-screen bg-dark">
       <MainNav />
 
-      <section className="px-4 py-10 text-white sm:py-16">
-        <div className="mx-auto grid w-full max-w-5xl items-center gap-10 md:grid-cols-2 md:gap-12">
+      <section className="py-10 text-white sm:py-16">
+        <div className="container mx-auto grid max-w-6xl items-center gap-10 px-4 md:grid-cols-2 md:gap-12">
           <div className="mx-auto w-full max-w-md md:mx-0 md:max-w-none">
             <h1 className="font-heading text-5xl leading-none text-white sm:text-6xl">
               Clases 1 a 1 <span className="block text-accent">con Richard</span>
@@ -43,7 +43,7 @@ export default function ConsultaPage() {
 
             <p className="mt-6 text-lg leading-relaxed text-neutral-light">
               Entrenamiento personalizado, enfocado en tu salud y pensado para personas comunes. Escríbenos y
-              coordinamos contigo el horario y el precio.
+              coordinamos contigo el lugar, el horario y el precio.
             </p>
 
             <dl className="mt-8 rounded-2xl border border-dark-300 bg-dark-100">
@@ -61,10 +61,10 @@ export default function ConsultaPage() {
             </dl>
 
             <a
-              href={enlaceWhatsapp(MENSAJE_WHATSAPP)}
+              href={enlaceWhatsapp(MENSAJE_CLASES_1A1)}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-6 block w-full rounded-lg bg-accent px-6 py-4 text-center text-lg font-bold text-dark transition-colors hover:bg-accent-dark"
+              className="btn-primary mt-6"
             >
               Escribir por WhatsApp
             </a>

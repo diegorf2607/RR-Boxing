@@ -33,21 +33,25 @@ export default function AlertBanner() {
     <div id={ID_BARRA} className="relative z-50 bg-red-600 text-white">
       <Link
         href="/clase"
-        className="block px-10 py-2.5 text-center text-xs font-medium leading-snug transition-colors hover:bg-red-700 sm:text-sm"
+        // Al menos 44 px de alto para el dedo; el texto va en un solo bloque para que siga en una línea corrida
+        className="flex min-h-[44px] items-center justify-center px-12 py-2.5 text-center text-xs font-medium leading-snug transition-colors hover:bg-red-700 sm:text-sm"
       >
-        <span className="sm:hidden">Clase virtual gratis: sáb 28 nov, 9 a. m. · </span>
-        <span className="hidden sm:inline">
-          Clase virtual gratis: sábado 28 de noviembre, 9 a. m. (hora Perú) ·{' '}
+        <span>
+          <span className="sm:hidden">Clase virtual gratis: sáb 28 nov, 9 a. m. · </span>
+          <span className="hidden sm:inline">
+            Clase virtual gratis: sábado 28 de noviembre, 9 a. m. (hora Perú) ·{' '}
+          </span>
+          <span className="font-semibold underline underline-offset-2">Inscríbete</span>
         </span>
-        <span className="font-semibold underline underline-offset-2">Inscríbete</span>
       </Link>
       <button
         type="button"
         onClick={() => setCerrada(true)}
-        className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1 hover:bg-white/20 sm:right-3"
+        // Toda la altura de la barra (44 px) y 44 px de ancho, para el dedo
+        className="absolute inset-y-0 right-0 flex w-11 items-center justify-center hover:bg-white/20"
         aria-label="Cerrar aviso"
       >
-        <X className="h-4 w-4" />
+        <X className="h-4 w-4" aria-hidden />
       </button>
     </div>
   )

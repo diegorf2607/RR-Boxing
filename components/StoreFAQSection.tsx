@@ -7,6 +7,8 @@ import { WHATSAPP_LEGIBLE, enlaceWhatsapp } from '@/shared/lib/whatsapp'
 import { useClaseVigente } from '@/components/EnlaceClase'
 import { CAMBIOS } from '@/shared/legal/cambios'
 import { GARANTIA_DIAS, RUTAS } from '@/shared/legal/politicas'
+import { TEXTO_PAGO_EN_LINEA } from '@/shared/config/pagos'
+import { CLASE } from '@/shared/lib/clase-virtual'
 
 type FaqItem = { id: string; question: string; answer: ReactNode }
 
@@ -14,7 +16,7 @@ const WHATSAPP_CONSULTA = enlaceWhatsapp('Hola, RR Boxing. Tengo una consulta so
 
 const enlace = 'text-accent underline underline-offset-2 hover:text-white'
 
-/** Frase de la clase virtual: solo sale mientras la clase no haya terminado. */
+/** Frase de la clase virtual: solo sale mientras la clase no haya terminado. La clase es gratis desde el 20 nov. */
 function FraseClaseVirtual() {
   const vigente = useClaseVigente()
   if (!vigente) return null
@@ -25,7 +27,7 @@ function FraseClaseVirtual() {
       <Link href="/clase" className={enlace}>
         clase virtual
       </Link>{' '}
-      con fecha y precio publicados.
+      gratis, el {CLASE.dia.toLocaleLowerCase('es-PE')}.
     </>
   )
 }
@@ -54,31 +56,45 @@ function WhatsappLink({ children }: { children: ReactNode }) {
   )
 }
 
-const FAQ_ITEMS: FaqItem[] = [
+/**
+ * Las preguntas. Las del envío, el pago y el stock cambian si hay pago en línea (lo decide el servidor). `tarifas` son
+ * las de /checkout en una frase (textoTarifas en shared/config/envios.ts): la ficha dice lo mismo.
+ */
+const preguntas = (pagoEnLinea: boolean, tarifas: string): FaqItem[] => [
   {
     id: 'pedido',
     question: '¿Cómo hago mi pedido?',
     answer: (
       <>
-        Agrega tus productos al carrito y pídelos por WhatsApp: el mensaje sale con tu pedido ya escrito. Ahí nos
-        dejas tu nombre, tu correo y la dirección de envío, y te confirmamos el envío y el total antes de cobrarte.
+        Agrega tus productos al carrito y toca «Continuar con mi pedido». Ahí nos dejas tu nombre, tu correo, tu
+        WhatsApp y la dirección de envío, y eliges el envío. Si prefieres, desde el carrito también puedes pedir
+        directo por WhatsApp: el mensaje sale con tu pedido ya escrito.
       </>
     ),
   },
   {
     id: 'envios',
     question: '¿A qué zonas envían y cuánto tarda?',
-    answer: (
+    answer: pagoEnLinea ? (
       <>
-        Por ahora enviamos dentro del Perú. El costo y el plazo dependen de tu distrito: te los confirmamos por
-        WhatsApp antes de cobrarte.
+        Por ahora enviamos dentro del Perú. {tarifas}. Si tu distrito tuviera otro costo, te avisamos antes de enviar
+        y no te cobramos nada que no aceptes.
+      </>
+    ) : (
+      <>
+        Por ahora enviamos dentro del Perú. {tarifas}. Si tu distrito tuviera otro costo, te avisamos por WhatsApp
+        antes de cobrarte.
       </>
     ),
   },
   {
     id: 'pagos',
     question: '¿Cómo pago?',
-    answer: (
+    answer: pagoEnLinea ? (
+      <>
+        {TEXTO_PAGO_EN_LINEA} Mercado Pago cobra en su propia página: nosotros no vemos los datos de tu tarjeta.
+      </>
+    ) : (
       <>
         Por ahora los productos de la tienda no se pagan en la web. Cuando nos escribes por WhatsApp con tu pedido,
         te decimos cómo pagar.
@@ -98,7 +114,14 @@ const FAQ_ITEMS: FaqItem[] = [
   {
     id: 'stock',
     question: '¿Cómo sé si hay stock?',
-    answer: <>Antes de cobrarte te confirmamos por WhatsApp que el producto está disponible.</>,
+    answer: pagoEnLinea ? (
+      <>
+        La ficha dice si hay stock, pero lo actualizamos a mano. Si algo se agotara después de que pagaste, te
+        avisamos por WhatsApp y te devolvemos lo que pagaste.
+      </>
+    ) : (
+      <>Antes de cobrarte te confirmamos por WhatsApp que el producto está disponible.</>
+    ),
   },
   {
     id: 'garantia',
@@ -163,8 +186,13 @@ const FAQ_ITEMS: FaqItem[] = [
   },
 ]
 
-export default function StoreFAQSection() {
+/**
+ * Preguntas frecuentes del inicio. `pagoEnLinea` viene de la página (servidor) con pagoEnLineaActivo()
+ * (shared/config/pagos.ts): en el navegador no se puede saber.
+ */
+export default function StoreFAQSection({ pagoEnLinea, tarifas }: { pagoEnLinea: boolean; tarifas: string }) {
   const baseId = useId()
+  const items = preguntas(pagoEnLinea, tarifas)
   const [openIds, setOpenIds] = useState<Set<string>>(() => new Set(['pedido']))
 
   const toggle = useCallback((id: string) => {
@@ -179,32 +207,27 @@ export default function StoreFAQSection() {
   return (
     <section
       id="preguntas-frecuentes"
-      className="scroll-mt-24 border-t border-dark-300 bg-dark py-14 md:py-20"
+      className="scroll-mt-24 border-t border-dark-300 bg-dark py-12 md:py-16"
       aria-labelledby={`${baseId}-heading`}
     >
-      <div className="container mx-auto px-4">
-        <div className="mx-auto max-w-3xl text-center">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.25em] text-accent">Dudas frecuentes</p>
-          <h2 id={`${baseId}-heading`} className="font-heading text-3xl tracking-wide text-white md:text-4xl">
-            Preguntas y respuestas
+      <div className="container mx-auto max-w-6xl px-4">
+        <div className="max-w-3xl">
+          <h2 id={`${baseId}-heading`} className="section-title">
+            Preguntas frecuentes
           </h2>
-          <p className="mt-3 text-sm text-neutral-light md:text-base">
+          <p className="section-subtitle">
             Si no ves tu caso, escríbenos por <WhatsappLink>WhatsApp</WhatsappLink>.
           </p>
         </div>
 
-        <div className="mx-auto mt-10 max-w-3xl space-y-3">
-          {FAQ_ITEMS.map((item) => {
+        {/* Una sola caja con filas finas, como las preguntas de la ficha (features/store/PreguntasProducto.tsx) */}
+        <div className="mt-8 max-w-3xl rounded-2xl border border-dark-300 bg-dark-100">
+          {items.map((item) => {
             const isOpen = openIds.has(item.id)
             const panelId = `${baseId}-panel-${item.id}`
             const buttonId = `${baseId}-btn-${item.id}`
             return (
-              <div
-                key={item.id}
-                className={`rounded-2xl border transition-colors ${
-                  isOpen ? 'border-accent/40 bg-dark-100/90 ring-1 ring-accent/15' : 'border-dark-300 bg-dark/50'
-                }`}
-              >
+              <div key={item.id} className="border-t border-dark-300 first:border-t-0">
                 <h3 className="text-base font-medium leading-snug">
                   <button
                     id={buttonId}
@@ -228,10 +251,9 @@ export default function StoreFAQSection() {
                   role="region"
                   aria-labelledby={buttonId}
                   hidden={!isOpen}
-                  className={isOpen ? 'border-t border-dark-300/80' : ''}
                 >
                   {isOpen ? (
-                    <p className="px-5 py-4 text-sm leading-relaxed text-neutral-light">{item.answer}</p>
+                    <p className="px-5 pb-4 text-sm leading-relaxed text-neutral-light">{item.answer}</p>
                   ) : null}
                 </div>
               </div>

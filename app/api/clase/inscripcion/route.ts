@@ -2,14 +2,24 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { insertAdminNotification } from '@/shared/lib/data-store'
 import { CLASE, PREFIJO_TITULO, claseVigente, normalizarWhatsapp, whatsappLegible } from '@/shared/lib/clase-virtual'
+import { limpiarOrigen, origenTexto } from '@/shared/lib/origen'
 
 const schema = z.object({
   nombre: z.string().trim().min(2).max(80),
   correo: z.string().trim().toLowerCase().email().max(120),
   whatsapp: z.string().trim().min(6).max(30),
+  // De dónde llegó la persona (shared/lib/origen.ts): se limpia aquí antes de guardarlo
+  origen: z.unknown().optional(),
   // Campo trampa: las personas no lo ven; si viene lleno, es un bot.
   sitio: z.string().max(200).optional(),
 })
+
+/** El mensaje de cada campo que no pasa la revisión (el formulario le agrega el punto final) */
+const MENSAJES: Record<string, string> = {
+  nombre: 'Escribe tu nombre y apellido',
+  correo: 'Revisa tu correo',
+  whatsapp: 'Revisa tu número de WhatsApp',
+}
 
 export async function POST(request: Request) {
   if (!claseVigente()) {
@@ -25,15 +35,22 @@ export async function POST(request: Request) {
 
   const parsed = schema.safeParse(body)
   if (!parsed.success) {
-    return NextResponse.json({ error: 'Revisa tu nombre, tu correo y tu WhatsApp' }, { status: 400 })
+    // Se dice qué campo está mal (campo), para que el formulario marque ese campo y ponga el mensaje a su lado
+    const campo = String(parsed.error.issues[0]?.path[0] ?? '')
+    const mensaje = MENSAJES[campo]
+    return NextResponse.json(
+      mensaje ? { error: mensaje, campo } : { error: 'Revisa tu nombre, tu correo y tu WhatsApp' },
+      { status: 400 }
+    )
   }
 
   const { nombre, correo, whatsapp, sitio } = parsed.data
+  const origen = limpiarOrigen(parsed.data.origen)
   if (sitio) return NextResponse.json({ ok: true })
 
   const digitos = normalizarWhatsapp(whatsapp)
   if (!digitos) {
-    return NextResponse.json({ error: 'Ese número de WhatsApp no parece válido' }, { status: 400 })
+    return NextResponse.json({ error: 'Ese número de WhatsApp no parece válido', campo: 'whatsapp' }, { status: 400 })
   }
 
   try {
@@ -41,7 +58,7 @@ export async function POST(request: Request) {
       type: 'clase_inscripcion',
       severity: 'info',
       title: `${PREFIJO_TITULO}${nombre}`,
-      body: `WhatsApp ${whatsappLegible(digitos)} · ${correo} · inscripción gratis`,
+      body: `WhatsApp ${whatsappLegible(digitos)} · ${correo} · inscripción gratis · origen: ${origenTexto(origen)}`,
       link: `https://wa.me/${digitos}`,
       entityType: 'clase',
       entityId: CLASE.id,

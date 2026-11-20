@@ -39,9 +39,14 @@ export interface DocumentoLegal {
   version: string
   vigenteDesde: string
   secciones: readonly Seccion[]
+  /**
+   * El paso a seguir, arriba y a la vista (no al final de un texto largo): por ejemplo, pedir un cambio por WhatsApp
+   * con un mensaje ya armado. `href` es un enlace externo (wa.me) y se abre en otra pestaña.
+   */
+  accion?: { texto: string; href: string }
 }
 
-/** La línea bajo la bajada: «Versión 1.0 · Vigente desde el 21 de noviembre de 2026» */
+/** La línea bajo la bajada: «Versión 1.0 · Vigente desde el 20 de noviembre de 2026» */
 export const lineaDe = (d: DocumentoLegal) => `Versión ${d.version} · Vigente desde el ${d.vigenteDesde}`
 
 /** Un dato que todavía no está: «Plazo por confirmar» */

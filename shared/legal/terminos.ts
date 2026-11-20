@@ -3,6 +3,8 @@
 // confirmar». Modelo: Longev (lib/legal/terminos.ts), sin lo que es solo de Longev.
 // Las clases virtuales se describen en general: la fecha, la hora y el precio de cada una están solo en /clase, para
 // que estos términos sigan valiendo cuando esa clase pase.
+// El pago de los pedidos se describe en sus dos formas (Mercado Pago cuando el checkout lo ofrece, o por WhatsApp),
+// para que el texto valga con y sin MERCADOPAGO_ACCESS_TOKEN (shared/config/pagos.ts).
 // Si cambias algo que la persona acepta, sube VERSION.terminos en politicas.ts.
 import type { Empresa } from '@/shared/lib/empresa'
 import { COMBO_DISCOUNT_RATE, COMBO_MIN_UNITS } from '@/shared/lib/combo-promo'
@@ -51,14 +53,32 @@ export function terminos(e: Empresa): DocumentoLegal {
       id: 'como-se-compra',
       titulo: 'Cómo se compra',
       bloques: [
-        parrafo('Hoy la tienda no cobra en la web. Los pedidos se hacen por WhatsApp:'),
+        parrafo('Armas tu carrito y registras tu pedido en la web:'),
         lista(
-          'Armas tu carrito y tocas «Pedir por WhatsApp». Se abre WhatsApp con tu pedido ya escrito.',
-          'Completas tu nombre, tu correo y tu dirección de envío, y nos mandas el mensaje.',
-          'Te confirmamos por WhatsApp que hay stock, el costo y el plazo del envío, el total y cómo pagar.',
-          'Solo te cobramos cuando aceptas ese total. Mandar el mensaje no te obliga a comprar.',
-          'Cuando confirmamos tu pago, preparamos y enviamos tu pedido.',
+          'Tocas «Continuar con mi pedido» y nos dejas tu nombre, tu correo, tu WhatsApp y tu dirección de envío. Tu DNI es opcional.',
+          'Eliges el envío y ves el total: los productos, el descuento del combo si te toca y el envío.',
+          'Confirmas tu pedido y queda registrado con un número.',
         ),
+        parrafo('Después pagas de una de estas dos formas:'),
+        grupo(
+          'Pago en línea con Mercado Pago',
+          parrafo(
+            'Cuando está disponible en el checkout, puedes pagar ahí mismo con Mercado Pago (Yape, tarjeta y más), en su propia página y en soles. Nosotros no vemos los datos de tu tarjeta.',
+          ),
+          parrafo(
+            'En ese caso, el envío que pagas es la tarifa que ves en el checkout. Si tu distrito tuviera otro costo, te avisamos antes de enviar y no se cobra nada que no aceptes.',
+          ),
+        ),
+        grupo(
+          'Pago coordinado por WhatsApp',
+          parrafo(
+            'Nos mandas tu pedido por WhatsApp, que ya va escrito con su número. Te confirmamos que hay stock, el costo y el plazo del envío, el total y cómo pagar. Solo te cobramos cuando aceptas ese total.',
+          ),
+        ),
+        parrafo(
+          'También puedes pedir directo por WhatsApp desde el carrito o desde la ficha del producto: se abre WhatsApp con tu pedido ya escrito y seguimos como en el pago coordinado por WhatsApp.',
+        ),
+        parrafo('Registrar tu pedido o mandarnos el mensaje no te obliga a comprar. Cuando confirmamos tu pago, preparamos y enviamos tu pedido.'),
         parrafo(CAMBIOS.cancelar),
         filas([{ nombre: 'Comprobante de pago (boleta o factura) y cómo te llega', valor: porConfirmar }]),
       ],
@@ -67,11 +87,15 @@ export function terminos(e: Empresa): DocumentoLegal {
       id: 'precios',
       titulo: 'Precios y descuentos',
       bloques: [
-        parrafo('Los precios están en soles (S/) y son finales: no se les suma ningún impuesto. El envío va aparte y te lo confirmamos antes de cobrarte.'),
+        parrafo(
+          'Los precios están en soles (S/) y son finales: no se les suma ningún impuesto. El envío va aparte: si pagas con Mercado Pago, es la tarifa que ves en el checkout; si coordinas el pago por WhatsApp, te lo confirmamos antes de cobrarte.',
+        ),
         parrafo(
           `El único descuento de la tienda es el combo: llevando ${COMBO_MIN_UNITS} o más unidades, aunque sean del mismo producto, tienes ${porcentajeCombo} de descuento sobre los productos que participan del combo. El carrito lo calcula solo y va escrito en tu pedido.`,
         ),
-        parrafo('Si después cambiamos un precio, tu pedido no cambia: vale el total que te confirmamos por WhatsApp. Nunca agregamos productos ni cargos que no elegiste.'),
+        parrafo(
+          'Si después cambiamos un precio, tu pedido no cambia: vale el total que pagaste con Mercado Pago o el que te confirmamos por WhatsApp. Nunca agregamos productos ni cargos que no elegiste.',
+        ),
       ],
     },
     {
@@ -80,12 +104,12 @@ export function terminos(e: Empresa): DocumentoLegal {
       bloques: [
         parrafo('Enviamos solo dentro del Perú.'),
         parrafo(
-          'El costo y el plazo del envío dependen de tu distrito y de la opción que elijas. Te los confirmamos por WhatsApp antes de cobrarte, y nunca te cobramos un envío que no hayas aceptado.',
+          'El costo y el plazo del envío dependen de tu distrito y de la opción que elijas en tu pedido. Si pagas con Mercado Pago, pagas la tarifa que ves en el checkout; si tu distrito tuviera otro costo, te avisamos antes de enviar y no se cobra nada que no aceptes. Si coordinas el pago por WhatsApp, te confirmamos el costo y el plazo antes de cobrarte. Nunca te cobramos un envío que no hayas aceptado.',
         ),
         parrafo(
-          'Si tu pedido no llega en el plazo que te confirmamos, o llega dañado, escríbenos: lo resolvemos contigo y, si se perdió o llegó mal, tú eliges: te enviamos otro o te devolvemos tu dinero.',
+          'Si tu pedido no llega en el plazo de la opción que elegiste o del que te confirmamos, o llega dañado, escríbenos: lo resolvemos contigo y, si se perdió o llegó mal, tú eliges: te enviamos otro o te devolvemos tu dinero.',
         ),
-        parrafo('Si después de confirmarte el pedido nos quedamos sin stock, te avisamos y te devolvemos todo lo que pagaste.'),
+        parrafo('Si nos quedamos sin stock después de que pagaste, te avisamos y te devolvemos todo lo que pagaste.'),
       ],
     },
     {

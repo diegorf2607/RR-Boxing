@@ -1,4 +1,4 @@
-/** Datos de la clase virtual gratuita (página /clase). Desde el 21 nov ya no se cobra: Diego la dejó gratis. */
+/** Datos de la clase virtual gratuita (página /clase). Desde el 20 nov ya no se cobra: Diego la dejó gratis. */
 export const CLASE = {
   id: '2026-11-28',
   nombreCorto: 'Clase virtual 28 nov',

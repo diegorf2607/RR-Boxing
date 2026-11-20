@@ -1,9 +1,9 @@
 import { redirect } from 'next/navigation'
-import MainNav from '@/components/MainNav'
 import AdminNav from '@/components/AdminNav'
 import { getSession } from '@/shared/lib/auth'
 import { getSupabaseAdmin } from '@/shared/lib/supabase-admin'
 import { CLASE, PREFIJO_TITULO, whatsappLegible } from '@/shared/lib/clase-virtual'
+import { origenDeInscripcion } from '@/shared/lib/resumen-diario'
 
 export const dynamic = 'force-dynamic'
 
@@ -29,15 +29,15 @@ export default async function AdminClasePage() {
 
   return (
     <main className="min-h-screen bg-dark">
-      <MainNav />
-      <section className="container mx-auto grid gap-6 px-4 py-10 md:grid-cols-[240px_1fr]">
+      <section className="container mx-auto grid grid-cols-1 gap-4 px-4 pb-10 pt-1 md:grid-cols-[240px_1fr] md:gap-6 md:py-10">
         <AdminNav />
         <div>
-          <h1 className="mb-2 text-4xl font-bold">Clase virtual · sábado 28 de noviembre</h1>
+          <h1 className="mb-2 font-heading text-4xl leading-none text-white md:text-5xl">Clase virtual · sábado 28 de noviembre</h1>
           <p className="mb-6 max-w-2xl text-sm text-neutral-light">
-            Quienes se inscribieron en rrboxing.com/clase con su nombre, su correo y su WhatsApp. La clase es gratis desde el 21
-            de noviembre: mándale a cada uno el link por WhatsApp antes del sábado. Quienes pagaron S/ 30 antes del cambio
-            figuran con «fue a pagar».
+            Quienes se inscribieron en rrboxing.com/clase con su nombre, su correo y su WhatsApp. La clase es gratis desde el 20
+            de noviembre: mándale a cada uno el link por WhatsApp antes del sábado. Quienes se inscribieron antes del cambio
+            figuran con «fue a pagar S/ 30»: fueron a la página de Mercado Pago, pero eso no confirma que hayan pagado:
+            revísalo en Mercado Pago. Cada uno lleva de dónde llegó a la web («sin dato» si no se supo).
           </p>
 
           {error && <p className="mb-4 text-sm text-red-400">No se pudo leer la lista: {error}</p>}
@@ -53,6 +53,9 @@ export default async function AdminClasePage() {
               const nombre = fila.title.startsWith(PREFIJO_TITULO) ? fila.title.slice(PREFIJO_TITULO.length) : fila.title
               const digitos = fila.link?.replace(/\D/g, '') ?? ''
               const correo = fila.body?.match(/[^\s·]+@[^\s·]+/)?.[0] ?? null
+              // El body es «WhatsApp … · correo · inscripción gratis · origen: …» (antes, «fue a pagar S/ 30»)
+              const fueAPagar = /fue a pagar/i.test(fila.body ?? '')
+              const origen = origenDeInscripcion(fila.body)
               return (
                 <div
                   key={fila.id}
@@ -72,7 +75,9 @@ export default async function AdminClasePage() {
                         dateStyle: 'short',
                         timeStyle: 'short',
                       })}
+                      {fueAPagar ? ' · fue a pagar S/ 30' : ''}
                     </p>
+                    <p className="text-sm text-neutral">Origen: {origen}</p>
                   </div>
                   {fila.link && (
                     <a

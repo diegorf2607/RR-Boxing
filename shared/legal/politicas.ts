@@ -3,11 +3,13 @@
 // Si cambias algo que la persona acepta (un plazo, quién paga un envío, un proveedor), sube la versión de ese
 // documento y su fecha.
 
-export const VIGENTE_DESDE = '21 de noviembre de 2026'
+export const VIGENTE_DESDE = '20 de noviembre de 2026'
 
 export const VERSION = {
-  terminos: '1.0',
-  privacidad: '1.0',
+  /** 1.1: el pedido se registra en la web y se paga con Mercado Pago (si el checkout lo ofrece) o por WhatsApp */
+  terminos: '1.1',
+  /** 1.1: los pedidos de la web se guardan, Mercado Pago cobra los pedidos y la clase virtual es gratis */
+  privacidad: '1.1',
   /** Cambios y devoluciones (/reembolso) y Garantía de compra (/garantia): son la misma fuente */
   cambios: '1.0',
 } as const
