@@ -12,6 +12,7 @@ import { COMBO_MIN_UNITS } from '@/shared/lib/combo-promo'
 import { armarLineas, resumirCarrito, topeLinea } from '@/features/cart/lineas'
 import { useCatalogo } from '@/features/cart/useCatalogo'
 import SelectorCantidad from '@/features/cart/SelectorCantidad'
+import IconoWhatsapp from '@/features/cart/IconoWhatsapp'
 import { enlacePedidoLineas } from '@/features/store/pedidoWhatsappProducto'
 
 const ENFOCABLES =
@@ -25,7 +26,8 @@ const TRANSICION = 200
  * desde abajo en el celular. Es un diálogo: atrapa el foco, Escape lo cierra y al cerrarse el foco vuelve a donde
  * estaba. El teclado se escucha en todo el documento, para que Escape y Tab sigan funcionando aunque el foco se haya
  * caído al <body>. Lleva a /checkout («Continuar con mi pedido»), donde se piden los datos del pedido, y también deja
- * pedir directo por WhatsApp con el pedido ya escrito.
+ * pedir directo por WhatsApp con el pedido ya escrito. En la línea A: fondo negro, líneas finas, fotos sobre el gris claro
+ * (.tile), el total en blanco y el amarillo solo en el botón principal y en lo que se ahorra con el combo.
  */
 export default function CarritoLateral({
   abierto,
@@ -167,10 +169,10 @@ export default function CarritoLateral({
       >
         <div className="flex items-center justify-between gap-4 border-b border-dark-300 px-5 py-4">
           {/* tabIndex -1: recibe el foco cuando se quita una línea (el botón del tacho desaparece) */}
-          <h2 id={titulo} ref={tituloRef} tabIndex={-1} className="font-heading text-3xl leading-none tracking-wide outline-none">
+          <h2 id={titulo} ref={tituloRef} tabIndex={-1} className="card-title outline-none">
             Tu carrito
             {resumen.unidades > 0 ? (
-              <span className="ml-3 font-sans text-sm font-normal tracking-normal text-neutral">
+              <span className="ml-3 align-middle text-sm font-normal tracking-normal text-neutral [font-stretch:100%]">
                 {resumen.unidades === 1 ? '1 producto' : `${resumen.unidades} productos`}
               </span>
             ) : null}
@@ -178,7 +180,7 @@ export default function CarritoLateral({
           <button
             type="button"
             onClick={onCerrar}
-            className="-my-1 -mr-3 rounded-lg p-3 text-neutral-light transition hover:bg-dark-100 hover:text-white"
+            className="-my-1 -mr-3 rounded-lg p-3 text-neutral-light transition-colors hover:bg-dark-100 hover:text-white motion-reduce:transition-none"
             aria-label="Cerrar el carrito"
           >
             <X className="h-5 w-5" aria-hidden />
@@ -189,8 +191,8 @@ export default function CarritoLateral({
           {esperando ? (
             <ul aria-label="Cargando el carrito">
               {items.slice(0, 3).map((item) => (
-                <li key={`${item.productId}-${item.variante?.color ?? ''}`} className="flex animate-pulse gap-4 border-b border-dark-300 px-5 py-4">
-                  <div className="h-16 w-16 shrink-0 rounded-lg bg-dark-200" />
+                <li key={`${item.productId}-${item.variante?.color ?? ''}`} className="flex animate-pulse gap-4 border-b border-dark-300 px-5 py-4 motion-reduce:animate-none">
+                  <div className="h-16 w-16 shrink-0 rounded-xl bg-dark-200" />
                   <div className="flex-1 space-y-2 py-1">
                     <div className="h-4 w-3/4 rounded bg-dark-200" />
                     <div className="h-4 w-1/3 rounded bg-dark-200" />
@@ -200,13 +202,13 @@ export default function CarritoLateral({
             </ul>
           ) : vacio ? (
             <div className="px-5 py-10 text-center">
-              <p className="text-base text-white">Tu carrito está vacío.</p>
+              <p className="text-base font-semibold text-white">Tu carrito está vacío.</p>
               <p className="mt-2 text-sm text-neutral-light">Agrega productos desde la tienda.</p>
             </div>
           ) : sinCatalogo ? (
             <p className="px-5 py-8 text-sm leading-relaxed text-neutral-light">
               No pudimos cargar los productos de tu carrito. Vuelve a intentarlo en un momento o{' '}
-              <Link href="/cart" className="text-accent underline underline-offset-2 hover:text-white">
+              <Link href="/cart" className="font-medium text-white underline decoration-1 underline-offset-4 hover:text-accent">
                 abre el carrito
               </Link>
               .
@@ -221,7 +223,7 @@ export default function CarritoLateral({
                     <Link
                       href={`/product/${linea.product.slug}`}
                       onClick={onCerrar}
-                      className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-dark-300 bg-white"
+                      className="tile relative h-16 w-16 shrink-0 rounded-xl"
                     >
                       {linea.product.imageUrls[0] ? (
                         <Image
@@ -229,14 +231,14 @@ export default function CarritoLateral({
                           alt={nombre}
                           fill
                           sizes="64px"
-                          className="object-contain"
+                          className="object-contain p-1.5"
                         />
                       ) : null}
                     </Link>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                          <p className="font-medium leading-snug text-white">{nombre}</p>
+                          <p className="text-[15.5px] font-semibold leading-snug text-white">{nombre}</p>
                           {linea.variante?.color ? (
                             <p className="mt-0.5 text-sm text-neutral-light">Color: {linea.variante.color}</p>
                           ) : null}
@@ -268,7 +270,7 @@ export default function CarritoLateral({
                             etiqueta={`Cantidad de ${nombre}`}
                             onCambiar={(q) => onCambiarCantidad(linea.productId, q, linea.variante)}
                           />
-                          <p className="font-semibold tabular-nums text-white">
+                          <p className="font-bold tabular-nums text-white">
                             {formatCurrency(linea.lineTotal, linea.price.currency, config.locale)}
                           </p>
                         </div>
@@ -283,8 +285,9 @@ export default function CarritoLateral({
 
         <div className="border-t border-dark-300 px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4">
           {puedeSeguir ? (
-            <dl className="space-y-1.5 text-sm">
-              <div className="flex justify-between gap-4 text-neutral-light">
+            // El resumen como el de la ficha: filas de 15 px, el combo en amarillo y el total en blanco y en negrita
+            <dl className="grid gap-1.5 text-[15px] text-neutral-light">
+              <div className="flex justify-between gap-4">
                 <dt>Subtotal</dt>
                 <dd className="tabular-nums text-white">{dinero(resumen.combo.subtotal)}</dd>
               </div>
@@ -294,15 +297,15 @@ export default function CarritoLateral({
                   <dd className="tabular-nums">−{dinero(resumen.combo.descuento)}</dd>
                 </div>
               ) : resumen.hayProductosDelCombo ? (
-                <p className="text-xs text-neutral">
+                <p className="text-[13.5px] text-neutral">
                   Con {COMBO_MIN_UNITS} o más productos del combo tienes 10% menos.
                 </p>
               ) : null}
-              <div className="flex items-baseline justify-between gap-4 pt-1">
-                <dt className="text-base text-white">Total de productos</dt>
-                <dd className="text-xl font-bold tabular-nums text-accent">{dinero(resumen.combo.total)}</dd>
+              <div className="mt-1 flex items-baseline justify-between gap-4 text-lg font-bold text-white">
+                <dt>Total de productos</dt>
+                <dd className="tabular-nums">{dinero(resumen.combo.total)}</dd>
               </div>
-              <p className="text-xs text-neutral">No incluye el envío.</p>
+              <p className="text-[13.5px] text-neutral">No incluye el envío.</p>
             </dl>
           ) : null}
 
@@ -316,8 +319,9 @@ export default function CarritoLateral({
               href={enlacePedidoLineas(resumen.disponibles, country)}
               target="_blank"
               rel="noopener noreferrer"
-              className="btn-secondary mt-2"
+              className="btn-secondary mt-2.5"
             >
+              <IconoWhatsapp />
               Pedir directo por WhatsApp
             </a>
           ) : null}
@@ -329,7 +333,7 @@ export default function CarritoLateral({
             <button
               type="button"
               onClick={onCerrar}
-              className={`${puedeSeguir ? 'mt-1' : ''} flex min-h-[44px] w-full items-center justify-center text-sm text-neutral-light underline underline-offset-2 transition hover:text-accent`}
+              className={`${puedeSeguir ? 'mt-1' : ''} flex min-h-[44px] w-full items-center justify-center text-sm font-medium text-neutral-light underline decoration-1 underline-offset-4 hover:text-white`}
             >
               Seguir comprando
             </button>

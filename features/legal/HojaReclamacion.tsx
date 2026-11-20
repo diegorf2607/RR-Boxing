@@ -29,8 +29,14 @@ import {
 } from '@/shared/lib/reclamo'
 
 const CAMPO =
-  'mt-2 block w-full rounded-lg border bg-dark px-4 py-3 text-base text-white placeholder:text-neutral focus:border-accent focus:outline-none'
+  'mt-2 block min-h-[50px] w-full rounded-lg border bg-dark px-4 py-3 text-base font-normal text-white placeholder:text-neutral focus:border-accent focus:outline-none'
 const borde = (mal?: string) => (mal ? 'border-red-500' : 'border-dark-300')
+/** El rótulo de cada campo y de cada grupo de opciones, como «Color» y «Elige tu pack» en la ficha de la maqueta */
+const ROTULO = 'block text-[14.5px] font-semibold text-white'
+/** Lo que acompaña al rótulo: «(obligatorio)», «(opcional)» */
+const NOTA_ROTULO = 'font-normal text-neutral'
+/** Enlaces dentro del texto: blancos y subrayados (el amarillo queda para los botones) */
+const ENLACE = 'font-medium text-white underline decoration-neutral underline-offset-4 hover:decoration-white'
 
 /** Los errores que se muestran junto a un campo; los demás (trampa, hoja) van al aviso general */
 const CAMPOS: readonly CampoReclamo[] = ['nombre', 'documentoTipo', 'documentoNumero', 'contacto', 'correo', 'detalle']
@@ -122,7 +128,7 @@ const enAppInterna = () =>
 /** «escríbenos a hola@… o al WhatsApp 986 964 194» */
 function Contacto({ proveedor: p }: { proveedor: Proveedor }) {
   const wa = p.whatsapp ? (
-    <a href={`https://wa.me/51${p.whatsapp}`} target="_blank" rel="noopener noreferrer" className="text-accent underline">
+    <a href={`https://wa.me/51${p.whatsapp}`} target="_blank" rel="noopener noreferrer" className={ENLACE}>
       {whatsappVisible(p.whatsapp)}
     </a>
   ) : null
@@ -130,7 +136,7 @@ function Contacto({ proveedor: p }: { proveedor: Proveedor }) {
     return (
       <>
         escríbenos a{' '}
-        <a href={`mailto:${p.correo}`} className="text-accent underline">
+        <a href={`mailto:${p.correo}`} className={ENLACE}>
           {p.correo}
         </a>{' '}
         o al WhatsApp {wa}
@@ -141,7 +147,7 @@ function Contacto({ proveedor: p }: { proveedor: Proveedor }) {
     return (
       <>
         escríbenos a{' '}
-        <a href={`mailto:${p.correo}`} className="text-accent underline">
+        <a href={`mailto:${p.correo}`} className={ENLACE}>
           {p.correo}
         </a>
       </>
@@ -156,10 +162,10 @@ function Fila({ t, v, primera, largo }: { t: string; v: React.ReactNode; primera
   const vacio = v === null || v === undefined || v === ''
   return (
     <div
-      className={`lr-fila grid gap-1 px-5 py-3.5 sm:grid-cols-[13rem_1fr] sm:gap-4 ${primera ? '' : 'border-t border-dark-300'}`}
+      className={`lr-fila grid gap-1 px-5 py-[15px] sm:grid-cols-[13rem_1fr] sm:gap-4 ${primera ? '' : 'border-t border-line'}`}
     >
       <dt className="text-sm text-neutral">{t}</dt>
-      <dd className={`text-base ${largo ? 'whitespace-pre-line' : ''} ${vacio ? 'text-neutral' : 'text-white'} break-words`}>
+      <dd className={`text-[15.5px] ${largo ? 'whitespace-pre-line' : ''} ${vacio ? 'text-neutral' : 'text-white'} break-words`}>
         {vacio ? '—' : v}
       </dd>
     </div>
@@ -182,7 +188,7 @@ function Encabezado({
 }) {
   const dias = `${PLAZO_RECLAMO_DIAS_HABILES} días hábiles`
   return (
-    <dl className="rounded-2xl border border-dark-300 bg-dark-100">
+    <dl className="rounded-2xl border border-line bg-dark-100">
       <Fila primera t="N.º de hoja" v={numero ?? <span className="text-neutral">Se asigna al presentar</span>} />
       <Fila t="Fecha" v={fecha ?? <span className="text-neutral">Se registra al presentar</span>} />
       <Fila t="Plazo de respuesta" v={vence ? `Hasta el ${vence} (${dias})` : dias} />
@@ -210,7 +216,7 @@ function Leyendas() {
 
 function Titulo({ id, children }: { id?: string; children: React.ReactNode }) {
   return (
-    <h2 id={id} className="text-lg font-semibold text-white">
+    <h2 id={id} className="font-heading text-[26px] leading-[0.95] text-white md:text-[30px] print:text-xl">
       {children}
     </h2>
   )
@@ -247,11 +253,11 @@ function ConstanciaHoja({ c, proveedor }: { c: Constancia; proveedor: Proveedor 
         <h2
           id="lr-constancia-titulo"
           tabIndex={-1}
-          className="font-heading text-4xl leading-none text-accent focus:outline-none sm:text-5xl"
+          className="section-title focus:outline-none"
         >
           {h.tipo === 'queja' ? 'Recibimos tu queja' : 'Recibimos tu reclamo'}
         </h2>
-        <p className="mt-4 text-base leading-relaxed text-white">
+        <p className="lead mt-5 text-white">
           {c.vence
             ? `Te respondemos por escrito a más tardar el ${c.vence}, dentro del plazo de ${PLAZO_RECLAMO_DIAS_HABILES} días hábiles.`
             : `Te respondemos por escrito en un plazo máximo de ${PLAZO_RECLAMO_DIAS_HABILES} días hábiles.`}
@@ -265,7 +271,7 @@ function ConstanciaHoja({ c, proveedor }: { c: Constancia; proveedor: Proveedor 
           <button
             type="button"
             onClick={() => window.print()}
-            className="mt-6 block w-full rounded-lg bg-accent px-6 py-3.5 text-center font-bold text-dark transition-colors hover:bg-accent-dark sm:w-auto"
+            className="btn-primary mt-7 sm:inline-flex sm:w-auto"
           >
             Imprimir o guardar en PDF
           </button>
@@ -277,12 +283,12 @@ function ConstanciaHoja({ c, proveedor }: { c: Constancia; proveedor: Proveedor 
         Hoja de Reclamación N.º {c.numero} ({tipo})
       </p>
 
-      <div className="mt-8 space-y-8 print:mt-4 print:space-y-5">
+      <div className="mt-10 space-y-10 print:mt-4 print:space-y-5">
         <Encabezado proveedor={proveedor} numero={c.numero} fecha={c.fechaTexto || undefined} vence={c.vence || undefined} />
 
         <div>
           <Titulo>1. Identificación del consumidor reclamante</Titulo>
-          <dl className="mt-3 rounded-2xl border border-dark-300 bg-dark-100">
+          <dl className="mt-4 rounded-2xl border border-line bg-dark-100">
             <Fila primera t="Nombre" v={h.nombre} />
             <Fila t="Documento" v={`${textoDocumento(h.documentoTipo)} ${h.documentoNumero}`} />
             <Fila t="Domicilio" v={h.domicilio} />
@@ -296,7 +302,7 @@ function ConstanciaHoja({ c, proveedor }: { c: Constancia; proveedor: Proveedor 
 
         <div>
           <Titulo>2. Identificación del bien contratado</Titulo>
-          <dl className="mt-3 rounded-2xl border border-dark-300 bg-dark-100">
+          <dl className="mt-4 rounded-2xl border border-line bg-dark-100">
             <Fila primera t="Producto o servicio" v={h.bien === 'producto' ? 'Producto' : h.bien === 'servicio' ? 'Servicio' : null} />
             <Fila t="Monto reclamado" v={monto} />
             <Fila t="Descripción" v={h.descripcion} />
@@ -305,7 +311,7 @@ function ConstanciaHoja({ c, proveedor }: { c: Constancia; proveedor: Proveedor 
 
         <div>
           <Titulo>3. Detalle de la reclamación y pedido del consumidor</Titulo>
-          <dl className="mt-3 rounded-2xl border border-dark-300 bg-dark-100">
+          <dl className="mt-4 rounded-2xl border border-line bg-dark-100">
             <Fila primera t="Tipo" v={h.tipo === 'queja' ? 'Queja' : 'Reclamo'} />
             <Fila t="Detalle" v={h.detalle} largo />
             <Fila t="Pedido del consumidor" v={h.pedido} largo />
@@ -323,7 +329,7 @@ function ConstanciaHoja({ c, proveedor }: { c: Constancia; proveedor: Proveedor 
 
         <div>
           <Titulo>4. Observaciones y acciones adoptadas por el proveedor</Titulo>
-          <dl className="mt-3 rounded-2xl border border-dark-300 bg-dark-100">
+          <dl className="mt-4 rounded-2xl border border-line bg-dark-100">
             <Fila primera t="Observaciones" v={<span className="text-neutral">En blanco: la completamos al responder.</span>} />
             <Fila t="Fecha de comunicación de la respuesta" v={null} />
           </dl>
@@ -333,8 +339,8 @@ function ConstanciaHoja({ c, proveedor }: { c: Constancia; proveedor: Proveedor 
         <p className="text-sm font-semibold text-white">Copia para el consumidor</p>
       </div>
 
-      <p className="lr-no-imprimir mt-8 text-sm text-neutral-light">
-        <Link href="/" className="text-accent underline">
+      <p className="lr-no-imprimir mt-10 text-[15px] text-neutral-light">
+        <Link href="/" className={`${ENLACE} inline-flex min-h-[44px] items-center`}>
           Volver a la tienda
         </Link>
       </p>
@@ -342,7 +348,7 @@ function ConstanciaHoja({ c, proveedor }: { c: Constancia; proveedor: Proveedor 
   )
 }
 
-/** Un grupo de opciones en filas con líneas finas, como las de /clase */
+/** Un grupo de opciones: cada una en su caja con el punto dibujado, como «Elige tu pack» de la ficha (.opcion) */
 function Opciones({
   nombre,
   opciones,
@@ -353,22 +359,16 @@ function Opciones({
   describe?: string
 }) {
   return (
-    <div className="mt-2 rounded-xl border border-dark-300 bg-dark-100">
-      {opciones.map((o, i) => (
-        <label
-          key={o.valor}
-          className={`flex cursor-pointer items-start gap-3 px-4 py-3 ${i > 0 ? 'border-t border-dark-300' : ''}`}
-        >
-          <input
-            type="radio"
-            name={nombre}
-            value={o.valor}
-            aria-describedby={describe}
-            className="mt-1 h-4 w-4 shrink-0 accent-accent"
-          />
-          <span className="text-base text-white">
-            {o.texto}
-            {o.detalle && <span className="block text-sm text-neutral">{o.detalle}</span>}
+    <div className="mt-2.5 grid gap-2.5">
+      {opciones.map((o) => (
+        <label key={o.valor} className="opcion">
+          <input type="radio" name={nombre} value={o.valor} aria-describedby={describe} />
+          <span className="opcion-caja items-start gap-3 py-3.5">
+            <span className="opcion-punto mt-0.5" aria-hidden="true" />
+            <span className="text-base text-white">
+              {o.texto}
+              {o.detalle && <span className="mt-0.5 block text-sm font-normal text-neutral">{o.detalle}</span>}
+            </span>
           </span>
         </label>
       ))}
@@ -378,7 +378,7 @@ function Opciones({
 
 function Ayuda({ id, children }: { id?: string; children: React.ReactNode }) {
   return (
-    <span id={id} className="mt-1.5 block text-xs text-neutral">
+    <span id={id} className="mt-1.5 block text-[13px] font-normal text-neutral">
       {children}
     </span>
   )
@@ -387,7 +387,7 @@ function Ayuda({ id, children }: { id?: string; children: React.ReactNode }) {
 function ErrorCampo({ id, children }: { id: string; children?: string }) {
   if (!children) return null
   return (
-    <span id={id} className="mt-1.5 block text-sm text-red-400">
+    <span id={id} className="mt-1.5 block text-sm font-normal text-red-400">
       {children}
     </span>
   )
@@ -396,7 +396,7 @@ function ErrorCampo({ id, children }: { id: string; children?: string }) {
 function Aviso({ id, children }: { id: string; children?: string }) {
   if (!children) return null
   return (
-    <span id={id} className="mt-1.5 block text-sm text-accent">
+    <span id={id} className="mt-1.5 block text-sm font-normal text-accent">
       {children}
     </span>
   )
@@ -534,11 +534,11 @@ export default function HojaReclamacion({ proveedor }: { proveedor: Proveedor })
         Solo son obligatorios tu nombre, tu documento, tu domicilio o tu correo, y el detalle.
       </p>
 
-      <section aria-labelledby="lr-s1" className="mt-8 border-t border-dark-300 pt-8">
+      <section aria-labelledby="lr-s1" className="mt-10 border-t border-line pt-8 md:pt-10">
         <Titulo id="lr-s1">1. Identificación del consumidor reclamante</Titulo>
-        <div className="mt-5 grid gap-5 sm:grid-cols-2">
-          <label className="block text-sm text-neutral-light sm:col-span-2">
-            Nombre y apellidos <span className="text-neutral">(obligatorio)</span>
+        <div className="mt-6 grid gap-5 sm:grid-cols-2">
+          <label className={`${ROTULO} sm:col-span-2`}>
+            Nombre y apellidos <span className={NOTA_ROTULO}>(obligatorio)</span>
             <input
               id="lr-nombre"
               name="nombre"
@@ -551,8 +551,8 @@ export default function HojaReclamacion({ proveedor }: { proveedor: Proveedor })
             <ErrorCampo id="lr-nombre-error">{errores.nombre}</ErrorCampo>
           </label>
 
-          <label className="block text-sm text-neutral-light">
-            Tipo de documento <span className="text-neutral">(obligatorio)</span>
+          <label className={ROTULO}>
+            Tipo de documento <span className={NOTA_ROTULO}>(obligatorio)</span>
             <select
               id="lr-documentoTipo"
               name="documentoTipo"
@@ -571,8 +571,8 @@ export default function HojaReclamacion({ proveedor }: { proveedor: Proveedor })
             <ErrorCampo id="lr-documentoTipo-error">{errores.documentoTipo}</ErrorCampo>
           </label>
 
-          <label className="block text-sm text-neutral-light">
-            Número de documento <span className="text-neutral">(obligatorio)</span>
+          <label className={ROTULO}>
+            Número de documento <span className={NOTA_ROTULO}>(obligatorio)</span>
             <input
               id="lr-documentoNumero"
               name="documentoNumero"
@@ -587,8 +587,8 @@ export default function HojaReclamacion({ proveedor }: { proveedor: Proveedor })
             <ErrorCampo id="lr-documentoNumero-error">{errores.documentoNumero}</ErrorCampo>
           </label>
 
-          <label className="block text-sm text-neutral-light sm:col-span-2">
-            Domicilio <span className="text-neutral">(domicilio o correo: al menos uno)</span>
+          <label className={`${ROTULO} sm:col-span-2`}>
+            Domicilio <span className={NOTA_ROTULO}>(domicilio o correo: al menos uno)</span>
             <input
               id="lr-domicilio"
               name="domicilio"
@@ -607,8 +607,8 @@ export default function HojaReclamacion({ proveedor }: { proveedor: Proveedor })
             </p>
           )}
 
-          <label className="block text-sm text-neutral-light">
-            Correo <span className="text-neutral">(domicilio o correo: al menos uno)</span>
+          <label className={ROTULO}>
+            Correo <span className={NOTA_ROTULO}>(domicilio o correo: al menos uno)</span>
             <input
               id="lr-correo"
               name="correo"
@@ -629,7 +629,7 @@ export default function HojaReclamacion({ proveedor }: { proveedor: Proveedor })
             <Aviso id="lr-correo-aviso">{avisos.correo}</Aviso>
           </label>
 
-          <label className="block text-sm text-neutral-light">
+          <label className={ROTULO}>
             Teléfono
             <input
               id="lr-telefono"
@@ -644,18 +644,28 @@ export default function HojaReclamacion({ proveedor }: { proveedor: Proveedor })
           </label>
 
           <div className="sm:col-span-2">
-            <label className="flex cursor-pointer items-center gap-3 text-base text-white">
+            {/* La casilla dibujada (la del navegador sale blanca sobre el fondo negro): borde gris; marcada, amarilla
+                con el check negro. La casilla real sigue debajo, para el teclado y el lector de pantalla. */}
+            <label className="relative flex min-h-[44px] cursor-pointer items-center gap-3 text-base font-[550] text-white">
               <input
                 type="checkbox"
                 name="menor"
                 value="si"
                 checked={menor}
                 onChange={(e) => setMenor(e.target.checked)}
-                className="h-4 w-4 shrink-0 accent-accent"
+                className="peer absolute left-0 top-1/2 m-0 h-5 w-5 -translate-y-1/2 cursor-pointer opacity-0"
               />
+              <span
+                aria-hidden="true"
+                className="flex h-5 w-5 shrink-0 items-center justify-center rounded-[5px] border-[1.5px] border-neutral text-transparent peer-checked:border-accent peer-checked:bg-accent peer-checked:text-dark peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent"
+              >
+                <svg viewBox="0 0 20 20" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.4">
+                  <path d="m4.5 10.5 3.5 3.5 7.5-8" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </span>
               Soy menor de edad
             </label>
-            <label className={menor ? 'mt-4 block text-sm text-neutral-light' : 'hidden'}>
+            <label className={menor ? `mt-3 ${ROTULO}` : 'hidden'}>
               Nombre del padre, madre o apoderado
               <input
                 id="lr-apoderado"
@@ -668,7 +678,7 @@ export default function HojaReclamacion({ proveedor }: { proveedor: Proveedor })
           </div>
 
           <fieldset className="sm:col-span-2">
-            <legend className="text-sm text-neutral-light">¿Cómo quieres recibir la respuesta?</legend>
+            <legend className={ROTULO}>¿Cómo quieres recibir la respuesta?</legend>
             <Opciones
               nombre="respuestaPor"
               describe="lr-respuesta-ayuda"
@@ -682,11 +692,11 @@ export default function HojaReclamacion({ proveedor }: { proveedor: Proveedor })
         </div>
       </section>
 
-      <section aria-labelledby="lr-s2" className="mt-10 border-t border-dark-300 pt-8">
+      <section aria-labelledby="lr-s2" className="mt-10 border-t border-line pt-8 md:pt-10">
         <Titulo id="lr-s2">2. Identificación del bien contratado</Titulo>
-        <div className="mt-5 grid gap-5 sm:grid-cols-2">
+        <div className="mt-6 grid gap-5 sm:grid-cols-2">
           <fieldset className="sm:col-span-2">
-            <legend className="text-sm text-neutral-light">¿Es un producto o un servicio?</legend>
+            <legend className={ROTULO}>¿Es un producto o un servicio?</legend>
             <Opciones
               nombre="bien"
               opciones={[
@@ -696,8 +706,8 @@ export default function HojaReclamacion({ proveedor }: { proveedor: Proveedor })
             />
           </fieldset>
 
-          <label className="block text-sm text-neutral-light">
-            Monto reclamado (S/) <span className="text-neutral">(opcional)</span>
+          <label className={ROTULO}>
+            Monto reclamado (S/) <span className={NOTA_ROTULO}>(opcional)</span>
             <input
               id="lr-monto"
               name="monto"
@@ -711,7 +721,7 @@ export default function HojaReclamacion({ proveedor }: { proveedor: Proveedor })
             <Aviso id="lr-monto-aviso">{avisos.monto}</Aviso>
           </label>
 
-          <label className="block text-sm text-neutral-light sm:col-span-2">
+          <label className={`${ROTULO} sm:col-span-2`}>
             Descripción
             <input
               id="lr-descripcion"
@@ -727,11 +737,11 @@ export default function HojaReclamacion({ proveedor }: { proveedor: Proveedor })
         </div>
       </section>
 
-      <section aria-labelledby="lr-s3" className="mt-10 border-t border-dark-300 pt-8">
+      <section aria-labelledby="lr-s3" className="mt-10 border-t border-line pt-8 md:pt-10">
         <Titulo id="lr-s3">3. Detalle de la reclamación y pedido del consumidor</Titulo>
-        <div className="mt-5 grid gap-5">
+        <div className="mt-6 grid gap-5">
           <fieldset>
-            <legend className="text-sm text-neutral-light">¿Es un reclamo o una queja?</legend>
+            <legend className={ROTULO}>¿Es un reclamo o una queja?</legend>
             <Opciones
               nombre="tipo"
               describe="lr-tipo-ayuda"
@@ -743,8 +753,8 @@ export default function HojaReclamacion({ proveedor }: { proveedor: Proveedor })
             <Ayuda id="lr-tipo-ayuda">Si no eliges, la registramos como reclamo.</Ayuda>
           </fieldset>
 
-          <label className="block text-sm text-neutral-light">
-            Detalle del reclamo o queja <span className="text-neutral">(obligatorio)</span>
+          <label className={ROTULO}>
+            Detalle del reclamo o queja <span className={NOTA_ROTULO}>(obligatorio)</span>
             <textarea
               id="lr-detalle"
               name="detalle"
@@ -758,7 +768,7 @@ export default function HojaReclamacion({ proveedor }: { proveedor: Proveedor })
             <ErrorCampo id="lr-detalle-error">{errores.detalle}</ErrorCampo>
           </label>
 
-          <label className="block text-sm text-neutral-light">
+          <label className={ROTULO}>
             Pedido del consumidor
             <textarea
               id="lr-pedido"
@@ -773,12 +783,12 @@ export default function HojaReclamacion({ proveedor }: { proveedor: Proveedor })
         </div>
       </section>
 
-      <div className="mt-10 space-y-5 border-t border-dark-300 pt-8">
+      <div className="mt-10 space-y-5 border-t border-line pt-8 md:pt-10">
         <Leyendas />
         <p className="text-sm leading-relaxed text-neutral">
           Usamos tus datos solo para atender tu reclamo o queja, como manda la ley, y los guardamos al menos 2 años. Se
           guardan en Supabase y la copia sale por correo con Resend (EE.&nbsp;UU.).{' '}
-          <Link href="/privacidad" className="text-accent underline">
+          <Link href="/privacidad" className={ENLACE}>
             Política de privacidad
           </Link>
         </p>
@@ -792,9 +802,7 @@ export default function HojaReclamacion({ proveedor }: { proveedor: Proveedor })
           <button
             type="submit"
             aria-disabled={enviando || undefined}
-            className={`mt-5 block w-full rounded-lg bg-accent px-6 py-4 text-center text-lg font-bold text-dark transition-colors hover:bg-accent-dark ${
-              enviando ? 'opacity-60' : ''
-            }`}
+            className="btn-primary btn-xl mt-5"
           >
             {enviando ? 'Presentando tu hoja…' : 'Presentar hoja de reclamación'}
           </button>

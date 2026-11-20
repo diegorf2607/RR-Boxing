@@ -1,16 +1,16 @@
 import type { Metadata, Viewport } from 'next'
-import { Bebas_Neue, Inter } from 'next/font/google'
+import { Archivo } from 'next/font/google'
 import Script from 'next/script'
 import './globals.css'
 import AppProviders from '@/components/AppProviders'
 import PieLegal from '@/components/PieLegal'
 import { IMAGEN_COMPARTIR } from '@/shared/config/imagen-compartir'
 
-// Fuentes de la marca. next/font las descarga al compilar y las sirve desde el propio sitio: el navegador no le
-// pide nada a Google y la letra no cambia de golpe (swap con un respaldo de medidas parecidas).
-// globals.css y tailwind.config.ts las usan con estas variables.
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' })
-const bebasNeue = Bebas_Neue({ subsets: ['latin'], weight: '400', variable: '--font-bebas-neue', display: 'swap' })
+// La letra de la marca: Archivo, variable en peso y en ancho (wdth 62–125), para el cuerpo y para los titulares
+// angostos (font-stretch en .font-heading, globals.css). next/font la descarga al compilar y la sirve desde el propio
+// sitio: el navegador no le pide nada a Google y la letra no cambia de golpe (swap con un respaldo de medidas
+// parecidas). globals.css y tailwind.config.ts la usan con la variable --font-archivo.
+const archivo = Archivo({ subsets: ['latin'], axes: ['wdth'], variable: '--font-archivo', display: 'swap' })
 
 // Search Console: el código de la etiqueta «google-site-verification» (solo el valor de content), en Vercel.
 const verificacionGoogle = process.env.GOOGLE_SITE_VERIFICATION?.trim()
@@ -70,8 +70,8 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="es-PE" className={`${inter.variable} ${bebasNeue.variable}`}>
-      <body className="antialiased">
+    <html lang="es-PE" className={archivo.variable}>
+      <body className="bg-dark font-sans text-white antialiased">
         <AppProviders>
           {children}
           <PieLegal />

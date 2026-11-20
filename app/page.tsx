@@ -1,11 +1,8 @@
 import type { Metadata } from 'next'
 import MainNav from '@/components/MainNav'
-import StoreHeroCarousel from '@/components/StoreHeroCarousel'
+import StoreHero from '@/components/StoreHero'
 import StoreClient from '@/features/store/StoreClient'
-import StoreComboSection from '@/components/StoreComboSection'
-import StoreAboutSection from '@/components/StoreAboutSection'
 import StoreFAQSection from '@/components/StoreFAQSection'
-import SocialProof from '@/components/SocialProof'
 import ClassesPromoSection from '@/components/ClassesPromoSection'
 import ClaseDestacada from '@/components/ClaseDestacada'
 import Footer from '@/components/Footer'
@@ -30,20 +27,22 @@ export const metadata: Metadata = {
 // La sección de la clase del 28 de noviembre se apaga sola: la página se rehace cada hora.
 export const revalidate = 3600
 
-// Primero lo que se vende: un carrusel más bajo, el catálogo (con su precio a la vista), la clase gratis y los combos.
+/**
+ * El inicio con la línea A («Oscuro sobrio», maqueta en RR\rrboxing-tienda-auditoria\opciones-visuales\opcion-a.html):
+ * la portada fija (sin carrusel), la tienda con sus combos, las clases (1 a 1 y la clase virtual mientras esté
+ * vigente) y las preguntas. La barra y el pie van fuera de <main> para que existan las regiones de cabecera y pie.
+ */
 export default function Home() {
   return (
-    <main className="min-h-screen bg-dark">
+    <>
       <MainNav />
-      <StoreHeroCarousel />
-      <StoreClient />
-      {claseVigente() && <ClaseDestacada />}
-      <StoreComboSection />
-      <StoreAboutSection />
-      <SocialProof />
-      <StoreFAQSection pagoEnLinea={pagoEnLineaActivo()} tarifas={textoTarifas(LISTA_ENVIOS)} />
-      <ClassesPromoSection />
+      <main className="min-h-screen bg-dark">
+        <StoreHero />
+        <StoreClient />
+        <ClassesPromoSection>{claseVigente() ? <ClaseDestacada /> : null}</ClassesPromoSection>
+        <StoreFAQSection pagoEnLinea={pagoEnLineaActivo()} tarifas={textoTarifas(LISTA_ENVIOS)} />
+      </main>
       <Footer />
-    </main>
+    </>
   )
 }

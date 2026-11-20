@@ -1,6 +1,7 @@
 'use client'
 
-// /checkout: la pantalla única de datos del pedido, en el estilo de /clase (filas con líneas finas, un acento).
+// /checkout: la pantalla única de datos del pedido, en la línea A (filas con líneas finas como /clase, cajas para elegir
+// como las de la ficha, un solo acento).
 // Arriba el resumen leído del carrito; abajo nombre, correo, WhatsApp, DNI, entrega y envío. «Confirmar pedido»
 // lo manda a POST /api/pedido, que recalcula todo en el servidor. Después: el número del pedido y el botón para
 // mandarlo por WhatsApp (o, con Mercado Pago prendido y elegido, la página de pago).
@@ -16,6 +17,7 @@ import { formatCurrency } from '@/shared/lib/country'
 import { leerOrigen } from '@/shared/lib/origen'
 import { RUTAS } from '@/shared/legal/politicas'
 import AvisoDatos from '@/components/AvisoDatos'
+import IconoWhatsapp from '@/features/cart/IconoWhatsapp'
 import type { CheckoutShippingMethod, OpcionEnvio } from '@/shared/lib/cart-checkout'
 
 type FormaPago = 'whatsapp' | 'mercadopago'
@@ -67,11 +69,18 @@ function guardarUltimo(r: Resultado | null) {
 const soles = (n: number) => formatCurrency(n, 'PEN', 'es-PE')
 const envioMonto = (e: OpcionEnvio) => (e.monto > 0 ? soles(e.monto) : 'Gratis')
 
-// El texto de ejemplo va en neutral (7,8:1 sobre el fondo) y empieza con «Ej.:» para que no parezca ya escrito
+// Línea A: campos de 52 px con la línea marcada y 10 px de borde (como las cajas para elegir de la ficha), etiquetas de
+// 14.5 px en negrita como las de la caja de compra, títulos angostos (.card-title) y cajas de filas (.filas) como /clase.
+// El texto de ejemplo va en neutral (5,8:1 sobre el fondo) y empieza con «Ej.:» para que no parezca ya escrito
 const campo =
-  'mt-2 block w-full rounded-lg border border-dark-300 bg-dark px-4 py-3 text-base text-white placeholder:text-neutral focus:border-accent focus:outline-none aria-[invalid=true]:border-red-500'
-const etiqueta = 'mt-4 block text-sm text-neutral-light first:mt-0'
-const fila = 'flex items-baseline justify-between gap-4 px-5 py-4'
+  'mt-2 block min-h-[52px] w-full rounded-lg border border-dark-300 bg-dark px-4 py-3 text-base font-normal text-white placeholder:text-neutral focus:border-accent focus:outline-none aria-[invalid=true]:border-red-500'
+const etiqueta = 'mt-5 block text-[14.5px] font-semibold text-white first:mt-0'
+/** La ayuda debajo de un campo (va dentro de la etiqueta, que es negrita) */
+const ayuda = 'mt-1.5 block text-[13px] font-normal text-neutral'
+/** Un grupo de cajas para elegir (envío, pago): cada una con el punto, el nombre, una nota y el precio a la derecha */
+const opcionCaja =
+  'opcion-caja grid min-h-[68px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3.5 gap-y-0.5 py-3'
+const enlace = 'font-medium text-neutral-light underline decoration-1 underline-offset-4 hover:text-white'
 
 type Campos = 'nombre' | 'correo' | 'whatsapp' | 'dni' | 'distrito' | 'direccion' | 'referencia'
 /** Los errores de estos campos salen junto al campo; los demás (stock, conexión…) van encima del botón */
@@ -212,20 +221,23 @@ export default function CheckoutClient({ envios, pagoEnLinea }: { envios: Opcion
   }
 
   return (
-    <div className="px-4 py-10 text-white sm:py-14">
-      <div className="mx-auto w-full max-w-lg">
+    <div className="wrap pb-16 pt-8 text-white min-[900px]:pb-20 min-[900px]:pt-12">
+      <div className="mx-auto w-full max-w-xl">
         <h1 className="page-title">Tu pedido</h1>
-        <p className="mt-3 text-base leading-relaxed text-neutral-light">
+        <p className="mt-3 text-neutral-light">
           {pagoEnLinea
             ? 'Revisa tus productos y déjanos tus datos para enviarte tu pedido.'
             : 'Revisa tus productos y déjanos tus datos. Te confirmamos el envío y cómo pagar por WhatsApp.'}
         </p>
 
         {cargando ? (
-          <div className="mt-8 h-40 animate-pulse rounded-2xl border border-dark-300 bg-dark-100" aria-label="Cargando tu pedido" />
+          <div
+            className="mt-8 h-40 animate-pulse rounded-2xl border border-dark-300 bg-dark-100 motion-reduce:animate-none"
+            aria-label="Cargando tu pedido"
+          />
         ) : vacio ? (
-          <div className="mt-8 rounded-2xl border border-dark-300 bg-dark-100 p-5">
-            <p className="text-base leading-relaxed text-white">
+          <div className="mt-8 rounded-2xl border border-dark-300 bg-dark-100 p-6">
+            <p className="text-base font-semibold leading-relaxed text-white">
               {agotadas.length > 0
                 ? 'Lo que tienes en el carrito está agotado por ahora, así que no hay nada que pedir.'
                 : 'Tu carrito está vacío.'}
@@ -240,8 +252,8 @@ export default function CheckoutClient({ envios, pagoEnLinea }: { envios: Opcion
               <h2 id="resumen-titulo" className="sr-only">
                 Resumen
               </h2>
-              <dl className="rounded-2xl border border-dark-300 bg-dark-100">
-                {resumen.disponibles.map((l, i) => {
+              <dl className="filas">
+                {resumen.disponibles.map((l) => {
                   const opciones = coloresDisponibles(l.product)
                   const color = colorDe(l)
                   // Si el color guardado ya no es uno de los del producto, no se muestra y se vuelve a pedir
@@ -249,23 +261,18 @@ export default function CheckoutClient({ envios, pagoEnLinea }: { envios: Opcion
                   const errorAqui = claveErrorColor === l.clave
                   return (
                     // En un <dl>, cada grupo es un <div> con <dt> y <dd> como hijos directos: el color va en otro <dd>
-                    <div
-                      key={l.clave}
-                      className={`grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-4 px-5 py-4 ${
-                        i > 0 ? 'border-t border-dark-300' : ''
-                      }`}
-                    >
-                      <dt className="min-w-0 text-base">
+                    <div key={l.clave} className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-4">
+                      <dt className="min-w-0 text-[15.5px] font-semibold text-white">
                         {l.product.name.trim()}
-                        <span className="block text-sm text-neutral">
+                        <span className="block text-sm font-normal text-neutral">
                           {l.quantity} × {soles(l.price.amount)}
                           {guardado ? ` · ${guardado}` : ''}
                         </span>
                       </dt>
-                      <dd className="text-right text-base font-medium tabular-nums">{soles(l.lineTotal)}</dd>
+                      <dd className="tabular-nums">{soles(l.lineTotal)}</dd>
                       {opciones.length > 0 && !guardado && (
-                        <dd className="col-span-2">
-                          <label className="mt-3 flex items-center justify-between gap-4 text-sm text-neutral-light">
+                        <dd className="col-span-2 text-left font-normal">
+                          <label className="mt-3 flex items-center justify-between gap-4 text-sm font-semibold text-white">
                             Color
                             <select
                               id={`color-${l.clave}`}
@@ -277,7 +284,7 @@ export default function CheckoutClient({ envios, pagoEnLinea }: { envios: Opcion
                                 setColores((c) => ({ ...c, [l.clave]: e.target.value }))
                                 if (errorAqui) setError(null)
                               }}
-                              className="rounded-lg border border-dark-300 bg-dark px-3 py-2 text-base text-white focus:border-accent focus:outline-none aria-[invalid=true]:border-red-500"
+                              className="min-h-[44px] rounded-lg border border-dark-300 bg-dark px-3 py-2 text-base font-normal text-white focus:border-accent focus:outline-none aria-[invalid=true]:border-red-500"
                             >
                               <option value="" disabled>
                                 Elige
@@ -301,40 +308,40 @@ export default function CheckoutClient({ envios, pagoEnLinea }: { envios: Opcion
                 })}
                 {resumen.combo.descuento > 0 && (
                   <>
-                    <div className={`${fila} border-t border-dark-300`}>
-                      <dt className="text-sm text-neutral">Subtotal</dt>
-                      <dd className="text-base tabular-nums">{soles(resumen.combo.subtotal)}</dd>
+                    <div>
+                      <dt>Subtotal</dt>
+                      <dd className="tabular-nums">{soles(resumen.combo.subtotal)}</dd>
                     </div>
-                    <div className={`${fila} border-t border-dark-300`}>
-                      <dt className="text-sm text-accent">Combo 10%</dt>
-                      <dd className="text-base font-medium tabular-nums text-accent">−{soles(resumen.combo.descuento)}</dd>
+                    <div>
+                      <dt className="text-accent">Combo 10%</dt>
+                      <dd className="tabular-nums text-accent">−{soles(resumen.combo.descuento)}</dd>
                     </div>
                   </>
                 )}
-                <div className={`${fila} border-t border-dark-300`}>
-                  <dt className="text-sm text-neutral">Total de productos</dt>
+                <div>
+                  <dt>Total de productos</dt>
                   <dd className="text-lg font-bold tabular-nums">{soles(resumen.combo.total)}</dd>
                 </div>
               </dl>
               {resumen.combo.descuento === 0 && resumen.hayProductosDelCombo && (
-                <p className="mt-2 text-sm text-neutral">Con {COMBO_MIN_UNITS} o más productos del combo tienes 10% menos.</p>
+                <p className="mt-2.5 text-[13.5px] text-neutral">Con {COMBO_MIN_UNITS} o más productos del combo tienes 10% menos.</p>
               )}
               {agotadas.map((l) => (
-                <p key={l.clave} className="mt-2 text-sm text-neutral">
+                <p key={l.clave} className="mt-2.5 text-[13.5px] text-neutral">
                   {l.product.name.trim()} está agotado y no va en tu pedido.
                 </p>
               ))}
               {country !== 'PE' && (
-                <p className="mt-2 text-sm text-neutral">Enviamos solo dentro del Perú: el pedido va en soles.</p>
+                <p className="mt-2.5 text-[13.5px] text-neutral">Enviamos solo dentro del Perú: el pedido va en soles.</p>
               )}
-              <Link href="/cart" className="mt-3 inline-block text-sm text-neutral-light underline underline-offset-2 hover:text-accent">
+              <Link href="/cart" className={`mt-1 inline-flex min-h-[44px] items-center text-sm ${enlace}`}>
                 Cambiar productos
               </Link>
             </section>
 
-            <form ref={formulario} onSubmit={confirmar} onInput={alEscribir} className="mt-10">
+            <form ref={formulario} onSubmit={confirmar} onInput={alEscribir} className="mt-12">
               <fieldset>
-                <legend className="font-heading text-3xl leading-none text-white">Tus datos</legend>
+                <legend className="card-title">Tus datos</legend>
                 <div className="mt-5">
                   <label className={etiqueta}>
                     Nombre y apellido
@@ -394,14 +401,14 @@ export default function CheckoutClient({ envios, pagoEnLinea }: { envios: Opcion
                       aria-describedby={describe('dni')}
                       className={campo}
                     />
-                    <span className="mt-1.5 block text-xs text-neutral">O tu carné de extranjería.</span>
+                    <span className={ayuda}>O tu carné de extranjería.</span>
                   </label>
                   {errorDe('dni')}
                 </div>
               </fieldset>
 
-              <fieldset className="mt-10">
-                <legend className="font-heading text-3xl leading-none text-white">Entrega</legend>
+              <fieldset className="mt-12">
+                <legend className="card-title">Entrega</legend>
                 <div className="mt-5">
                   <label className={etiqueta}>
                     Distrito
@@ -416,7 +423,7 @@ export default function CheckoutClient({ envios, pagoEnLinea }: { envios: Opcion
                       aria-describedby={describe('distrito')}
                       className={campo}
                     />
-                    <span className="mt-1.5 block text-xs text-neutral">Si no estás en Lima, pon también tu ciudad.</span>
+                    <span className={ayuda}>Si no estás en Lima, pon también tu ciudad.</span>
                   </label>
                   {errorDe('distrito')}
                   <label className={etiqueta}>
@@ -450,31 +457,28 @@ export default function CheckoutClient({ envios, pagoEnLinea }: { envios: Opcion
                 </div>
               </fieldset>
 
-              <fieldset className="mt-10">
-                <legend className="font-heading text-3xl leading-none text-white">Envío</legend>
-                <div className="mt-5 rounded-2xl border border-dark-300 bg-dark-100">
-                  {envios.map((e, i) => (
-                    <label
-                      key={e.metodo}
-                      className={`flex cursor-pointer items-start gap-3 px-5 py-4 ${i > 0 ? 'border-t border-dark-300' : ''}`}
-                    >
+              <fieldset className="mt-12">
+                <legend className="card-title">Envío</legend>
+                <div className="mt-5 grid gap-2.5">
+                  {envios.map((e) => (
+                    <label key={e.metodo} className="opcion">
                       <input
                         type="radio"
                         name="envio"
                         value={e.metodo}
                         checked={envio === e.metodo}
                         onChange={() => setEnvio(e.metodo)}
-                        className="mt-1 h-4 w-4 shrink-0 accent-accent"
                       />
-                      <span className="min-w-0 flex-1">
-                        <span className="block text-base text-white">{e.nombre}</span>
-                        <span className="block text-sm text-neutral">{e.plazo}</span>
+                      <span className={opcionCaja}>
+                        <span className="opcion-punto row-span-2" />
+                        <span className="font-semibold">{e.nombre}</span>
+                        <span className="row-span-2 text-right font-bold tabular-nums">{envioMonto(e)}</span>
+                        <span className="col-start-2 text-[13.5px] font-normal text-neutral">{e.plazo}</span>
                       </span>
-                      <span className="shrink-0 text-base font-medium tabular-nums">{envioMonto(e)}</span>
                     </label>
                   ))}
                 </div>
-                <p className="mt-2 text-sm text-neutral">
+                <p className="mt-2.5 text-[13.5px] text-neutral">
                   {pagoEnLinea && pago === 'mercadopago'
                     ? 'Es la tarifa que pagas. Si tu distrito tuviera otro costo, te avisamos antes de enviar y no se cobra nada que no aceptes.'
                     : 'Si tu distrito tuviera otro costo, te avisamos por WhatsApp antes de cobrarte.'}
@@ -482,30 +486,27 @@ export default function CheckoutClient({ envios, pagoEnLinea }: { envios: Opcion
               </fieldset>
 
               {pagoEnLinea && (
-                <fieldset className="mt-10">
-                  <legend className="font-heading text-3xl leading-none text-white">Pago</legend>
-                  <div className="mt-5 rounded-2xl border border-dark-300 bg-dark-100">
+                <fieldset className="mt-12">
+                  <legend className="card-title">Pago</legend>
+                  <div className="mt-5 grid gap-2.5">
                     {(
                       [
                         { valor: 'mercadopago', titulo: 'Pagar ahora con Mercado Pago', nota: 'Yape, tarjeta y más' },
                         { valor: 'whatsapp', titulo: 'Coordinar el pago por WhatsApp', nota: 'Te escribimos para confirmar el envío y cómo pagar' },
                       ] as const
-                    ).map((o, i) => (
-                      <label
-                        key={o.valor}
-                        className={`flex cursor-pointer items-start gap-3 px-5 py-4 ${i > 0 ? 'border-t border-dark-300' : ''}`}
-                      >
+                    ).map((o) => (
+                      <label key={o.valor} className="opcion">
                         <input
                           type="radio"
                           name="pago"
                           value={o.valor}
                           checked={pago === o.valor}
                           onChange={() => setPago(o.valor)}
-                          className="mt-1 h-4 w-4 shrink-0 accent-accent"
                         />
-                        <span className="min-w-0 flex-1">
-                          <span className="block text-base text-white">{o.titulo}</span>
-                          <span className="block text-sm text-neutral">{o.nota}</span>
+                        <span className={opcionCaja}>
+                          <span className="opcion-punto row-span-2" />
+                          <span className="font-semibold">{o.titulo}</span>
+                          <span className="col-start-2 text-[13.5px] font-normal text-neutral">{o.nota}</span>
                         </span>
                       </label>
                     ))}
@@ -513,18 +514,18 @@ export default function CheckoutClient({ envios, pagoEnLinea }: { envios: Opcion
                 </fieldset>
               )}
 
-              <dl className="mt-10 rounded-2xl border border-dark-300 bg-dark-100">
-                <div className={fila}>
-                  <dt className="text-sm text-neutral">Total de productos</dt>
-                  <dd className="text-base tabular-nums">{soles(resumen.combo.total)}</dd>
+              <dl className="filas mt-12">
+                <div>
+                  <dt>Total de productos</dt>
+                  <dd className="tabular-nums">{soles(resumen.combo.total)}</dd>
                 </div>
-                <div className={`${fila} border-t border-dark-300`}>
-                  <dt className="text-sm text-neutral">Envío {opcionEnvio?.nombre.toLowerCase()}</dt>
-                  <dd className="text-base tabular-nums">{opcionEnvio ? envioMonto(opcionEnvio) : '—'}</dd>
+                <div>
+                  <dt>Envío {opcionEnvio?.nombre.toLowerCase()}</dt>
+                  <dd className="tabular-nums">{opcionEnvio ? envioMonto(opcionEnvio) : '—'}</dd>
                 </div>
-                <div className={`${fila} border-t border-dark-300`}>
-                  <dt className="text-base text-white">Total</dt>
-                  <dd className="text-xl font-bold tabular-nums text-accent">{soles(totalConEnvio)}</dd>
+                <div>
+                  <dt className="text-base font-semibold text-white">Total</dt>
+                  <dd className="text-[21px] font-bold tabular-nums">{soles(totalConEnvio)}</dd>
                 </div>
               </dl>
 
@@ -540,7 +541,7 @@ export default function CheckoutClient({ envios, pagoEnLinea }: { envios: Opcion
               <button
                 type="submit"
                 disabled={enviando}
-                className={`btn-primary ${errorGeneral ? 'mt-3' : 'mt-6'}`}
+                className={`btn-primary btn-xl ${errorGeneral ? 'mt-3' : 'mt-6'}`}
               >
                 {enviando ? 'Un momento…' : pagoEnLinea && pago === 'mercadopago' ? 'Confirmar y pagar' : 'Confirmar pedido'}
               </button>
@@ -554,13 +555,13 @@ export default function CheckoutClient({ envios, pagoEnLinea }: { envios: Opcion
                 }
                 className="mt-4"
               />
-              <p className="mt-2 text-xs leading-relaxed text-neutral">
+              <p className="mt-2 text-[13px] leading-relaxed text-neutral">
                 Al confirmar aceptas los{' '}
-                <Link href={RUTAS.terminos} className="text-neutral-light underline underline-offset-2 hover:text-accent">
+                <Link href={RUTAS.terminos} className={enlace}>
                   Términos
                 </Link>{' '}
                 y la política de{' '}
-                <Link href={RUTAS.cambios} className="text-neutral-light underline underline-offset-2 hover:text-accent">
+                <Link href={RUTAS.cambios} className={enlace}>
                   Cambios y devoluciones
                 </Link>
                 .
@@ -582,45 +583,47 @@ function PedidoRecibido({ resultado }: { resultado: Resultado }) {
     titulo.current?.focus({ preventScroll: true })
   }, [])
   return (
-    <div className="px-4 py-10 text-white sm:py-14">
-      <div className="mx-auto w-full max-w-lg">
+    <div className="wrap pb-16 pt-8 text-white min-[900px]:pb-20 min-[900px]:pt-12">
+      <div className="mx-auto w-full max-w-xl">
         <h1 ref={titulo} tabIndex={-1} className="page-title outline-none">
           Pedido recibido
         </h1>
 
-        <dl className="mt-8 rounded-2xl border border-dark-300 bg-dark-100">
-          <div className={fila}>
-            <dt className="text-sm text-neutral">Número de pedido</dt>
-            <dd className="text-right font-mono text-lg font-bold tracking-wide text-accent">{resultado.numero}</dd>
+        <dl className="filas mt-8">
+          <div>
+            <dt>Número de pedido</dt>
+            <dd className="text-lg font-bold tracking-[0.04em] text-accent">{resultado.numero}</dd>
           </div>
           {r?.lineas.map((l, i) => (
-            <div key={`${l.nombre}-${i}`} className={`${fila} border-t border-dark-300`}>
-              <dt className="min-w-0 text-base">
+            <div key={`${l.nombre}-${i}`}>
+              <dt className="min-w-0 text-[15.5px] font-semibold text-white">
                 {l.nombre}
-                <span className="block text-sm text-neutral">{l.cantidad === 1 ? '1 unidad' : `${l.cantidad} unidades`}</span>
+                <span className="block text-sm font-normal text-neutral">
+                  {l.cantidad === 1 ? '1 unidad' : `${l.cantidad} unidades`}
+                </span>
               </dt>
-              <dd className="shrink-0 text-right text-base tabular-nums">{soles(l.total)}</dd>
+              <dd className="shrink-0 tabular-nums">{soles(l.total)}</dd>
             </div>
           ))}
           {r && r.descuentoCombo > 0 && (
-            <div className={`${fila} border-t border-dark-300`}>
-              <dt className="text-sm text-accent">Combo 10%</dt>
-              <dd className="text-base tabular-nums text-accent">−{soles(r.descuentoCombo)}</dd>
+            <div>
+              <dt className="text-accent">Combo 10%</dt>
+              <dd className="tabular-nums text-accent">−{soles(r.descuentoCombo)}</dd>
             </div>
           )}
           {r && (
             <>
-              <div className={`${fila} border-t border-dark-300`}>
-                <dt className="text-sm text-neutral">
+              <div>
+                <dt>
                   Envío {r.envio.nombre.toLowerCase()}
                   {/* «Gratis de referencia» se contradice: el aviso va solo cuando el envío tiene costo */}
-                  {r.envio.monto > 0 ? <span className="block text-xs">de referencia</span> : null}
+                  {r.envio.monto > 0 ? <small>de referencia</small> : null}
                 </dt>
-                <dd className="text-base tabular-nums">{envioMonto(r.envio)}</dd>
+                <dd className="tabular-nums">{envioMonto(r.envio)}</dd>
               </div>
-              <div className={`${fila} border-t border-dark-300`}>
-                <dt className="text-base text-white">Total</dt>
-                <dd className="text-xl font-bold tabular-nums">{soles(r.total)}</dd>
+              <div>
+                <dt className="text-base font-semibold text-white">Total</dt>
+                <dd className="text-[21px] font-bold tabular-nums">{soles(r.total)}</dd>
               </div>
             </>
           )}
@@ -634,17 +637,13 @@ function PedidoRecibido({ resultado }: { resultado: Resultado }) {
         <p className="mt-8 text-base leading-relaxed text-white">
           Mándanos tu pedido por WhatsApp para terminar. Ya va escrito con tu número de pedido.
         </p>
-        <a
-          href={resultado.whatsapp}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="btn-primary mt-5"
-        >
+        <a href={resultado.whatsapp} target="_blank" rel="noopener noreferrer" className="btn-primary btn-xl mt-5">
+          <IconoWhatsapp />
           Enviar pedido por WhatsApp
         </a>
-        <p className="mt-3 text-center text-sm text-neutral-light">Te confirmamos el envío y cómo pagar.</p>
+        <p className="mt-3 text-center text-[13.5px] text-neutral">Te confirmamos el envío y cómo pagar.</p>
 
-        <Link href="/" className="mt-10 block text-center text-sm text-neutral-light underline underline-offset-2 hover:text-accent">
+        <Link href="/" className={`mt-8 flex min-h-[44px] items-center justify-center text-sm ${enlace}`}>
           Volver a la tienda
         </Link>
       </div>

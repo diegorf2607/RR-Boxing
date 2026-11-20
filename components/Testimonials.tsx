@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { Play } from 'lucide-react'
 import { enlaceWhatsapp } from '@/shared/lib/whatsapp'
 import { MENSAJE_CLASES_1A1 } from '@/shared/config/clases'
+import IconoWhatsapp from '@/components/legal/IconoWhatsapp'
 
 /** El mismo mensaje que el botón de arriba en /consulta */
 const WHATSAPP_CLASES = enlaceWhatsapp(MENSAJE_CLASES_1A1)
@@ -34,7 +35,7 @@ function TestimonialShortCard({ item }: { item: (typeof testimonials)[0] }) {
   const embedSrc = `https://www.youtube-nocookie.com/embed/${item.videoId}?autoplay=1&playsinline=1&rel=0`
 
   return (
-    <article className="card relative w-[min(100%,280px)] flex-shrink-0 snap-center overflow-hidden p-0 md:w-auto">
+    <article className="relative w-[min(78%,280px)] flex-shrink-0 snap-start overflow-hidden rounded-2xl border border-line bg-dark-100 md:w-auto">
       <div className="relative aspect-[9/16] w-full bg-dark-200">
         {reproduciendo ? (
           <iframe
@@ -58,7 +59,7 @@ function TestimonialShortCard({ item }: { item: (typeof testimonials)[0] }) {
               sizes="(min-width: 768px) 320px, 280px"
               className="object-cover"
             />
-            <span className="absolute left-1/2 top-1/2 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/50 bg-black/60 text-white transition-colors group-hover:border-accent group-hover:text-accent">
+            <span className="absolute left-1/2 top-1/2 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/60 bg-dark/80 text-white transition-colors group-hover:border-white group-hover:bg-dark motion-reduce:transition-none">
               <Play className="ml-1 h-7 w-7" aria-hidden />
             </span>
           </button>
@@ -67,7 +68,7 @@ function TestimonialShortCard({ item }: { item: (typeof testimonials)[0] }) {
           href={item.href}
           target="_blank"
           rel="noopener noreferrer"
-          className="absolute bottom-2 right-2 inline-flex min-h-[44px] items-center rounded bg-dark/90 px-3 text-xs font-medium text-accent underline-offset-2 hover:text-white"
+          className="absolute bottom-3 left-3 inline-flex min-h-[44px] items-center rounded-md bg-dark/80 px-3 text-[13px] font-semibold text-white underline decoration-neutral underline-offset-4 hover:decoration-white"
         >
           Abrir en YouTube
         </a>
@@ -76,27 +77,36 @@ function TestimonialShortCard({ item }: { item: (typeof testimonials)[0] }) {
   )
 }
 
+/**
+ * Testimonios en video, en la línea A: la cabecera de sección de la maqueta, las tres portadas en cajas con línea fina
+ * (en el celular se deslizan de costado, como la galería de la ficha) y, al final, la caja de cierre de la maqueta
+ * («¿Recién empiezas?» en la ficha) con el botón de WhatsApp.
+ */
 export default function Testimonials() {
   return (
-    <section id="testimonios" className="border-t border-dark-300 bg-dark py-12 md:py-16">
-      <div className="container mx-auto max-w-6xl px-4">
-        <h2 className="section-title">
-          Lo que cuentan <span className="text-accent">quienes entrenan con nosotros</span>
-        </h2>
-        <p className="section-subtitle">Personas que entrenan con RR Boxing cuentan su experiencia en video.</p>
+    <section id="testimonios" className="seccion bg-dark">
+      <div className="wrap">
+        <div className="seccion-cab">
+          <h2 className="section-title">Lo que cuentan quienes entrenan con nosotros</h2>
+          <p>Personas que entrenan con RR Boxing cuentan su experiencia en video.</p>
+        </div>
 
-        {/* En el celular se deslizan de costado: la tarjeta siguiente asoma a la derecha */}
-        <div className="mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 scrollbar-hide md:grid md:grid-cols-3 md:gap-6 md:overflow-visible md:pb-0">
+        {/* En el celular se deslizan de costado, de borde a borde: la tarjeta siguiente asoma a la derecha */}
+        <div className="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-1 scrollbar-hide md:mx-0 md:grid md:grid-cols-3 md:gap-5 md:overflow-visible md:px-0 md:pb-0">
           {testimonials.map((t) => (
             <TestimonialShortCard key={t.videoId} item={t} />
           ))}
         </div>
 
-        <div className="mt-10 max-w-md">
-          <p className="text-base leading-relaxed text-neutral-light">
-            ¿Quieres clases 1 a 1? Escríbenos por WhatsApp y te contamos cómo serían según tus objetivos y tu tiempo.
-          </p>
-          <a href={WHATSAPP_CLASES} target="_blank" rel="noopener noreferrer" className="btn-primary mt-5">
+        <div className="mt-10 flex flex-wrap items-center justify-between gap-x-8 gap-y-5 rounded-2xl border border-line bg-dark-100 p-5 md:p-6">
+          <div className="max-w-[36em]">
+            <h3 className="font-heading text-[28px] leading-[0.95] text-white">¿Quieres clases 1 a 1?</h3>
+            <p className="mt-2 text-neutral-light">
+              Escríbenos por WhatsApp y te contamos cómo serían según tus objetivos y tu tiempo.
+            </p>
+          </div>
+          <a href={WHATSAPP_CLASES} target="_blank" rel="noopener noreferrer" className="btn-primary sm:inline-flex sm:w-auto">
+            <IconoWhatsapp />
             Escribir por WhatsApp
           </a>
         </div>

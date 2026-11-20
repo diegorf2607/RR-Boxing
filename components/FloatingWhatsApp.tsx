@@ -17,6 +17,11 @@ function resolveWhatsAppHref(): string {
   return enlaceWhatsapp(message)
 }
 
+/**
+ * El botón fijo de WhatsApp, en la línea A: una caja oscura con borde fino y el ícono en blanco (el amarillo queda
+ * para la acción principal de cada página; sin verde, sin sombra). En el celular es un cuadrado de 56 px; desde
+ * 768 px dice «WhatsApp» al lado del ícono.
+ */
 export default function FloatingWhatsApp() {
   const href = resolveWhatsAppHref()
 
@@ -25,10 +30,13 @@ export default function FloatingWhatsApp() {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="fixed bottom-6 right-6 z-[65] flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg shadow-black/35 transition hover:scale-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+      className="fixed bottom-4 right-4 z-[65] flex h-14 w-14 items-center justify-center gap-2.5 rounded-xl border border-dark-400 bg-dark-100 text-white transition-colors hover:border-neutral motion-reduce:transition-none md:bottom-6 md:right-6 md:h-12 md:w-auto md:px-4"
       aria-label="WhatsApp: escríbenos para comprar o resolver dudas"
     >
-      <WhatsAppIcon className="h-8 w-8" />
+      <WhatsAppIcon className="h-7 w-7 md:h-5 md:w-5" />
+      <span aria-hidden className="hidden text-[15px] font-semibold md:inline">
+        WhatsApp
+      </span>
     </a>
   )
 }

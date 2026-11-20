@@ -13,12 +13,17 @@ import { enlaceConsultaAgotado, enlacePedidoLineas } from '@/features/store/pedi
 import { armarLineas, resumirCarrito, topeLinea } from '@/features/cart/lineas'
 import { useCatalogo } from '@/features/cart/useCatalogo'
 import SelectorCantidad from '@/features/cart/SelectorCantidad'
+import IconoWhatsapp from '@/features/cart/IconoWhatsapp'
 import { nombreConVariante } from '@/features/store/colores'
+
+/** La caja de la línea A: fondo #131313, línea fina y 16 px de borde (sin el cambio de borde al pasar el mouse). */
+const caja = 'rounded-2xl border border-dark-300 bg-dark-100'
+const enlace = 'font-medium text-white underline decoration-1 underline-offset-4 hover:text-accent'
 
 function CartLineSkeleton() {
   return (
-    <div className="flex animate-pulse gap-4 rounded-2xl border border-dark-300 bg-dark-100 p-4 md:p-5">
-      <div className="h-20 w-20 shrink-0 rounded-lg bg-dark-200 md:h-24 md:w-24" />
+    <div className={`flex animate-pulse gap-4 p-4 motion-reduce:animate-none md:p-5 ${caja}`}>
+      <div className="h-20 w-20 shrink-0 rounded-xl bg-dark-200 md:h-24 md:w-24" />
       <div className="min-w-0 flex-1 space-y-3 py-1">
         <div className="h-5 w-3/4 max-w-xs rounded bg-dark-200" />
         <div className="h-4 w-24 rounded bg-dark-200" />
@@ -29,8 +34,9 @@ function CartLineSkeleton() {
 }
 
 /**
- * /cart, en el estilo de /clase y del carrito lateral: filas con líneas finas, un acento y el resumen al lado (abajo en
- * el celular). Al quitar una línea, el foco pasa al título «Carrito» para no caerse al <body>.
+ * /cart, en la línea A (como la ficha y el carrito lateral): los productos en una caja de filas con líneas finas, las
+ * fotos sobre el gris claro y el resumen al lado desde 900 px (abajo en el celular). Al quitar una línea, el foco pasa
+ * al título «Carrito» para no caerse al <body>.
  */
 export default function CartClient() {
   const { items, removeItem, updateQuantity } = useCart()
@@ -59,26 +65,22 @@ export default function CartClient() {
   const orphanLines = productsLoaded && items.length > 0 && rows.length === 0
 
   return (
-    <section className="border-t border-dark-300 bg-dark pb-16 pt-6 md:pb-24 md:pt-10">
-      <div className="container mx-auto max-w-6xl px-4">
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <Link
-              href="/"
-              className="mb-3 inline-flex items-center gap-2 text-sm font-medium text-neutral-light transition hover:text-accent"
-            >
-              <ArrowLeft className="h-4 w-4" aria-hidden />
-              Seguir comprando
-            </Link>
-            <h1 ref={titulo} tabIndex={-1} className="page-title outline-none">
-              Carrito
-            </h1>
-            {!trulyEmpty && !waitingForCatalog && !orphanLines && (
-              <p className="mt-1 text-sm text-neutral-light">
-                {itemCount === 1 ? '1 producto' : `${itemCount} productos`}
-              </p>
-            )}
-          </div>
+    <section className="bg-dark pb-16 pt-2 min-[900px]:pb-20">
+      <div className="wrap">
+        <div className="mb-7 min-[900px]:mb-9">
+          <Link
+            href="/"
+            className="inline-flex min-h-[44px] items-center gap-2 text-sm text-neutral-light transition-colors hover:text-white motion-reduce:transition-none"
+          >
+            <ArrowLeft className="h-4 w-4" strokeWidth={1.6} aria-hidden />
+            Seguir comprando
+          </Link>
+          <h1 ref={titulo} tabIndex={-1} className="page-title mt-1 outline-none">
+            Carrito
+          </h1>
+          {!trulyEmpty && !waitingForCatalog && !orphanLines && (
+            <p className="mt-2 text-neutral-light">{itemCount === 1 ? '1 producto' : `${itemCount} productos`}</p>
+          )}
         </div>
 
         {waitingForCatalog ? (
@@ -87,18 +89,16 @@ export default function CartClient() {
             <CartLineSkeleton />
           </div>
         ) : trulyEmpty ? (
-          <div className="max-w-lg rounded-2xl border border-dark-300 bg-dark-100 p-5">
-            <h2 className="text-lg font-semibold text-white">Tu carrito está vacío</h2>
-            <p className="mt-2 text-base leading-relaxed text-neutral-light">
-              Agrega productos desde la tienda y aquí armas tu pedido.
-            </p>
+          <div className={`max-w-lg p-6 ${caja}`}>
+            <h2 className="card-title">Tu carrito está vacío</h2>
+            <p className="mt-3 text-neutral-light">Agrega productos desde la tienda y aquí armas tu pedido.</p>
             <Link href="/" className="btn-primary mt-5">
               Ir a la tienda
             </Link>
           </div>
         ) : orphanLines ? (
-          <div className="max-w-lg rounded-2xl border border-dark-300 bg-dark-100 p-5">
-            <p className="text-base leading-relaxed text-neutral-light">
+          <div className={`max-w-lg p-6 ${caja}`}>
+            <p className="text-neutral-light">
               Hay productos en tu carrito que ya no están disponibles. Vuelve a la tienda y agrégalos de nuevo.
             </p>
             <Link href="/" className="btn-secondary mt-5">
@@ -106,8 +106,8 @@ export default function CartClient() {
             </Link>
           </div>
         ) : (
-          <div className="grid gap-8 lg:grid-cols-[1fr_minmax(280px,340px)] lg:items-start lg:gap-10">
-            <ul className="rounded-2xl border border-dark-300 bg-dark-100">
+          <div className="grid gap-8 min-[900px]:grid-cols-[minmax(0,1fr)_360px] min-[900px]:items-start min-[900px]:gap-10">
+            <ul className={caja}>
               {rows.map((row) => {
                 const stock = getStockStatus(row.product.stock)
                 const agotado = stock.kind === 'agotado'
@@ -121,7 +121,7 @@ export default function CartClient() {
                           href={`/product/${row.product.slug}`}
                           tabIndex={-1}
                           aria-hidden="true"
-                          className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg border border-dark-300 bg-white md:h-24 md:w-24"
+                          className="tile relative h-20 w-20 shrink-0 rounded-xl md:h-24 md:w-24"
                         >
                           {row.product.imageUrls[0] ? (
                             <Image
@@ -129,7 +129,7 @@ export default function CartClient() {
                               alt=""
                               fill
                               sizes="(max-width: 768px) 80px, 96px"
-                              className="object-contain"
+                              className="object-contain p-2"
                             />
                           ) : null}
                         </Link>
@@ -137,8 +137,8 @@ export default function CartClient() {
                         <div className="min-w-0 flex-1">
                           <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0">
-                              <h2 className="text-base font-medium leading-snug text-white">
-                                <Link href={`/product/${row.product.slug}`} className="hover:text-accent">
+                              <h2 className="text-[16.5px] font-semibold leading-snug text-white">
+                                <Link href={`/product/${row.product.slug}`} className="hover:underline hover:decoration-1 hover:underline-offset-4">
                                   {row.product.name}
                                 </Link>
                               </h2>
@@ -153,10 +153,10 @@ export default function CartClient() {
                                 // El botón desaparece con la línea: el foco pasa al título para no caerse al <body>
                                 requestAnimationFrame(() => titulo.current?.focus())
                               }}
-                              className="-mr-3 -mt-2 flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-neutral transition hover:bg-dark-200 hover:text-white"
+                              className="-mb-3 -mr-3 -mt-2 flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-neutral transition-colors hover:bg-dark-200 hover:text-white motion-reduce:transition-none"
                               aria-label={`Quitar ${row.product.name.trim()}${row.variante?.color ? ` (${row.variante.color})` : ''} del carrito`}
                             >
-                              <Trash2 className="h-4 w-4" aria-hidden />
+                              <Trash2 className="h-4 w-4" strokeWidth={1.6} aria-hidden />
                             </button>
                           </div>
 
@@ -173,7 +173,7 @@ export default function CartClient() {
                                   href={enlaceConsultaAgotado(row.product)}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="text-accent underline underline-offset-2 hover:text-white"
+                                  className={enlace}
                                 >
                                   Preguntar cuándo vuelve
                                 </a>
@@ -188,13 +188,13 @@ export default function CartClient() {
                                 etiqueta={`Cantidad de ${nombreConVariante(row.product.name, row.variante)}`}
                                 onCambiar={(q) => updateQuantity(row.productId, q, row.variante)}
                               />
-                              <p className="font-semibold tabular-nums text-white">
+                              <p className="font-bold tabular-nums text-white">
                                 {formatCurrency(row.lineTotal, row.price.currency, config.locale)}
                               </p>
                             </div>
                           )}
 
-                          {stock.kind === 'pocas' && <p className="mt-2 text-xs text-neutral">{stock.label}</p>}
+                          {stock.kind === 'pocas' && <p className="mt-2 text-[13px] text-neutral">{stock.label}</p>}
                         </div>
                       </div>
                     </article>
@@ -204,30 +204,30 @@ export default function CartClient() {
             </ul>
 
             {/* Una sección dentro de <main> (no un <aside>): el resumen es parte del contenido principal */}
-            <section aria-labelledby="resumen-carrito" className="lg:sticky lg:top-24">
-              <div className="rounded-2xl border border-dark-300 bg-dark-100 p-6">
-                <h2 id="resumen-carrito" className="text-lg font-semibold text-white">
+            <section aria-labelledby="resumen-carrito" className="min-[900px]:sticky min-[900px]:top-[88px]">
+              <div className={`p-5 sm:p-6 ${caja}`}>
+                <h2 id="resumen-carrito" className="card-title">
                   Resumen
                 </h2>
-                <dl className="mt-4 space-y-3 text-sm">
-                  <div className="flex justify-between gap-4 text-neutral-light">
+                <dl className="mt-5 grid gap-1.5 text-[15px] text-neutral-light">
+                  <div className="flex justify-between gap-4">
                     <dt>Subtotal</dt>
-                    <dd className="font-semibold tabular-nums text-white">{dinero(subtotal)}</dd>
+                    <dd className="tabular-nums text-white">{dinero(subtotal)}</dd>
                   </div>
                   {comboDiscount > 0 ? (
                     <div className="flex justify-between gap-4 text-accent">
-                      <dt className="font-semibold">Combo 10%</dt>
-                      <dd className="font-bold tabular-nums">−{dinero(comboDiscount)}</dd>
+                      <dt>Combo 10%</dt>
+                      <dd className="tabular-nums">−{dinero(comboDiscount)}</dd>
                     </div>
                   ) : hayProductosDelCombo ? (
-                    <p className="text-xs text-neutral">
+                    <p className="text-[13.5px] text-neutral">
                       Con {COMBO_MIN_UNITS} o más productos del combo tienes 10% menos.
                     </p>
                   ) : null}
                 </dl>
-                <div className="mt-4 flex items-baseline justify-between gap-4 border-t border-dark-300 pt-4">
-                  <span className="text-base text-white">Total de productos</span>
-                  <span className="text-xl font-bold tabular-nums text-accent">{dinero(subtotalConCombo)}</span>
+                <div className="mt-3.5 flex items-baseline justify-between gap-4 border-t border-dark-300 pt-3.5 text-lg font-bold text-white">
+                  <span>Total de productos</span>
+                  <span className="tabular-nums">{dinero(subtotalConCombo)}</span>
                 </div>
                 {todoAgotado ? (
                   <>
@@ -241,21 +241,22 @@ export default function CartClient() {
                   </>
                 ) : (
                   <>
-                    <p className="mt-2 text-xs text-neutral">No incluye el envío.</p>
+                    <p className="mt-1.5 text-[13.5px] text-neutral">No incluye el envío.</p>
                     <Link href="/checkout" className="btn-primary mt-5">
                       Continuar con mi pedido
                     </Link>
-                    <a href={enlacePedido} target="_blank" rel="noopener noreferrer" className="btn-secondary mt-3">
+                    <a href={enlacePedido} target="_blank" rel="noopener noreferrer" className="btn-secondary mt-2.5">
+                      <IconoWhatsapp />
                       Pedir directo por WhatsApp
                     </a>
-                    <p className="mt-3 text-center text-sm leading-relaxed text-neutral-light">
+                    <p className="mt-3 text-center text-[13.5px] text-neutral">
                       Por WhatsApp, el mensaje sale con tu pedido ya escrito.
                     </p>
                   </>
                 )}
                 <Link
                   href="/"
-                  className="mt-3 flex min-h-[44px] items-center justify-center text-sm text-neutral-light underline underline-offset-2 hover:text-accent"
+                  className="mt-2 flex min-h-[44px] items-center justify-center text-sm font-medium text-neutral-light underline decoration-1 underline-offset-4 hover:text-white"
                 >
                   Agregar más productos
                 </Link>

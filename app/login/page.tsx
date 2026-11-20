@@ -9,12 +9,14 @@ export const metadata: Metadata = {
 
 export default function LoginPage() {
   return (
-    <main className="min-h-screen bg-dark">
+    <main className="min-h-screen bg-dark text-white">
       <MainNav />
-      <section className="container mx-auto max-w-md px-4 py-12">
-        <h1 className="mb-2 text-3xl font-bold">Acceso administrador</h1>
-        <p className="mb-6 text-sm text-neutral-light">Solo personal autorizado de RR Boxing.</p>
-        <LoginForm />
+      <section className="wrap pb-16 pt-10 md:pb-24 md:pt-16">
+        <div className="max-w-md">
+          <h1 className="page-title">Acceso administrador</h1>
+          <p className="mb-7 mt-4 text-base text-neutral-light">Solo personal autorizado de RR Boxing.</p>
+          <LoginForm />
+        </div>
       </section>
     </main>
   )
