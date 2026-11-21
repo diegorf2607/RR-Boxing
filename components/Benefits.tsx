@@ -25,21 +25,24 @@ const benefits = [
   },
 ]
 
-/** Qué ganas con las clases 1 a 1 (/consulta): filas con líneas finas, como las de arriba en la misma página. */
+/**
+ * Qué ganas con las clases 1 a 1 (/consulta), en una banda gris: seis puntos con una línea fina arriba, en tres
+ * columnas en escritorio, dos en la tableta y uno en el celular.
+ */
 export default function Benefits() {
   return (
-    <section id="beneficios" className="border-t border-dark-300 bg-dark py-12 md:py-16">
-      <div className="container mx-auto max-w-6xl px-4">
-        <h2 className="section-title">Qué ganas entrenando con RR Boxing</h2>
+    <section id="beneficios" className="bg-gris py-12 md:py-[72px]">
+      <div className="contenedor">
+        <h2 className="section-title max-w-4xl">Qué ganas entrenando con RR Boxing</h2>
         <p className="section-subtitle">
           Clases personalizadas con Richard para cuando quieres ir más allá de los videos gratis de las redes.
         </p>
 
-        <dl className="mt-8 max-w-3xl rounded-2xl border border-dark-300 bg-dark-100">
+        <dl className="mt-8 grid gap-x-8 sm:grid-cols-2 md:mt-10 lg:grid-cols-3">
           {benefits.map((benefit) => (
-            <div key={benefit.title} className="border-t border-dark-300 px-5 py-4 first:border-t-0">
-              <dt className="text-base font-medium text-white">{benefit.title}</dt>
-              <dd className="mt-1 text-sm leading-relaxed text-neutral-light">{benefit.description}</dd>
+            <div key={benefit.title} className="border-t border-linea-fuerte py-5">
+              <dt className="text-lg font-bold">{benefit.title}</dt>
+              <dd className="mt-1.5 leading-relaxed text-tinta-2">{benefit.description}</dd>
             </div>
           ))}
         </dl>

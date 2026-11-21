@@ -2,12 +2,29 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Las fuentes (Inter y Bebas Neue) las carga next/font en app/layout.tsx: se sirven desde el propio sitio y
-   dejan las variables --font-inter y --font-bebas-neue en <html>. Tailwind las usa en font-sans y font-heading. */
+/* Línea «Tienda deportiva»: página blanca, texto negro, menú y pie negros, acento amarillo.
+   Las fuentes las carga next/font en app/layout.tsx (se sirven desde el propio sitio):
+   --font-barlow (texto), --font-titulo (Barlow Condensed 800 itálica) y --font-cifra (Barlow Condensed 700).
+   El panel /admin conserva su tema oscuro con Inter y Bebas Neue: ver .tema-oscuro más abajo. */
 
-:root {
-  --accent-color: #FFD700;
-  --dark-bg: #0a0a0a;
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-white font-sans text-tinta;
+  }
+
+  /* Foco visible en todo el sitio: negro sobre fondo claro y amarillo sobre fondo negro. */
+  :focus-visible {
+    outline: 3px solid #0a0a0a;
+    outline-offset: 2px;
+  }
+
+  :where(.bg-tinta, .bg-dark, .bg-dark-100, .tema-oscuro) :focus-visible {
+    outline-color: #fcdd03;
+  }
 }
 
 * {
@@ -29,76 +46,197 @@ body {
   }
 }
 
-body {
-  background: var(--dark-bg);
-  color: #ffffff;
-  font-family: var(--font-inter), system-ui, sans-serif;
-}
-
-/* Bebas Neue tiene un solo peso: sin esto, font-bold la engorda con una negrita falsa. */
-.font-heading {
-  font-synthesis: none;
+/* Red de seguridad mientras quede alguna página con el fondo oscuro de antes: sobre bg-dark el texto que no tiene
+   color propio sigue siendo blanco (especificidad cero: cualquier text-* lo cambia). */
+:where(.bg-dark, .bg-dark-100) {
+  color: #fff;
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
-  
-  .text-gradient {
-    background: linear-gradient(135deg, #FFD700 0%, #FFE44D 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+
+  /* Titulares: Barlow Condensed 800 en itálica y mayúsculas. La familia solo trae esa cara, así que el navegador
+     no inventa negritas ni cursivas falsas. El interlineado lo pone cada título (.page-title, .section-title…). */
+  .font-heading {
+    font-style: italic;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: -0.005em;
+    font-synthesis: none;
+  }
+
+  .font-cond {
+    font-synthesis: none;
   }
 }
 
 @layer components {
-  /* Los dos botones de toda la tienda, en un solo lugar: el principal (amarillo) y el secundario (borde amarillo).
-     Miden lo mismo (54 px) y van a todo el ancho; donde van en línea se les suma «inline-flex w-auto». */
+  /* Contenedor de la tienda: 1320 px como máximo, 16 px de margen en el celular y 24 px desde 768 px. */
+  .contenedor {
+    @apply mx-auto w-full max-w-tienda px-4 md:px-6;
+  }
+
+  /* Botones. Van a todo el ancho; donde van en línea se les suma «inline-flex w-auto». Miden 52 px de alto, esquinas
+     rectas y sin sombra. El principal es amarillo; el secundario es solo borde y toma el color del texto que lo rodea
+     (negro sobre blanco, blanco sobre negro); el negro es para acciones de apoyo sobre blanco. */
   .btn-primary {
-    @apply block w-full rounded-lg border border-accent bg-accent px-6 py-3.5 text-center text-base font-bold text-dark transition-colors hover:border-accent-dark hover:bg-accent-dark disabled:cursor-not-allowed disabled:opacity-40;
+    @apply flex min-h-[52px] w-full items-center justify-center gap-2.5 border-2 border-transparent bg-accent px-6 py-3 text-center text-base font-bold leading-tight text-tinta transition-colors hover:bg-accent-dark disabled:cursor-not-allowed disabled:opacity-40;
   }
 
   .btn-secondary {
-    @apply block w-full rounded-lg border border-accent px-6 py-3.5 text-center text-base font-bold text-accent transition-colors hover:bg-accent/10;
+    @apply flex min-h-[52px] w-full items-center justify-center gap-2.5 border-2 border-current bg-transparent px-6 py-3 text-center text-base font-bold leading-tight transition-colors hover:bg-[color-mix(in_srgb,currentColor_8%,transparent)] disabled:cursor-not-allowed disabled:opacity-40;
   }
 
+  .btn-negro {
+    @apply flex min-h-[52px] w-full items-center justify-center gap-2.5 border-2 border-tinta bg-tinta px-6 py-3 text-center text-base font-bold leading-tight text-white transition-colors hover:border-tinta-2 hover:bg-tinta-2 disabled:cursor-not-allowed disabled:opacity-40;
+  }
+
+  /* Tarjeta oscura del panel /admin (y de secciones viejas). La tienda nueva usa .caja. */
   .card {
     @apply bg-dark-100 border border-dark-300 rounded-2xl p-6 transition-colors hover:border-accent/50;
   }
-  
-  /* Tres niveles de título en toda la tienda: página (h1, font-heading text-5xl sm:text-6xl, como /clase), sección
-     (.section-title, a la izquierda) y bloque (text-lg font-semibold). */
+
+  /* Cajas de la tienda: blanca con línea fina, o gris sin borde. Esquinas rectas, sin sombra. */
+  .caja {
+    @apply border border-linea bg-white p-5 md:p-6;
+  }
+
+  .caja-gris {
+    @apply bg-gris p-5 md:p-6;
+  }
+
+  /* Títulos (Barlow Condensed 800 itálica, en mayúsculas, interlineado 0,9). Toman el color del texto que los rodea.
+     .titulo-portada: el grande de la portada (66 → 76 → 120 → 156 px).
+     .page-title: el h1 de cada página y de la ficha (54 → 68 px).
+     .section-title: el h2 de cada sección (54 → 72 px).
+     .titulo-bloque: títulos dentro de una sección, como «Cómo son» en la ficha (44 → 52 px). */
+  .titulo-portada {
+    @apply font-heading text-[66px] leading-[0.9] min-[381px]:text-[76px] md:text-[120px] xl:text-[156px];
+  }
+
   .page-title {
-    @apply font-heading text-5xl leading-none text-white sm:text-6xl;
+    @apply font-heading text-[54px] leading-[0.9] md:text-[68px];
   }
 
   .section-title {
-    @apply font-heading text-4xl leading-none text-white md:text-5xl;
+    @apply font-heading text-[54px] leading-[0.9] md:text-[72px];
   }
 
+  .titulo-bloque {
+    @apply font-heading text-[44px] leading-[0.9] md:text-[52px];
+  }
+
+  /* Texto de apoyo bajo un título: gris oscuro sobre blanco, gris claro sobre negro. */
   .section-subtitle {
-    @apply mt-3 max-w-2xl text-base leading-relaxed text-neutral-light;
+    @apply mt-3 max-w-2xl text-base leading-relaxed text-suave;
+  }
+
+  :where(.bg-tinta, .bg-dark, .bg-dark-100, .tema-oscuro) .section-subtitle {
+    @apply text-claro;
+  }
+
+  /* Precios y cifras: Barlow Condensed 700 recta, números del mismo ancho. */
+  .num {
+    @apply font-cond tabular-nums tracking-[0.01em];
+  }
+
+  /* Etiqueta amarilla rectangular («Combo −10%»), arriba a la izquierda de una foto. */
+  .etiqueta {
+    @apply inline-block bg-accent px-2 py-1 text-xs font-bold leading-tight text-tinta md:px-2.5 md:py-1.5 md:text-sm;
+  }
+
+  /* Enlace dentro de un texto: subrayado separado de la letra. */
+  .enlace {
+    @apply font-semibold underline decoration-1 underline-offset-[3px] hover:decoration-2;
+  }
+
+  /* Filas con líneas finas (<dl class="filas"><div><dt/><dd/></div>…</dl>), como en /clase y la ficha. */
+  .filas {
+    @apply border-t border-linea;
+  }
+
+  .filas > div {
+    @apply flex justify-between gap-6 border-b border-linea py-4;
+  }
+
+  .filas dt {
+    @apply text-suave;
+  }
+
+  .filas dd {
+    @apply text-right font-semibold;
+  }
+
+  :where(.bg-tinta, .bg-dark, .bg-dark-100, .tema-oscuro) .filas,
+  :where(.bg-tinta, .bg-dark, .bg-dark-100, .tema-oscuro) .filas > div {
+    border-color: #333333;
+  }
+
+  :where(.bg-tinta, .bg-dark, .bg-dark-100, .tema-oscuro) .filas dt {
+    color: #a3a3a3;
+  }
+
+  /* Lista con un cuadrito amarillo en vez de viñeta. */
+  .lista-amarilla {
+    @apply grid list-none gap-2.5;
+  }
+
+  .lista-amarilla > li {
+    @apply relative pl-[22px];
+  }
+
+  .lista-amarilla > li::before {
+    @apply absolute left-0 top-[0.5em] h-2.5 w-2.5 bg-accent content-[''];
+  }
+
+  /* Tema oscuro del panel /admin (app/admin/layout.tsx): conserva el estilo de antes de la línea nueva, con Inter
+     y Bebas Neue (se descargan solo ahí). */
+  .tema-oscuro {
+    background-color: #0a0a0a;
+    color: #fff;
+    color-scheme: dark;
+    font-family: var(--font-inter), system-ui, sans-serif;
+  }
+
+  .tema-oscuro .font-heading {
+    font-family: var(--font-bebas-neue), Impact, sans-serif;
+    font-style: normal;
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: normal;
   }
 }
 
-/* Custom scrollbar */
+/* Barra de desplazamiento clara; en el panel, oscura como antes. */
 ::-webkit-scrollbar {
   width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #1a1a1a;
+  background: #f2f2f2;
 }
 
 ::-webkit-scrollbar-thumb {
+  background: #c9c9c9;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #8a8a8a;
+}
+
+:root:has(.tema-oscuro) ::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+:root:has(.tema-oscuro) ::-webkit-scrollbar-thumb {
   background: #3a3a3a;
   border-radius: 4px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #FFD700;
+:root:has(.tema-oscuro) ::-webkit-scrollbar-thumb:hover {
+  background: #fcdd03;
 }
 
 /* Hide scrollbar for horizontal carousels */
@@ -142,3 +280,33 @@ body {
 .animate-delay-300 { animation-delay: 300ms; }
 .animate-delay-400 { animation-delay: 400ms; }
 .animate-delay-500 { animation-delay: 500ms; }
+
+/* Portada (components/PortadaVideo.tsx), «al lado»: desde 1024 px, o desde 768 px si la pantalla está acostada
+   (tableta en horizontal, ventana partida), el texto pasa a la derecha sobre la pared oscura y Richard queda a la
+   izquierda sin velo. Va fuera de las capas de Tailwind para ganarle a las clases del celular. El titular se achica
+   con la altura de la pantalla (15vh) para que en laptops bajas (1366×768, 1280×720) quepa entero bajo «Pausar». */
+@media (min-width: 1024px), (min-width: 768px) and (orientation: landscape) {
+  .portada-velo {
+    background-image: linear-gradient(to left, rgb(0 0 0 / 0.8), rgb(0 0 0 / 0.45) 50%, transparent);
+  }
+  .portada-texto {
+    display: flex;
+    justify-content: flex-end;
+  }
+  .portada-columna {
+    width: 46%;
+  }
+  .portada-fondo {
+    object-position: 0% 0%;
+  }
+  .portada-titulo {
+    font-size: clamp(64px, 15vh, 156px);
+  }
+}
+
+/* Safari en modo de bajo consumo no deja arrancar el video solo y pinta su botón de play encima de la portada: se
+   esconde, porque la portada ya tiene su propio «Reproducir». */
+video::-webkit-media-controls-start-playback-button {
+  display: none !important;
+  -webkit-appearance: none;
+}

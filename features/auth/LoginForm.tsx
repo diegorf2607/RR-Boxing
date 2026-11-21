@@ -1,6 +1,11 @@
 'use client'
 
 import { useState } from 'react'
+import { AlertCircle } from 'lucide-react'
+
+// Campos rectos de 52 px con línea gris, como en /checkout; el foco es el contorno negro del sitio (globals.css)
+const campo =
+  'mt-2 block min-h-[52px] w-full border border-linea-fuerte bg-white px-4 py-3 text-base font-normal text-tinta hover:border-tinta focus:border-tinta'
 
 export default function LoginForm() {
   const [email, setEmail] = useState('')
@@ -24,25 +29,36 @@ export default function LoginForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="card space-y-4">
-      <input
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        type="email"
-        required
-        placeholder="Correo"
-        className="w-full rounded-lg border border-dark-300 bg-dark px-3 py-2"
-      />
-      <input
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        type="password"
-        required
-        placeholder="Contraseña"
-        className="w-full rounded-lg border border-dark-300 bg-dark px-3 py-2"
-      />
-      {error && <p className="text-sm text-red-400">{error}</p>}
-      <button className="w-full rounded-lg bg-accent px-4 py-2 font-bold text-dark">Entrar</button>
+    <form onSubmit={onSubmit} className="space-y-5">
+      <label className="block text-[15px] font-semibold">
+        Correo
+        <input
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          type="email"
+          required
+          autoComplete="username"
+          className={campo}
+        />
+      </label>
+      <label className="block text-[15px] font-semibold">
+        Contraseña
+        <input
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          type="password"
+          required
+          autoComplete="current-password"
+          className={campo}
+        />
+      </label>
+      {error && (
+        <p role="alert" className="flex items-start gap-1.5 text-sm font-semibold">
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+          {error}
+        </p>
+      )}
+      <button className="btn-primary">Entrar</button>
     </form>
   )
 }

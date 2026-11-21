@@ -3,8 +3,10 @@
 import { Minus, Plus } from 'lucide-react'
 
 /**
- * − 2 + : la cantidad con dos botones, como en el carrito. En el tope, el botón queda con aria-disabled y no con
- * disabled: un botón deshabilitado suelta el foco (cae al <body>) y quien usa teclado se queda fuera del carrito.
+ * − 2 + : la cantidad con dos botones dentro de un cuadro con línea gris, como en la ficha y el carrito. En el tope,
+ * el botón queda con aria-disabled y no con disabled: un botón deshabilitado suelta el foco (cae al <body>) y quien usa
+ * teclado se queda fuera del carrito.
+ * - `md` (ficha): 52 px de alto. `sm` (carrito): 46 px. Los dos dejan botones de 44 px o más para el dedo.
  */
 export default function SelectorCantidad({
   valor,
@@ -22,16 +24,18 @@ export default function SelectorCantidad({
   etiqueta?: string
   tamano?: 'sm' | 'md'
 }) {
-  // Los dos tamaños miden 44 px para el dedo; el sm solo tiene el número más chico
-  const boton =
-    tamano === 'sm'
-      ? 'flex h-11 w-11 items-center justify-center rounded-md'
-      : 'flex h-11 w-11 items-center justify-center rounded-lg'
+  const chico = tamano === 'sm'
   const enMin = valor <= min
   const enMax = valor >= max
-  const estilo = `${boton} text-neutral-light transition hover:bg-dark-200 hover:text-white aria-disabled:cursor-not-allowed aria-disabled:opacity-40 aria-disabled:hover:bg-transparent aria-disabled:hover:text-neutral-light`
+  const estilo = `flex shrink-0 items-center justify-center text-tinta transition-colors hover:bg-gris aria-disabled:cursor-not-allowed aria-disabled:text-[#9A9A9A] aria-disabled:hover:bg-transparent ${
+    chico ? 'h-11 w-11' : 'h-[50px] w-[52px]'
+  }`
   return (
-    <div role="group" aria-label={etiqueta} className="inline-flex items-center rounded-xl border border-dark-300 bg-dark p-1">
+    <div
+      role="group"
+      aria-label={etiqueta}
+      className={`inline-flex items-center border border-linea-fuerte bg-white ${chico ? 'h-[46px]' : 'h-[52px]'}`}
+    >
       <button
         type="button"
         aria-disabled={enMin || undefined}
@@ -41,10 +45,10 @@ export default function SelectorCantidad({
         className={estilo}
         aria-label="Una unidad menos"
       >
-        <Minus className="h-4 w-4" aria-hidden />
+        <Minus className={chico ? 'h-4 w-4' : 'h-5 w-5'} strokeWidth={2} aria-hidden />
       </button>
       <span
-        className={`${tamano === 'sm' ? 'min-w-[2rem] text-sm' : 'min-w-[2.75rem] text-base'} text-center font-bold tabular-nums text-white`}
+        className={`${chico ? 'min-w-[2rem] text-[15px]' : 'min-w-[2.5rem] text-base'} text-center font-bold tabular-nums`}
         aria-live="polite"
       >
         {valor}
@@ -58,7 +62,7 @@ export default function SelectorCantidad({
         className={estilo}
         aria-label="Una unidad más"
       >
-        <Plus className="h-4 w-4" aria-hidden />
+        <Plus className={chico ? 'h-4 w-4' : 'h-5 w-5'} strokeWidth={2} aria-hidden />
       </button>
     </div>
   )

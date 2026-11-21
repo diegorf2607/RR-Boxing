@@ -1,20 +1,25 @@
 'use client'
 
 import { useRef, useState } from 'react'
+import { AlertCircle } from 'lucide-react'
 import Link from 'next/link'
 import { CLASE } from '@/shared/lib/clase-virtual'
 import { RUTAS } from '@/shared/legal/politicas'
 import AvisoDatos from '@/components/AvisoDatos'
 import { leerOrigen } from '@/shared/lib/origen'
 import { enlaceWhatsapp, WHATSAPP_LEGIBLE } from '@/shared/lib/whatsapp'
+import IconoWhatsapp from '@/features/cart/IconoWhatsapp'
 
 type Estado = 'listo' | 'enviando' | 'error' | 'inscrito'
 type Campo = 'nombre' | 'correo' | 'whatsapp'
 const CAMPOS: readonly string[] = ['nombre', 'correo', 'whatsapp']
 
-// El texto de ejemplo va en neutral (7,8:1 sobre el fondo) y empieza con «Ej.:» para que no parezca ya escrito
+// Sobre el negro de /clase: campos blancos y rectos de 52 px. Con error, borde amarillo de 3 px y el mensaje al lado
+// (sin rojo). El foco es el contorno amarillo del sitio sobre negro (globals.css). El texto de ejemplo va en gris
+// oscuro (6,9:1) y empieza con «Ej.:» para que no parezca ya escrito.
 const campo =
-  'mt-2 block w-full rounded-lg border border-dark-300 bg-dark px-4 py-3 text-base text-white placeholder:text-neutral focus:border-accent focus:outline-none aria-[invalid=true]:border-red-500'
+  'mt-2 block min-h-[52px] w-full border-0 bg-white px-4 py-3 text-base font-normal text-tinta placeholder:text-suave aria-[invalid=true]:shadow-[inset_0_0_0_3px_#FCDD03]'
+const etiqueta = 'block text-[15px] font-semibold text-white'
 
 const conPunto = (texto: string) => (texto.endsWith('.') ? texto : `${texto}.`)
 
@@ -68,14 +73,15 @@ export default function FormularioClase() {
       `Hola, RR Boxing. Me inscribí a la clase virtual gratis del ${CLASE.dia.toLowerCase()}.`
     )
     return (
-      <div className="mt-8 rounded-2xl border border-dark-300 bg-dark-100 p-5" role="status">
-        <p className="text-lg font-semibold text-white">{nombre ? `Listo, ${nombre}: ya estás inscrito.` : 'Listo: ya estás inscrito.'}</p>
-        <p className="mt-2 text-base leading-relaxed text-neutral-light">
+      <div className="mt-8" role="status">
+        <p className="text-xl font-bold">{nombre ? `Listo, ${nombre}: ya estás inscrito.` : 'Listo: ya estás inscrito.'}</p>
+        <p className="mt-2 text-[17px] leading-relaxed text-claro">
           La clase es gratis. Antes del sábado te mandamos el link para entrar por WhatsApp. Escríbenos un hola al{' '}
           <span className="whitespace-nowrap text-white">{WHATSAPP_LEGIBLE}</span> para que te llegue sin
           problemas.
         </p>
         <a href={saludar} target="_blank" rel="noopener noreferrer" className="btn-primary mt-5">
+          <IconoWhatsapp />
           Escribir a RR Boxing
         </a>
       </div>
@@ -87,8 +93,9 @@ export default function FormularioClase() {
   /** Junto al campo: el mensaje del error, enlazado con aria-describedby */
   const errorDe = (n: Campo) =>
     campoError === n && mensaje ? (
-      <span id={`clase-error-${n}`} className="mt-1.5 block text-sm text-red-400">
-        {conPunto(mensaje)}
+      <span id={`clase-error-${n}`} className="mt-2 flex items-start gap-1.5 text-sm font-semibold text-white">
+        <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-accent" aria-hidden />
+        <span>{conPunto(mensaje)}</span>
       </span>
     ) : null
   /** Al corregir el campo con error, el mensaje ya no aplica */
@@ -102,11 +109,11 @@ export default function FormularioClase() {
 
   return (
     <form ref={formulario} onSubmit={enviar} onInput={alEscribir} className="mt-8">
-      <p className="text-base leading-relaxed">
+      <p className="text-[17px] leading-relaxed">
         Déjanos tu nombre, tu correo y tu WhatsApp para mandarte el link de la clase.
       </p>
 
-      <label className="mt-5 block text-sm text-neutral-light">
+      <label className={`${etiqueta} mt-6`}>
         Nombre y apellido
         <input
           name="nombre"
@@ -121,7 +128,7 @@ export default function FormularioClase() {
       </label>
       {errorDe('nombre')}
 
-      <label className="mt-4 block text-sm text-neutral-light">
+      <label className={`${etiqueta} mt-5`}>
         Correo
         <input
           name="correo"
@@ -138,7 +145,7 @@ export default function FormularioClase() {
       </label>
       {errorDe('correo')}
 
-      <label className="mt-4 block text-sm text-neutral-light">
+      <label className={`${etiqueta} mt-5`}>
         WhatsApp
         <input
           name="whatsapp"
@@ -153,7 +160,7 @@ export default function FormularioClase() {
           aria-describedby={describe('whatsapp')}
           className={campo}
         />
-        <span className="mt-1.5 block text-xs text-neutral">Si no eres de Perú, ponlo con el código de tu país.</span>
+        <span className="mt-1.5 block text-sm font-normal text-claro">Si no eres de Perú, ponlo con el código de tu país.</span>
       </label>
       {errorDe('whatsapp')}
 
@@ -161,7 +168,8 @@ export default function FormularioClase() {
 
       {/* Los errores sin campo van aquí, a la vista del botón; los de un campo, junto a él */}
       {mensaje && !campoError && (
-        <p role="alert" className="mt-6 text-sm text-red-400">
+        <p role="alert" className="mt-6 text-[15px] font-semibold">
+          <AlertCircle className="mr-1.5 inline h-[18px] w-[18px] align-[-3px] text-accent" aria-hidden />
           {conPunto(mensaje)}
           {estado === 'error' && (
             <>
@@ -175,20 +183,20 @@ export default function FormularioClase() {
       <button
         type="submit"
         disabled={estado === 'enviando'}
-        className={`btn-primary ${mensaje && !campoError ? 'mt-3' : 'mt-6'}`}
+        className={`btn-primary min-h-[58px] text-[17px] ${mensaje && !campoError ? 'mt-3' : 'mt-7'}`}
       >
         {estado === 'enviando' ? 'Un momento…' : 'Inscribirme gratis'}
       </button>
 
-      <p className="mt-3 text-sm leading-relaxed text-neutral">
+      <p className="mt-3 text-sm leading-relaxed text-claro">
         La clase es gratis. Puedes entrar desde cualquier país.
       </p>
 
       <AvisoDatos para="mandarte el link de la clase y avisarte si algo cambia" className="mt-3" />
-      <p className="mt-2 text-xs leading-relaxed text-neutral">
+      <p className="mt-1 text-sm">
         <Link
           href={`${RUTAS.terminos}#clases`}
-          className="text-neutral-light underline underline-offset-2 hover:text-accent"
+          className="inline-flex min-h-[44px] items-center text-white underline underline-offset-[3px] hover:decoration-2"
         >
           Condiciones de la clase
         </Link>

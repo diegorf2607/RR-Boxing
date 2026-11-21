@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Bebas_Neue, Inter } from 'next/font/google'
+import { Barlow, Barlow_Condensed, Bebas_Neue, Inter } from 'next/font/google'
 import Script from 'next/script'
 import './globals.css'
 import AppProviders from '@/components/AppProviders'
@@ -9,8 +9,33 @@ import { IMAGEN_COMPARTIR } from '@/shared/config/imagen-compartir'
 // Fuentes de la marca. next/font las descarga al compilar y las sirve desde el propio sitio: el navegador no le
 // pide nada a Google y la letra no cambia de golpe (swap con un respaldo de medidas parecidas).
 // globals.css y tailwind.config.ts las usan con estas variables.
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' })
-const bebasNeue = Bebas_Neue({ subsets: ['latin'], weight: '400', variable: '--font-bebas-neue', display: 'swap' })
+// - Barlow: el texto (font-sans).
+// - Barlow Condensed 800 itálica: los titulares (font-heading). Una sola cara, para no bajar archivos de más.
+// - Barlow Condensed 700 recta: precios y cifras (font-cond, .num).
+const barlow = Barlow({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-barlow',
+  display: 'swap',
+})
+const titulo = Barlow_Condensed({
+  subsets: ['latin'],
+  weight: '800',
+  style: 'italic',
+  variable: '--font-titulo',
+  display: 'swap',
+})
+const cifra = Barlow_Condensed({ subsets: ['latin'], weight: '700', variable: '--font-cifra', display: 'swap' })
+// Las del panel /admin, que conserva su estilo (.tema-oscuro en globals.css). Sin precarga: el navegador solo las
+// baja cuando una página las usa, así que la tienda no las descarga.
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap', preload: false })
+const bebasNeue = Bebas_Neue({
+  subsets: ['latin'],
+  weight: '400',
+  variable: '--font-bebas-neue',
+  display: 'swap',
+  preload: false,
+})
 
 // Search Console: el código de la etiqueta «google-site-verification» (solo el valor de content), en Vercel.
 const verificacionGoogle = process.env.GOOGLE_SITE_VERIFICATION?.trim()
@@ -70,7 +95,10 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="es-PE" className={`${inter.variable} ${bebasNeue.variable}`}>
+    <html
+      lang="es-PE"
+      className={`${barlow.variable} ${titulo.variable} ${cifra.variable} ${inter.variable} ${bebasNeue.variable}`}
+    >
       <body className="antialiased">
         <AppProviders>
           {children}

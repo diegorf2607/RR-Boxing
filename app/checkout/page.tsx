@@ -15,9 +15,11 @@ export const metadata: Metadata = {
 /** La pantalla de datos del pedido. Las tarifas de envío y si hay pago en línea vienen del servidor. */
 export default function CheckoutPage() {
   return (
-    <main className="min-h-screen bg-dark">
+    <>
       <MainNav />
-      <CheckoutClient envios={LISTA_ENVIOS} pagoEnLinea={pagoEnLineaActivo()} />
-    </main>
+      <main className="min-h-[70vh]">
+        <CheckoutClient envios={LISTA_ENVIOS} pagoEnLinea={pagoEnLineaActivo()} />
+      </main>
+    </>
   )
 }

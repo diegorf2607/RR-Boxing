@@ -9,6 +9,7 @@ import ClearCartOnSuccess from '@/features/checkout/ClearCartOnSuccess'
 import { getOrderById } from '@/shared/lib/data-store'
 import { mercadoPagoListo } from '@/shared/lib/mercadopago'
 import { enlaceWhatsapp } from '@/shared/lib/whatsapp'
+import IconoWhatsapp from '@/features/cart/IconoWhatsapp'
 import { confirmarPagoMercadoPago } from '@/app/api/mercadopago/confirmar-pago'
 
 export const dynamic = 'force-dynamic'
@@ -56,48 +57,46 @@ export default async function CheckoutSuccessPage({
   )
 
   return (
-    <main className="min-h-screen bg-dark">
+    <>
       <MainNav />
-      <ClearCartOnSuccess pedido={existe && numero ? numero : undefined} />
-      <div className="px-4 py-10 text-white sm:py-14">
-        <div className="mx-auto w-full max-w-lg">
-          <h1 className="font-heading text-5xl leading-none text-white sm:text-6xl">Gracias por tu pedido</h1>
+      <main className="min-h-[70vh]">
+        <ClearCartOnSuccess pedido={existe && numero ? numero : undefined} />
+        <div className="contenedor pb-16 pt-6 md:pb-24 md:pt-10">
+          <div className="max-w-[640px]">
+            <h1 className="page-title">Gracias por tu pedido</h1>
 
-          {existe && numero ? (
-            <dl className="mt-8 rounded-2xl border border-dark-300 bg-dark-100">
-              <div className="flex items-baseline justify-between gap-4 px-5 py-4">
-                <dt className="text-sm text-neutral">Número de pedido</dt>
-                <dd className="text-right font-mono text-lg font-bold tracking-wide text-accent">{numero}</dd>
-              </div>
-              <div className="flex items-baseline justify-between gap-4 border-t border-dark-300 px-5 py-4">
-                <dt className="text-sm text-neutral">Pago</dt>
-                <dd className="text-right text-base font-medium">{pagado ? 'Confirmado' : 'Por confirmar'}</dd>
-              </div>
-            </dl>
-          ) : null}
+            {existe && numero ? (
+              <dl className="mt-8 border-t border-linea">
+                <div className="flex items-baseline justify-between gap-4 border-b border-linea py-4">
+                  <dt className="text-tinta-2">Número de pedido</dt>
+                  <dd className="num bg-accent px-2.5 py-1 text-2xl leading-none tracking-wide">{numero}</dd>
+                </div>
+                <div className="flex items-baseline justify-between gap-4 border-b border-linea py-4">
+                  <dt className="text-tinta-2">Pago</dt>
+                  <dd className="text-right font-semibold">{pagado ? 'Confirmado' : 'Por confirmar'}</dd>
+                </div>
+              </dl>
+            ) : null}
 
-          <p className="mt-8 text-base leading-relaxed text-neutral-light">
-            {pagado
-              ? 'Ya recibimos tu pago. Te escribimos por WhatsApp para coordinar el envío.'
-              : 'Si ya pagaste, Mercado Pago nos avisa en unos minutos. Escríbenos por WhatsApp para coordinar el envío o si tienes alguna duda.'}
-          </p>
+            <p className="mt-8 text-[17px] leading-relaxed text-tinta-2">
+              {pagado
+                ? 'Ya recibimos tu pago. Te escribimos por WhatsApp para coordinar el envío.'
+                : 'Si ya pagaste, Mercado Pago nos avisa en unos minutos. Escríbenos por WhatsApp para coordinar el envío o si tienes alguna duda.'}
+            </p>
 
-          <a
-            href={whatsapp}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-5 block rounded-lg bg-accent px-6 py-4 text-center text-lg font-bold text-dark transition-colors hover:bg-accent-dark"
-          >
-            Escribir por WhatsApp
-          </a>
-          <Link
-            href="/"
-            className="mt-6 block text-center text-sm text-neutral-light underline underline-offset-2 hover:text-accent"
-          >
-            Volver a la tienda
-          </Link>
+            <a href={whatsapp} target="_blank" rel="noopener noreferrer" className="btn-primary mt-6 min-h-[58px] text-[17px]">
+              <IconoWhatsapp />
+              Escribir por WhatsApp
+            </a>
+            <Link
+              href="/"
+              className="mt-6 flex min-h-[44px] items-center justify-center text-[15px] font-semibold underline underline-offset-[3px] hover:decoration-2"
+            >
+              Volver a la tienda
+            </Link>
+          </div>
         </div>
-      </div>
-    </main>
+      </main>
+    </>
   )
 }

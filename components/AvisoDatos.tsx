@@ -1,6 +1,6 @@
 // Una línea corta para debajo de cada formulario que pide datos: para qué se usan, dónde se guardan y el enlace a
 // la política de privacidad (Ley N.º 29733, art. 18). Sirve en componentes del servidor y del navegador: no lee
-// variables del servidor.
+// variables del servidor. Se lee sobre blanco (gris oscuro) y sobre negro, dentro de .bg-tinta (gris claro).
 //   <AvisoDatos para="mandarte el link de la clase y avisarte si algo cambia" />
 import Link from 'next/link'
 import { RUTAS } from '@/shared/legal/politicas'
@@ -18,9 +18,12 @@ export default function AvisoDatos({
   className?: string
 }) {
   return (
-    <p className={`text-xs leading-relaxed text-neutral ${className}`}>
+    <p className={`text-xs leading-relaxed text-suave [.bg-tinta_&]:text-claro ${className}`}>
       Usamos tus datos solo para {para}. Se guardan en {donde}. Más en la{' '}
-      <Link href={RUTAS.privacidad} className="text-neutral-light underline underline-offset-2 hover:text-accent">
+      <Link
+        href={RUTAS.privacidad}
+        className="text-tinta underline underline-offset-2 hover:decoration-2 [.bg-tinta_&]:text-white"
+      >
         Política de privacidad
       </Link>
       .

@@ -1,26 +1,30 @@
 import Link from 'next/link'
 import type { ReactNode } from 'react'
-import { ChevronDown } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { CAMBIOS } from '@/shared/legal/cambios'
 import { RUTAS } from '@/shared/legal/politicas'
 import { COMBO_MIN_UNITS } from '@/shared/lib/combo-promo'
 import { enlaceWhatsapp } from '@/shared/lib/whatsapp'
 
-const enlace = 'text-accent underline underline-offset-2 hover:text-white'
+const enlace = 'enlace text-tinta'
 
 /**
  * Las preguntas frecuentes de la tienda (components/StoreFAQSection.tsx) que sirven en la ficha, con el mismo texto.
- * El envío y el pago ya van en las filas de arriba. Acordeón con <details>: funciona sin JavaScript y con teclado.
+ * El envío y el pago ya van en las filas de la caja de compra. Acordeón con <details>: funciona sin JavaScript y con
+ * teclado. Como en la portada: el título a la izquierda y las preguntas a la derecha, con líneas finas y un «+» que
+ * gira al abrir. `children` va debajo del título (la ficha pone ahí el enlace a las clases).
  * `pagoEnLinea` lo decide la página en el servidor con pagoEnLineaActivo() (shared/config/pagos.ts).
  */
 export default function PreguntasProducto({
   nombre,
   participaDelCombo,
   pagoEnLinea,
+  children,
 }: {
   nombre: string
   participaDelCombo: boolean
   pagoEnLinea: boolean
+  children?: ReactNode
 }) {
   const whatsapp = enlaceWhatsapp(`Hola, RR Boxing. Tengo una consulta sobre ${nombre.trim()}.`)
 
@@ -80,21 +84,28 @@ export default function PreguntasProducto({
   ]
 
   return (
-    <section className="mt-8 max-w-lg" aria-labelledby="preguntas-producto">
-      <h2 id="preguntas-producto" className="text-lg font-semibold text-white">
-        Preguntas frecuentes
-      </h2>
-      <div className="mt-3 rounded-2xl border border-dark-300 bg-dark-100">
-        {preguntas.map((p, i) => (
-          <details key={p.id} className={`group ${i > 0 ? 'border-t border-dark-300' : ''}`}>
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-left text-base text-white transition hover:text-accent [&::-webkit-details-marker]:hidden">
+    <section
+      className="mt-14 grid gap-7 border-t border-linea pt-10 lg:mt-[88px] lg:grid-cols-[1fr_1.4fr] lg:gap-14"
+      aria-labelledby="preguntas-producto"
+    >
+      <div>
+        <h2 id="preguntas-producto" className="titulo-bloque">
+          Preguntas frecuentes
+        </h2>
+        {children}
+      </div>
+      <div>
+        {preguntas.map((p) => (
+          <details key={p.id} className="group border-b border-linea first:border-t">
+            <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-4 py-5 text-left text-[17px] font-semibold md:text-lg [&::-webkit-details-marker]:hidden">
               <span>{p.pregunta}</span>
-              <ChevronDown
-                className="h-5 w-5 shrink-0 text-accent transition-transform duration-200 group-open:rotate-180"
+              <Plus
+                className="h-5 w-5 shrink-0 transition-transform duration-200 group-open:rotate-45 motion-reduce:transition-none"
+                strokeWidth={2}
                 aria-hidden
               />
             </summary>
-            <p className="px-5 pb-4 text-sm leading-relaxed text-neutral-light">{p.respuesta}</p>
+            <p className="pb-[22px] pr-10 leading-relaxed text-tinta-2">{p.respuesta}</p>
           </details>
         ))}
       </div>
