@@ -3,9 +3,11 @@ import CartClient from '@/features/cart/CartClient'
 
 export default function CartPage() {
   return (
-    <main className="min-h-screen bg-dark">
+    <>
       <MainNav />
-      <CartClient />
-    </main>
+      <main className="min-h-[70vh]">
+        <CartClient />
+      </main>
+    </>
   )
 }

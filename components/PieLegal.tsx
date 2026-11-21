@@ -1,6 +1,7 @@
 // El legal del pie, igual en todas las páginas y debajo de todo: el Libro de Reclamaciones (siempre a la vista),
 // quién vende, cómo escribirnos y los textos legales. Componente del servidor: lee empresa() al armarse.
 // Mientras falte un dato de quién vende, se ve «por confirmar» (nunca se inventa).
+// Va en negro, como la última franja del pie (components/Footer.tsx), separado por una línea fina.
 import Link from 'next/link'
 import { empresa, identidad, whatsappVisible } from '@/shared/lib/empresa'
 import { RUTAS } from '@/shared/legal/politicas'
@@ -13,8 +14,8 @@ const ENLACES = [
   { href: RUTAS.garantia, texto: 'Garantía' },
 ] as const
 
-const claseEnlace = 'inline-flex min-h-[32px] items-center underline-offset-2 hover:text-accent hover:underline'
-const claseFalta = 'border-b border-dashed border-neutral-dark'
+const claseEnlace = 'inline-flex min-h-[32px] items-center underline-offset-[3px] hover:text-white hover:underline'
+const claseFalta = 'border-b border-dashed border-tenue'
 
 function IconoLibro() {
   return (
@@ -39,51 +40,53 @@ export default function PieLegal() {
   const quien = identidad(e)
 
   return (
-    <div className="border-t border-dark-300 bg-dark pb-24 pt-5 text-xs leading-relaxed text-neutral md:pb-8">
-      <div className="container mx-auto max-w-6xl space-y-2 px-4">
-        <p className="flex flex-wrap items-center gap-x-4 gap-y-1">
-          <Link
-            href={RUTAS.libro}
-            className="inline-flex min-h-[32px] items-center gap-2 font-medium text-neutral-light underline-offset-2 hover:text-accent hover:underline"
-          >
-            <IconoLibro />
-            Libro de Reclamaciones
-          </Link>
-          {quien ? <span>{quien}</span> : <span className={claseFalta}>Razón social, RUC y domicilio por confirmar</span>}
-        </p>
+    <div className="bg-tinta text-sm leading-relaxed text-tenue">
+      <div className="contenedor">
+        <div className="space-y-1.5 border-t border-linea-oscura pb-24 pt-5 md:pb-8">
+          <p className="flex flex-wrap items-center gap-x-6 gap-y-1">
+            <Link
+              href={RUTAS.libro}
+              className="inline-flex min-h-[32px] items-center gap-2 font-semibold text-claro underline-offset-[3px] hover:text-white hover:underline"
+            >
+              <IconoLibro />
+              Libro de Reclamaciones
+            </Link>
+            {quien ? <span>{quien}</span> : <span className={claseFalta}>Razón social, RUC y domicilio por confirmar</span>}
+          </p>
 
-        <p className="flex flex-wrap items-center gap-x-1">
-          <span>Atención:</span>
-          {e.correo ? (
-            <a href={`mailto:${e.correo}`} className={`${claseEnlace} [overflow-wrap:anywhere]`}>
-              {e.correo}
-            </a>
-          ) : (
-            <span className={claseFalta}>correo por confirmar</span>
-          )}
-          {e.whatsapp && (
-            <>
-              <span aria-hidden="true">·</span>
-              <a href={enlaceWhatsappAtencion(e.whatsapp)} target="_blank" rel="noopener noreferrer" className={claseEnlace}>
-                WhatsApp {whatsappVisible(e.whatsapp)}
+          <p className="flex flex-wrap items-center gap-x-1">
+            <span>Atención:</span>
+            {e.correo ? (
+              <a href={`mailto:${e.correo}`} className={`${claseEnlace} [overflow-wrap:anywhere]`}>
+                {e.correo}
               </a>
-            </>
-          )}
-        </p>
+            ) : (
+              <span className={claseFalta}>correo por confirmar</span>
+            )}
+            {e.whatsapp && (
+              <>
+                <span aria-hidden="true">·</span>
+                <a href={enlaceWhatsappAtencion(e.whatsapp)} target="_blank" rel="noopener noreferrer" className={claseEnlace}>
+                  WhatsApp {whatsappVisible(e.whatsapp)}
+                </a>
+              </>
+            )}
+          </p>
 
-        <nav aria-label="Textos legales">
-          <ul className="flex flex-wrap gap-x-4">
-            {ENLACES.map((l) => (
-              <li key={l.href}>
-                <Link href={l.href} className={claseEnlace}>
-                  {l.texto}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
+          <nav aria-label="Textos legales">
+            <ul className="flex flex-wrap gap-x-6">
+              {ENLACES.map((l) => (
+                <li key={l.href}>
+                  <Link href={l.href} className={claseEnlace}>
+                    {l.texto}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
 
-        <p>© 2026 RR Boxing</p>
+          <p className="pt-1">© 2026 RR Boxing</p>
+        </div>
       </div>
     </div>
   )

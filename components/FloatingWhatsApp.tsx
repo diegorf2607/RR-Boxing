@@ -1,5 +1,7 @@
 'use client'
 
+import { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
 import { enlaceWhatsapp } from '@/shared/lib/whatsapp'
 
 function WhatsAppIcon({ className }: { className?: string }) {
@@ -17,18 +19,55 @@ function resolveWhatsAppHref(): string {
   return enlaceWhatsapp(message)
 }
 
+const CELULAR = '(max-width: 767px)'
+
+/**
+ * En el celular se esconde mientras esté a la vista algo marcado con data-ocultar-whatsapp (los botones de la portada):
+ * en pantallas bajas (360×640) quedaba encima de «Ver la tienda» y al tocar su borde se abría WhatsApp.
+ */
+function useOcultoEnCelular(): boolean {
+  const ruta = usePathname()
+  const [oculto, setOculto] = useState(false)
+  useEffect(() => {
+    const objetivo = document.querySelector('[data-ocultar-whatsapp]')
+    if (!objetivo || !('IntersectionObserver' in window)) {
+      setOculto(false)
+      return
+    }
+    const celular = window.matchMedia(CELULAR)
+    let aLaVista = false
+    const actualizar = () => setOculto(aLaVista && celular.matches)
+    const observador = new IntersectionObserver(([entrada]) => {
+      aLaVista = entrada.isIntersecting
+      actualizar()
+    })
+    observador.observe(objetivo)
+    celular.addEventListener('change', actualizar)
+    return () => {
+      observador.disconnect()
+      celular.removeEventListener('change', actualizar)
+    }
+  }, [ruta])
+  return oculto
+}
+
 export default function FloatingWhatsApp() {
   const href = resolveWhatsAppHref()
+  const oculto = useOcultoEnCelular()
 
   return (
     <a
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="fixed bottom-6 right-6 z-[65] flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg shadow-black/35 transition hover:scale-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+      // Cuadrado negro con el ícono blanco, como los botones de la tienda: sin sombra ni círculo verde. El borde gris
+      // lo separa cuando pasa por encima de una franja negra (la clase, el pie).
+      className={`fixed bottom-4 right-4 z-[65] flex h-14 w-14 items-center justify-center border border-[#4A4A4A] bg-tinta text-white transition-[color,background-color,border-color,opacity] hover:border-accent hover:bg-accent hover:text-tinta md:bottom-6 md:right-6 ${
+        oculto ? 'invisible opacity-0' : 'visible opacity-100'
+      }`}
       aria-label="WhatsApp: escríbenos para comprar o resolver dudas"
     >
-      <WhatsAppIcon className="h-8 w-8" />
+      <WhatsAppIcon className="h-7 w-7" />
     </a>
   )
 }

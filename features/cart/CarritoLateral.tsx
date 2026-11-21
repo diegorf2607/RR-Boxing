@@ -12,6 +12,7 @@ import { COMBO_MIN_UNITS } from '@/shared/lib/combo-promo'
 import { armarLineas, resumirCarrito, topeLinea } from '@/features/cart/lineas'
 import { useCatalogo } from '@/features/cart/useCatalogo'
 import SelectorCantidad from '@/features/cart/SelectorCantidad'
+import IconoWhatsapp from '@/features/cart/IconoWhatsapp'
 import { enlacePedidoLineas } from '@/features/store/pedidoWhatsappProducto'
 
 const ENFOCABLES =
@@ -21,8 +22,8 @@ const ENFOCABLES =
 const TRANSICION = 200
 
 /**
- * Carrito lateral: se abre al agregar un producto y con el ícono del carrito del menú. A la derecha en escritorio y
- * desde abajo en el celular. Es un diálogo: atrapa el foco, Escape lo cierra y al cerrarse el foco vuelve a donde
+ * Carrito lateral, blanco con líneas finas: se abre al agregar un producto y con el carrito del menú. A la derecha en
+ * escritorio y desde abajo en el celular. Es un diálogo: atrapa el foco, Escape lo cierra y al cerrarse el foco vuelve a donde
  * estaba. El teclado se escucha en todo el documento, para que Escape y Tab sigan funcionando aunque el foco se haya
  * caído al <body>. Lleva a /checkout («Continuar con mi pedido»), donde se piden los datos del pedido, y también deja
  * pedir directo por WhatsApp con el pedido ya escrito.
@@ -151,7 +152,7 @@ export default function CarritoLateral({
       <div
         aria-hidden
         onClick={onCerrar}
-        className={`absolute inset-0 bg-black/70 transition-opacity duration-200 motion-reduce:transition-none ${
+        className={`absolute inset-0 bg-black/60 transition-opacity duration-200 motion-reduce:transition-none ${
           visible ? 'opacity-100' : 'opacity-0'
         }`}
       />
@@ -161,16 +162,16 @@ export default function CarritoLateral({
         aria-modal="true"
         aria-labelledby={titulo}
         tabIndex={-1}
-        className={`absolute inset-x-0 bottom-0 flex max-h-[92dvh] flex-col rounded-t-2xl border-t border-dark-300 bg-dark text-white outline-none transition-transform duration-200 ease-out motion-reduce:transition-none md:inset-x-auto md:inset-y-0 md:right-0 md:max-h-none md:w-[420px] md:rounded-none md:border-l md:border-t-0 ${
+        className={`absolute inset-x-0 bottom-0 flex max-h-[92dvh] flex-col border-t border-linea bg-white text-tinta outline-none transition-transform duration-200 ease-out motion-reduce:transition-none md:inset-x-auto md:inset-y-0 md:right-0 md:max-h-none md:w-[440px] md:border-l md:border-t-0 ${
           visible ? 'translate-x-0 translate-y-0' : 'translate-y-full md:translate-x-full md:translate-y-0'
         }`}
       >
-        <div className="flex items-center justify-between gap-4 border-b border-dark-300 px-5 py-4">
+        <div className="flex items-center justify-between gap-4 border-b border-linea px-5 py-3.5">
           {/* tabIndex -1: recibe el foco cuando se quita una línea (el botón del tacho desaparece) */}
-          <h2 id={titulo} ref={tituloRef} tabIndex={-1} className="font-heading text-3xl leading-none tracking-wide outline-none">
-            Tu carrito
+          <h2 id={titulo} ref={tituloRef} tabIndex={-1} className="flex items-baseline gap-3 outline-none">
+            <span className="titulo-bloque text-[40px] md:text-[44px]">Tu carrito</span>
             {resumen.unidades > 0 ? (
-              <span className="ml-3 font-sans text-sm font-normal tracking-normal text-neutral">
+              <span className="text-sm font-medium text-suave">
                 {resumen.unidades === 1 ? '1 producto' : `${resumen.unidades} productos`}
               </span>
             ) : null}
@@ -178,10 +179,10 @@ export default function CarritoLateral({
           <button
             type="button"
             onClick={onCerrar}
-            className="-my-1 -mr-3 rounded-lg p-3 text-neutral-light transition hover:bg-dark-100 hover:text-white"
+            className="-mr-2.5 flex h-11 w-11 shrink-0 items-center justify-center text-tinta transition-colors hover:bg-gris"
             aria-label="Cerrar el carrito"
           >
-            <X className="h-5 w-5" aria-hidden />
+            <X className="h-6 w-6" strokeWidth={2} aria-hidden />
           </button>
         </div>
 
@@ -189,24 +190,27 @@ export default function CarritoLateral({
           {esperando ? (
             <ul aria-label="Cargando el carrito">
               {items.slice(0, 3).map((item) => (
-                <li key={`${item.productId}-${item.variante?.color ?? ''}`} className="flex animate-pulse gap-4 border-b border-dark-300 px-5 py-4">
-                  <div className="h-16 w-16 shrink-0 rounded-lg bg-dark-200" />
+                <li
+                  key={`${item.productId}-${item.variante?.color ?? ''}`}
+                  className="flex gap-4 border-b border-linea px-5 py-4 motion-safe:animate-pulse"
+                >
+                  <div className="h-20 w-20 shrink-0 bg-gris" />
                   <div className="flex-1 space-y-2 py-1">
-                    <div className="h-4 w-3/4 rounded bg-dark-200" />
-                    <div className="h-4 w-1/3 rounded bg-dark-200" />
+                    <div className="h-4 w-3/4 bg-gris" />
+                    <div className="h-4 w-1/3 bg-gris" />
                   </div>
                 </li>
               ))}
             </ul>
           ) : vacio ? (
             <div className="px-5 py-10 text-center">
-              <p className="text-base text-white">Tu carrito está vacío.</p>
-              <p className="mt-2 text-sm text-neutral-light">Agrega productos desde la tienda.</p>
+              <p className="text-lg font-semibold">Tu carrito está vacío.</p>
+              <p className="mt-2 text-suave">Agrega productos desde la tienda.</p>
             </div>
           ) : sinCatalogo ? (
-            <p className="px-5 py-8 text-sm leading-relaxed text-neutral-light">
+            <p className="px-5 py-8 leading-relaxed text-tinta-2">
               No pudimos cargar los productos de tu carrito. Vuelve a intentarlo en un momento o{' '}
-              <Link href="/cart" className="text-accent underline underline-offset-2 hover:text-white">
+              <Link href="/cart" className="enlace text-tinta">
                 abre el carrito
               </Link>
               .
@@ -217,30 +221,30 @@ export default function CarritoLateral({
                 const nombre = linea.product.name.trim()
                 const max = topeLinea(linea.product.stock)
                 return (
-                  <li key={linea.clave} className="flex gap-4 border-b border-dark-300 px-5 py-4">
+                  <li key={linea.clave} className="flex gap-4 border-b border-linea px-5 py-4">
                     <Link
                       href={`/product/${linea.product.slug}`}
                       onClick={onCerrar}
-                      className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-dark-300 bg-white"
+                      className="relative h-20 w-20 shrink-0 overflow-hidden bg-gris"
                     >
                       {linea.product.imageUrls[0] ? (
                         <Image
                           src={linea.product.imageUrls[0]}
                           alt={nombre}
                           fill
-                          sizes="64px"
-                          className="object-contain"
+                          sizes="80px"
+                          className="object-contain p-1.5 mix-blend-multiply"
                         />
                       ) : null}
                     </Link>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                          <p className="font-medium leading-snug text-white">{nombre}</p>
+                          <p className="font-semibold leading-snug">{nombre}</p>
                           {linea.variante?.color ? (
-                            <p className="mt-0.5 text-sm text-neutral-light">Color: {linea.variante.color}</p>
+                            <p className="mt-0.5 text-sm text-tinta-2">Color: {linea.variante.color}</p>
                           ) : null}
-                          <p className="mt-0.5 text-sm text-neutral">
+                          <p className="mt-0.5 text-sm text-suave">
                             {formatCurrency(linea.price.amount, linea.price.currency, config.locale)} c/u
                           </p>
                         </div>
@@ -251,16 +255,16 @@ export default function CarritoLateral({
                             // El botón desaparece con la línea: el foco pasa al título para no caerse al <body>
                             requestAnimationFrame(() => tituloRef.current?.focus())
                           }}
-                          className="-mr-3 -mt-2 flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-neutral transition hover:bg-dark-100 hover:text-white"
+                          className="-mr-3 -mt-2.5 flex h-11 w-11 shrink-0 items-center justify-center text-suave transition-colors hover:bg-gris hover:text-tinta"
                           aria-label={`Quitar ${nombre}${linea.variante?.color ? ` (${linea.variante.color})` : ''} del carrito`}
                         >
-                          <Trash2 className="h-4 w-4" aria-hidden />
+                          <Trash2 className="h-[18px] w-[18px]" aria-hidden />
                         </button>
                       </div>
                       {linea.agotado ? (
-                        <p className="mt-2 text-sm text-neutral-light">Agotado por ahora: no va en tu pedido.</p>
+                        <p className="mt-2 text-sm font-semibold">Agotado por ahora: no va en tu pedido.</p>
                       ) : (
-                        <div className="mt-2 flex items-center justify-between gap-3">
+                        <div className="mt-2.5 flex items-center justify-between gap-3">
                           <SelectorCantidad
                             tamano="sm"
                             valor={linea.quantity}
@@ -268,7 +272,7 @@ export default function CarritoLateral({
                             etiqueta={`Cantidad de ${nombre}`}
                             onCambiar={(q) => onCambiarCantidad(linea.productId, q, linea.variante)}
                           />
-                          <p className="font-semibold tabular-nums text-white">
+                          <p className="num text-[22px] leading-none">
                             {formatCurrency(linea.lineTotal, linea.price.currency, config.locale)}
                           </p>
                         </div>
@@ -281,28 +285,28 @@ export default function CarritoLateral({
           )}
         </div>
 
-        <div className="border-t border-dark-300 px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4">
+        <div className="border-t border-linea px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4">
           {puedeSeguir ? (
-            <dl className="space-y-1.5 text-sm">
-              <div className="flex justify-between gap-4 text-neutral-light">
-                <dt>Subtotal</dt>
-                <dd className="tabular-nums text-white">{dinero(resumen.combo.subtotal)}</dd>
+            <dl className="space-y-1.5 text-[15px]">
+              <div className="flex justify-between gap-4">
+                <dt className="text-suave">Subtotal</dt>
+                <dd className="tabular-nums">{dinero(resumen.combo.subtotal)}</dd>
               </div>
               {resumen.combo.descuento > 0 ? (
-                <div className="flex justify-between gap-4 text-accent">
-                  <dt>Combo 10%</dt>
-                  <dd className="tabular-nums">−{dinero(resumen.combo.descuento)}</dd>
+                <div className="flex items-center justify-between gap-4">
+                  <dt>
+                    <span className="etiqueta">Combo 10%</span>
+                  </dt>
+                  <dd className="font-semibold tabular-nums">−{dinero(resumen.combo.descuento)}</dd>
                 </div>
               ) : resumen.hayProductosDelCombo ? (
-                <p className="text-xs text-neutral">
-                  Con {COMBO_MIN_UNITS} o más productos del combo tienes 10% menos.
-                </p>
+                <p className="text-sm text-suave">Con {COMBO_MIN_UNITS} o más productos del combo tienes 10% menos.</p>
               ) : null}
               <div className="flex items-baseline justify-between gap-4 pt-1">
-                <dt className="text-base text-white">Total de productos</dt>
-                <dd className="text-xl font-bold tabular-nums text-accent">{dinero(resumen.combo.total)}</dd>
+                <dt className="text-base font-bold">Total de productos</dt>
+                <dd className="num text-[28px] leading-none">{dinero(resumen.combo.total)}</dd>
               </div>
-              <p className="text-xs text-neutral">No incluye el envío.</p>
+              <p className="text-sm text-suave">No incluye el envío.</p>
             </dl>
           ) : null}
 
@@ -318,6 +322,7 @@ export default function CarritoLateral({
               rel="noopener noreferrer"
               className="btn-secondary mt-2"
             >
+              <IconoWhatsapp />
               Pedir directo por WhatsApp
             </a>
           ) : null}
@@ -329,15 +334,13 @@ export default function CarritoLateral({
             <button
               type="button"
               onClick={onCerrar}
-              className={`${puedeSeguir ? 'mt-1' : ''} flex min-h-[44px] w-full items-center justify-center text-sm text-neutral-light underline underline-offset-2 transition hover:text-accent`}
+              className={`${puedeSeguir ? 'mt-1' : ''} flex min-h-[44px] w-full items-center justify-center text-[15px] font-semibold underline underline-offset-[3px] hover:decoration-2`}
             >
               Seguir comprando
             </button>
           )}
           {resumen.todoAgotado ? (
-            <p className="mt-3 text-center text-sm text-neutral-light">
-              Lo que tienes en el carrito está agotado por ahora.
-            </p>
+            <p className="mt-3 text-center text-sm text-tinta-2">Lo que tienes en el carrito está agotado por ahora.</p>
           ) : null}
         </div>
       </div>

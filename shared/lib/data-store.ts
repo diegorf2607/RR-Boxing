@@ -3,6 +3,7 @@ import type { Order, Product, ProductImage, ListingStatus, PaymentStatus, OrderS
 import type { AdminNotification, AdminNotificationType, StoreSettings } from '@/shared/types/admin'
 import type { DigitalGift, DigitalGiftType, OrderGiftSendEvent } from '@/shared/types/digital-gifts'
 import { getSupabaseAdmin } from '@/shared/lib/supabase-admin'
+import { fotosDeProducto } from '@/shared/config/fotos-producto'
 import type { CountryCode, CurrencyCode } from '@/shared/types/commerce'
 
 type ProductRow = {
@@ -83,14 +84,31 @@ function sortImageRows(rows: ProductImageRow[]): ProductImageRow[] {
   })
 }
 
-function mapProduct(row: ProductRow, imageRows: ProductImageRow[], priceRows: ProductPriceRow[]): Product {
+type OpcionesMapeo = {
+  /**
+   * true en lo que ve el público (catálogo, ficha, carrito, JSON-LD): si el slug tiene fotos nuevas en
+   * shared/config/fotos-producto.ts, imageUrls y productImages salen de ahí. El panel no lo pasa: ahí se ven y se
+   * editan las fotos guardadas en la base, que no se tocan.
+   */
+  fotosDeLaTienda?: boolean
+}
+
+function mapProduct(
+  row: ProductRow,
+  imageRows: ProductImageRow[],
+  priceRows: ProductPriceRow[],
+  { fotosDeLaTienda = false }: OpcionesMapeo = {}
+): Product {
+  const fotosNuevas = fotosDeLaTienda ? fotosDeProducto(row.slug) : null
   const ownImages = sortImageRows(imageRows.filter((img) => img.product_id === row.id))
-  const productImages: ProductImage[] = ownImages.map((img) => ({
-    url: img.url,
-    sortOrder: img.sort_order,
-    isPrimary: !!img.is_primary,
-  }))
-  const imageUrls = ownImages.map((img) => img.url)
+  const productImages: ProductImage[] = fotosNuevas
+    ? fotosNuevas.map((foto, i) => ({ url: foto.url, sortOrder: i, isPrimary: i === 0 }))
+    : ownImages.map((img) => ({
+        url: img.url,
+        sortOrder: img.sort_order,
+        isPrimary: !!img.is_primary,
+      }))
+  const imageUrls = fotosNuevas ? fotosNuevas.map((foto) => foto.url) : ownImages.map((img) => img.url)
 
   const prices = priceRows
     .filter((price) => price.product_id === row.id)
@@ -200,7 +218,7 @@ export async function getStoreProducts(): Promise<Product[]> {
     .sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0))
   const ids = rows.map((row) => row.id)
   const { imageRows, priceRows } = await loadProductRelations(supabase, ids)
-  return rows.map((row) => mapProduct(row, imageRows, priceRows))
+  return rows.map((row) => mapProduct(row, imageRows, priceRows, { fotosDeLaTienda: true }))
 }
 
 export async function getProducts(): Promise<Product[]> {
@@ -239,7 +257,7 @@ export async function getProductBySlug(slug: string): Promise<Product | undefine
   if (listingFromRow(productRow) !== 'active') return undefined
 
   const { imageRows, priceRows } = await loadProductRelations(supabase, [productRow.id])
-  return mapProduct(productRow, imageRows, priceRows)
+  return mapProduct(productRow, imageRows, priceRows, { fotosDeLaTienda: true })
 }
 
 export async function getAdminProductById(id: string): Promise<Product | undefined> {

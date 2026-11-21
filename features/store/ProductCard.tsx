@@ -6,81 +6,73 @@ import type { Product } from '@/shared/types/commerce'
 import { useCountry } from '@/features/country/CountryProvider'
 import { getCountryConfig, formatCurrency } from '@/shared/lib/country'
 import { getPriceForCountry } from '@/features/store/pricing'
-import { useCart } from '@/features/cart/CartProvider'
 import { getStockStatus } from '@/features/store/stockUrgency'
-import { enlaceConsultaAgotado, enlacePedidoProducto } from '@/features/store/pedidoWhatsappProducto'
 import { coloresDisponibles } from '@/features/store/colores'
+import { datosDeFoto } from '@/shared/config/fotos-producto'
 
+/** Ancho de la foto: 2 columnas en el celular y 3 desde 768 px, dentro de 1320 px. */
+export const TAMANO_FOTO_TARJETA = '(min-width: 1320px) 430px, (min-width: 768px) 33vw, 50vw'
+
+const valorDe = (product: Product, etiqueta: string) =>
+  product.attributes?.find((a) => a.label.trim().toLowerCase() === etiqueta)?.value.trim() || ''
+
+/**
+ * La línea corta debajo del nombre, armada con los datos del panel: material, medida y colores
+ * («Cuero PU · 12 oz · negro o blanco»). Si el producto no tiene esos datos, va su descripción.
+ */
+export function resumenProducto(product: Product): string {
+  const colores = coloresDisponibles(product).map((c) => c.toLocaleLowerCase('es-PE'))
+  const partes = [
+    valorDe(product, 'material'),
+    valorDe(product, 'medida'),
+    colores.length > 1 ? `${colores.slice(0, -1).join(', ')} o ${colores[colores.length - 1]}` : '',
+  ].filter(Boolean)
+  return partes.length > 0 ? partes.join(' · ') : product.description.trim()
+}
+
+/**
+ * La tarjeta del catálogo, como en la maqueta: toda la tarjeta lleva a la ficha (ahí se elige el color, el combo y
+ * la cantidad, y se agrega al carrito). La foto «producto» va entera sobre el gris (multiply funde su fondo blanco);
+ * una foto «ambiente» llena el cuadro.
+ */
 export default function ProductCard({ product }: { product: Product }) {
   const { country } = useCountry()
-  const { addItem, abrirPanel } = useCart()
   const price = getPriceForCountry(product, country)
   const locale = getCountryConfig(country).locale
   const status = getStockStatus(product.stock)
-  const out = status.kind === 'agotado'
-  // Si viene en varios colores, el color se elige en la ficha antes de agregar
-  const eligeColor = !out && coloresDisponibles(product).length > 0
+  const foto = product.imageUrls[0]
+  const ambiente = foto ? datosDeFoto(foto)?.tipo === 'ambiente' : false
 
   return (
-    <article className="card flex h-full flex-col">
-      {/* La foto lleva a la ficha para el dedo y el mouse; para el teclado y el lector basta el enlace del título */}
-      <Link
-        href={`/product/${product.slug}`}
-        tabIndex={-1}
-        aria-hidden="true"
-        className="relative mb-4 block aspect-square overflow-hidden rounded-xl bg-white"
-      >
-        {/* Entera (contain) sobre blanco: las fotos del producto ya tienen fondo blanco y así no se cortan */}
-        <Image
-          src={product.imageUrls[0]}
-          alt={product.name}
-          fill
-          sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-          className="object-contain"
-        />
-      </Link>
-      <p className="mb-1 text-sm text-neutral">{product.category}</p>
-      {/* h2: va justo debajo del h1 «Tienda RR Boxing» */}
-      <h2 className="mb-2 text-lg font-bold">
-        <Link href={`/product/${product.slug}`} className="hover:text-accent">
-          {product.name}
-        </Link>
-      </h2>
-      <p className="mb-4 text-sm text-neutral-light">{product.description}</p>
-      <div className="mt-auto">
-        <div className="flex items-baseline justify-between gap-3">
-          <p className="text-xl font-bold text-accent">{formatCurrency(price.amount, price.currency, locale)}</p>
-          {status.kind !== 'disponible' ? <p className="text-sm text-neutral">{status.label}</p> : null}
-        </div>
-        {/* Una acción principal a todo el ancho; el pedido directo por WhatsApp queda como enlace de texto */}
-        <div className="mt-3 grid gap-1">
-          {eligeColor ? (
-            <Link href={`/product/${product.slug}`} className="btn-primary">
-              Elegir color
-            </Link>
-          ) : (
-            <button
-              type="button"
-              disabled={out}
-              onClick={() => {
-                addItem(product.id)
-                abrirPanel()
-              }}
-              className="btn-primary"
-            >
-              {out ? 'Agotado' : 'Agregar al carrito'}
-            </button>
-          )}
-          <a
-            href={out ? enlaceConsultaAgotado(product) : enlacePedidoProducto(product, country, 1)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex min-h-[44px] items-center justify-center text-center text-sm text-neutral-light underline underline-offset-2 hover:text-accent"
-          >
-            {out ? 'Preguntar por WhatsApp cuándo vuelve' : 'o pídelo directo por WhatsApp'}
-          </a>
-        </div>
+    <Link href={`/product/${product.slug}`} className="group block">
+      <div className="relative aspect-square overflow-hidden bg-gris">
+        {foto ? (
+          <div className={ambiente ? 'absolute inset-0' : 'absolute inset-x-[5%] inset-y-[7%]'}>
+            <Image
+              src={foto}
+              alt=""
+              fill
+              sizes={TAMANO_FOTO_TARJETA}
+              className={ambiente ? 'object-cover' : 'object-contain mix-blend-multiply'}
+            />
+          </div>
+        ) : null}
+        {status.kind === 'agotado' ? (
+          <span className="absolute left-0 top-0 bg-tinta px-2 py-1 text-xs font-bold text-white md:px-2.5 md:py-1.5 md:text-sm">
+            {status.label}
+          </span>
+        ) : null}
       </div>
-    </article>
+      <div className="grid gap-x-4 gap-y-0.5 px-0.5 pt-2.5 md:grid-cols-[1fr_auto] md:items-baseline md:pt-3.5">
+        <h3 className="text-base font-semibold leading-snug decoration-1 underline-offset-[3px] group-hover:underline md:text-lg">
+          {product.name.trim()}
+        </h3>
+        <p className="num mt-1 text-[26px] leading-none md:row-span-2 md:mt-0 md:text-right md:text-[30px]">
+          {formatCurrency(price.amount, price.currency, locale)}
+        </p>
+        <p className="line-clamp-2 text-sm text-suave md:text-[15px]">{resumenProducto(product)}</p>
+        {status.kind === 'pocas' ? <p className="text-sm font-semibold text-tinta-2">{status.label}</p> : null}
+      </div>
+    </Link>
   )
 }

@@ -4,15 +4,21 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { CLASE, claseVigente } from '@/shared/lib/clase-virtual'
 
-const filas: { etiqueta: string; valor: string; nota?: string }[] = [
-  { etiqueta: 'Día', valor: CLASE.dia },
+const filas: { etiqueta: string; valor: string }[] = [
   { etiqueta: 'Hora', valor: CLASE.hora },
   { etiqueta: 'Dónde', valor: CLASE.donde },
-  { etiqueta: 'Precio', valor: CLASE.precio, nota: CLASE.precioFuera },
+  { etiqueta: 'Precio', valor: 'Gratis, solo te inscribes' },
+  { etiqueta: 'El link', valor: 'Te lo mandamos por WhatsApp' },
 ]
 
+/** «Sábado 28 de noviembre» → «Sábado 28» y «de noviembre», para partir el título en dos líneas como en la maqueta. */
+const [DIA, MES] = (() => {
+  const corte = CLASE.dia.indexOf(' de ')
+  return corte > 0 ? [CLASE.dia.slice(0, corte), CLASE.dia.slice(corte + 1)] : [CLASE.dia, '']
+})()
+
 /**
- * Aviso de la clase virtual en el inicio. La página decide en el servidor si se muestra; si la página
+ * La banda negra de la clase virtual gratis en el inicio. La página decide en el servidor si se muestra; si la página
  * se armó antes de la clase y alguien la abre después, aquí se esconde al cargar.
  */
 export default function ClaseDestacada() {
@@ -25,35 +31,35 @@ export default function ClaseDestacada() {
   if (!vigente) return null
 
   return (
-    <section aria-labelledby="clase-destacada-titulo" className="border-t border-dark-300 bg-dark py-12 text-white md:py-16">
-      <div className="container mx-auto grid max-w-6xl gap-8 px-4 md:grid-cols-2 md:items-center md:gap-12">
+    <section
+      id="clase"
+      aria-labelledby="clase-destacada-titulo"
+      className="scroll-mt-20 bg-tinta py-12 text-white md:scroll-mt-24 md:py-[72px]"
+    >
+      <div className="contenedor grid gap-7 md:gap-10 lg:grid-cols-[1.15fr_1fr] lg:items-end lg:gap-16">
         <div>
-          <h2 id="clase-destacada-titulo" className="section-title">
-            Clase virtual <span className="text-accent">gratis</span>
+          <p className="mb-3.5 text-lg font-bold text-accent">Clase virtual gratis</p>
+          <h2 id="clase-destacada-titulo" className="font-heading text-[60px] leading-[0.9] md:text-[88px] xl:text-[120px]">
+            {DIA}
+            {MES ? (
+              <>
+                <br />
+                {MES}
+              </>
+            ) : null}
           </h2>
-          <p className="section-subtitle max-w-sm">
-            Es gratis: te inscribes y te mandamos el link de la clase por WhatsApp.
-          </p>
         </div>
 
         <div>
-          <dl className="rounded-2xl border border-dark-300 bg-dark-100">
-            {filas.map((fila, i) => (
-              <div
-                key={fila.etiqueta}
-                className={`flex items-baseline justify-between gap-4 px-5 py-4 ${
-                  i > 0 ? 'border-t border-dark-300' : ''
-                }`}
-              >
-                <dt className="text-sm text-neutral">{fila.etiqueta}</dt>
-                <dd className="text-right text-base font-medium">
-                  {fila.valor}
-                  {fila.nota && <span className="block text-sm font-normal text-neutral">{fila.nota}</span>}
-                </dd>
+          <dl className="filas">
+            {filas.map((fila) => (
+              <div key={fila.etiqueta}>
+                <dt>{fila.etiqueta}</dt>
+                <dd>{fila.valor}</dd>
               </div>
             ))}
           </dl>
-          <Link href="/clase" className="btn-primary mt-5">
+          <Link href="/clase" className="btn-primary mt-7">
             Inscribirme gratis
           </Link>
         </div>
